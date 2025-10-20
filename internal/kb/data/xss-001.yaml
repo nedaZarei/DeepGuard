@@ -1,0 +1,14 @@
+id: xss-001
+title: Cross-Site Scripting via Unescaped Output
+description: |
+  XSS occurs when user-controlled data is rendered in HTML without proper escaping
+  or sanitization. This allows attackers to inject malicious JavaScript that executes
+  in victims' browsers, potentially stealing cookies, session tokens, or performing
+  actions on behalf of the user. Template engines that don't auto-escape are vulnerable.
+code_patterns:
+  - res.send("<div>" + userInput + "</div>")
+  - document.write(userData)
+  - innerHTML = req.query.name
+  - response.getWriter().write("<h1>" + request.getParameter("title") + "</h1>")
+  - return render_template_string("<p>" + user_content + "</p>")
+schema_version: 1

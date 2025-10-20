@@ -1,0 +1,14 @@
+id: random-001
+title: Cryptographically Weak Random Number Generation
+description: |
+  Using non-cryptographic random number generators like Math.random(), random.random(),
+  or java.util.Random for security-sensitive operations creates predictable values
+  that attackers can exploit. Session tokens, CSRF tokens, password reset codes, and
+  cryptographic keys must use cryptographically secure random sources like crypto.randomBytes().
+code_patterns:
+  - const sessionToken = Math.random().toString(36)
+  - resetCode = str(random.randint(100000, 999999))
+  - String csrfToken = UUID.randomUUID().toString()
+  - token = Math.floor(Math.random() * 1000000)
+  - Random rand = new Random(); int otp = rand.nextInt(999999)
+schema_version: 1

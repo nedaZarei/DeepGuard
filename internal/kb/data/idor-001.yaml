@@ -1,0 +1,14 @@
+id: idor-001
+title: Insecure Direct Object Reference (IDOR)
+description: |
+  IDOR occurs when applications use user-supplied input to directly access database
+  objects or files without authorization checks. Attackers can manipulate IDs in URLs
+  or request bodies to access other users' data, modify records they shouldn't control,
+  or perform administrative actions. Always verify the user has permission to access the requested resource.
+code_patterns:
+  - const user = await User.findById(req.params.id)
+  - order = Order.objects.get(id=request.GET["order_id"])
+  - db.query("SELECT * FROM messages WHERE id = ?", [req.query.messageId])
+  - File file = new File("/uploads/" + request.getParameter("fileId"))
+  - prisma.post.delete({where {id parseInt(req.params.postId)}})
+schema_version: 1

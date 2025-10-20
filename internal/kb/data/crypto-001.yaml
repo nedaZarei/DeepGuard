@@ -1,0 +1,14 @@
+id: crypto-001
+title: Weak Cryptographic Hash Functions
+description: |
+  Using MD5, SHA1, or other deprecated hash functions for security-sensitive operations
+  creates vulnerabilities due to known collision attacks. These algorithms are broken
+  for password hashing, digital signatures, and integrity verification. Use bcrypt,
+  argon2, or SHA-256 minimum for security purposes. MD5/SHA1 are only acceptable for checksums.
+code_patterns:
+  - crypto.createHash("md5").update(password)
+  - hashlib.md5(password.encode()).hexdigest()
+  - MessageDigest.getInstance("MD5")
+  - sha1(userPassword)
+  - Hashing.md5().hashString(secret, StandardCharsets.UTF_8)
+schema_version: 1

@@ -1,0 +1,14 @@
+id: traversal-001
+title: Path Traversal Vulnerability
+description: |
+  Path traversal occurs when user-controlled input is used to construct file paths
+  without proper validation. Attackers can use sequences like ../ to escape the
+  intended directory and access sensitive files like /etc/passwd, application source
+  code, or configuration files containing secrets. Always validate and sanitize file paths.
+code_patterns:
+  - fs.readFile(req.params.filename, callback)
+  - res.sendFile(path.join(__dirname, userPath))
+  - open(user_input, "r")
+  - with open(os.path.join(base_dir, filename)) as f
+  - new File(baseDir + File.separator + request.getParameter("file"))
+schema_version: 1

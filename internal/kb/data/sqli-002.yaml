@@ -1,0 +1,14 @@
+id: sqli-002
+title: SQL Injection via Unsafe ORM Methods
+description: |
+  Many ORMs provide raw query methods that bypass parameterization when used with
+  string concatenation. Using Prisma's queryRaw, Django's .raw(), or JPA's
+  createNativeQuery with user input creates SQL injection vulnerabilities even in
+  otherwise safe ORM code. These methods should only be used with parameterized queries.
+code_patterns:
+  - prisma.$queryRaw(`SELECT * FROM users WHERE email = ${userEmail}`)
+  - prisma.$executeRaw(`UPDATE users SET role = ${role} WHERE id = ${id}`)
+  - User.objects.raw("SELECT * FROM users WHERE username = '" + username + "'")
+  - entityManager.createNativeQuery("SELECT * FROM orders WHERE status = " + status)
+  - connection.createQuery("FROM User WHERE name = " + userName)
+schema_version: 1

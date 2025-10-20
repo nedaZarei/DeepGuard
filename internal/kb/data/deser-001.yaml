@@ -1,0 +1,14 @@
+id: deser-001
+title: Insecure Deserialization Vulnerability
+description: |
+  Insecure deserialization occurs when untrusted data is deserialized without validation,
+  allowing attackers to inject malicious objects that execute code during deserialization.
+  Python's pickle, Node's eval on JSON, and Java's ObjectInputStream are commonly
+  exploited. Never deserialize untrusted data or use secure alternatives like JSON.
+code_patterns:
+  - pickle.loads(user_data)
+  - eval("(" + jsonString + ")")
+  - yaml.load(request.body)
+  - ObjectInputStream ois = new ObjectInputStream(socket.getInputStream()); ois.readObject()
+  - unserialize($_COOKIE["data"])
+schema_version: 1

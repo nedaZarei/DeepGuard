@@ -1,0 +1,14 @@
+id: mass-assign-001
+title: Mass Assignment Vulnerability
+description: |
+  Mass assignment occurs when ORM methods directly accept user input to create or
+  update database records without whitelisting allowed fields. Attackers can inject
+  unexpected fields like 'isAdmin' or 'role' to escalate privileges or modify protected
+  data. Always explicitly specify which fields can be updated by users.
+code_patterns:
+  - User.create(req.body)
+  - user.update(request.POST)
+  - await prisma.user.update({where {id}, data req.body})
+  - User.objects.create(**request.data)
+  - userRepository.save(objectMapper.convertValue(requestBody, User.class))
+schema_version: 1

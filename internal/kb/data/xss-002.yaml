@@ -1,0 +1,14 @@
+id: xss-002
+title: Cross-Site Scripting via dangerouslySetInnerHTML
+description: |
+  React and Vue provide escape hatches to render raw HTML, bypassing built-in XSS
+  protections. Using dangerouslySetInnerHTML in React or v-html in Vue with user
+  input creates XSS vulnerabilities. These should only be used with content from
+  trusted sources after sanitization with libraries like DOMPurify.
+code_patterns:
+  - <div dangerouslySetInnerHTML={{__html userComment}} />
+  - dangerouslySetInnerHTML={{__html props.content}}
+  - <div v-html="userBio"></div>
+  - v-html="message"
+  - innerHTML = {__html sanitizedHtml}
+schema_version: 1

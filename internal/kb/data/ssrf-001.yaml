@@ -1,0 +1,14 @@
+id: ssrf-001
+title: Server-Side Request Forgery (SSRF)
+description: |
+  SSRF occurs when user-controlled URLs are used in server-side HTTP requests without
+  validation, allowing attackers to make the server access internal services, cloud
+  metadata endpoints (AWS/GCP), or external systems. This can expose internal APIs,
+  credentials from metadata services, or enable port scanning of internal networks.
+code_patterns:
+  - fetch(req.query.url)
+  - axios.get(userProvidedUrl)
+  - requests.get(request.args.get("url"))
+  - urllib.request.urlopen(target_url)
+  - HttpClient.get(request.getParameter("webhook"))
+schema_version: 1

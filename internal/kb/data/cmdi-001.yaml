@@ -1,0 +1,14 @@
+id: cmdi-001
+title: Command Injection Vulnerability
+description: |
+  Command injection occurs when user input is passed to system shell commands without
+  proper sanitization. Attackers can chain commands using shell metacharacters like
+  semicolons, pipes, or backticks to execute arbitrary system commands with the
+  application's privileges. Always use parameterized APIs instead of shell commands.
+code_patterns:
+  - exec("ping " + userHost)
+  - child_process.exec(`git clone ${repoUrl}`)
+  - os.system("wget " + url)
+  - subprocess.call("curl " + target, shell=True)
+  - Runtime.getRuntime().exec("sh -c " + userCommand)
+schema_version: 1

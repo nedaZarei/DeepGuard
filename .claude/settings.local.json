@@ -61,7 +61,8 @@
       "Bash(go test -v ./internal/parser/ -run TestNew)",
       "Bash(go get gopkg.in/yaml.v3)",
       "Bash(go test -v ./internal/kb/)",
-      "Bash(go test ./internal/kb/)"
+      "Bash(go test ./internal/kb/)",
+      "Bash(./deepguard.exe kb validate --kb-path ./internal/kb/data/)"
     ],
     "deny": [],
     "ask": []

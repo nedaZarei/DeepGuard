@@ -1,0 +1,14 @@
+id: sqli-001
+title: SQL Injection via String Concatenation
+description: |
+  SQL injection occurs when user-controlled input is directly concatenated into
+  SQL query strings without parameterization or sanitization. This allows attackers
+  to inject arbitrary SQL commands, potentially reading, modifying, or deleting
+  database data, bypassing authentication, or executing administrative operations.
+code_patterns:
+  - db.query("SELECT * FROM users WHERE id = " + userId)
+  - query = "DELETE FROM posts WHERE id = " + req.params.id
+  - cursor.execute("SELECT * FROM products WHERE category = '" + category + "'")
+  - execute("INSERT INTO logs VALUES ('" + userInput + "')")
+  - Statement stmt = conn.createStatement(); stmt.executeQuery("SELECT * FROM accounts WHERE username = '" + username + "'")
+schema_version: 1

@@ -1,0 +1,14 @@
+id: xxe-001
+title: XML External Entity (XXE) Injection
+description: |
+  XXE vulnerabilities occur when XML parsers are configured to process external entities,
+  allowing attackers to read local files, perform SSRF attacks, or cause denial of
+  service. Parsing untrusted XML with default parser settings that enable external
+  entity resolution is dangerous. Always disable external entity processing in XML parsers.
+code_patterns:
+  - libxmljs.parseXml(userXml)
+  - ElementTree.fromstring(xml_data)
+  - DocumentBuilder builder = factory.newDocumentBuilder(); builder.parse(inputStream)
+  - etree.XML(untrusted_xml)
+  - SAXParserFactory.newInstance().newSAXParser().parse(xmlInput, handler)
+schema_version: 1

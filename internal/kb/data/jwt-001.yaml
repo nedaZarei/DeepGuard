@@ -1,0 +1,14 @@
+id: jwt-001
+title: JWT None Algorithm Vulnerability
+description: |
+  Accepting JWTs with algorithm 'none' or allowing client-controlled algorithm selection
+  enables attackers to forge tokens without a signature. Libraries that don't properly
+  validate the algorithm allow unsigned tokens to be accepted as valid, bypassing
+  authentication entirely. Always explicitly specify and validate the expected algorithm.
+code_patterns:
+  - jwt.verify(token, secret, {algorithms ["none", "HS256"]})
+  - decode(token, verify=False)
+  - jwt.decode(token, options={verify_signature false})
+  - Jwts.parser().setSigningKey(key).parseClaimsJws(token)
+  - jsonwebtoken.verify(token, null, {algorithms ["none"]})
+schema_version: 1
