@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go mod init github.com/Neda-Zarei/deep-guard)",
+      "Bash(mkdir -p cmd/deepguard internal pkg)",
+      "Bash(go build ./cmd/deepguard)",
+      "Bash(./deepguard.exe)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
