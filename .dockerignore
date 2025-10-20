@@ -1,0 +1,41 @@
+# Ignore build artifacts and temporary files
+*.exe
+*.test
+*.out
+deepguard
+
+# Ignore reports and runtime directories
+reports/
+.deepguard/
+
+# Ignore git and IDE files
+.git/
+.gitignore
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore documentation and non-essential files
+*.md
+!README.md
+LICENSE
+
+# Ignore Docker files themselves (no need to copy into image)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Ignore test and example directories
+test-project/
+example-project/
+
+# Ignore Go build cache
+vendor/
+
+# Ignore configuration files (will be mounted as volumes)
+.deepguard.yaml
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db

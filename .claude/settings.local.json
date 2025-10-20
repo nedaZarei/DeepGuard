@@ -51,7 +51,14 @@
       "Bash(./deepguard.exe scan --path test-project --languages js)",
       "Bash(go test -v ./internal/discovery/ -run TestDetect)",
       "Bash(go test -v ./internal/discovery/ -run \"TestDetectPythonFrameworks_SetupPy|TestDetectJavaFrameworks_PomXml\")",
-      "Bash(./deepguard.exe scan --path test-project --languages javascript)"
+      "Bash(./deepguard.exe scan --path test-project --languages javascript)",
+      "Bash(go get github.com/smacker/go-tree-sitter@latest)",
+      "Bash(go get github.com/smacker/go-tree-sitter/javascript@latest github.com/smacker/go-tree-sitter/typescript/typescript@latest github.com/smacker/go-tree-sitter/python@latest github.com/smacker/go-tree-sitter/java@latest)",
+      "Bash(go get github.com/smacker/go-tree-sitter/javascript)",
+      "Bash(go get github.com/smacker/go-tree-sitter/typescript/typescript)",
+      "Bash(go get github.com/smacker/go-tree-sitter/python)",
+      "Bash(go get github.com/smacker/go-tree-sitter/java)",
+      "Bash(go test -v ./internal/parser/ -run TestNew)"
     ],
     "deny": [],
     "ask": []

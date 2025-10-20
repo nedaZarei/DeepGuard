@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  deepguard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: deepguard:latest
+    container_name: deepguard
+
+    volumes:
+      # Mount your project to scan (read-only)
+      - ./example-project:/workspace:ro
+      # Mount output directory for reports (read-write)
+      - ./reports:/app/reports
+      # Optional: Mount custom config file
+      - ./.deepguard.yaml:/app/.deepguard.yaml:ro
+
+    environment:
+      - DEEPGUARD_OUTPUT_DIR=/app/reports
+      - DEEPGUARD_OPENAI_MODEL=gpt-4o
+      - DEEPGUARD_BUDGET_CAP=3.0
+      - DEEPGUARD_CONFIDENCE_THRESHOLD=0.5
+      - DEEPGUARD_VERBOSE=false
+      # Add your OpenAI API key here or use .env file
+      # - OPENAI_API_KEY=your-key-here
+
+    # override default command to scan the workspace
+    command: scan --path /workspace --languages js,ts,python,java
+
+    # resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 512M
+
+  # alternative service for interactive usage
+  deepguard-interactive:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: deepguard:latest
+    container_name: deepguard-interactive
+
+    volumes:
+      - ./example-project:/workspace:ro
+      - ./reports:/app/reports
+      - ./.deepguard.yaml:/app/.deepguard.yaml:ro
+
+    environment:
+      - DEEPGUARD_OUTPUT_DIR=/app/reports
+      - DEEPGUARD_VERBOSE=false
+
+    entrypoint: ["/bin/sh"]
+    stdin_open: true
+    tty: true
+
+    profiles:
+      - interactive

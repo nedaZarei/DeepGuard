@@ -25,3 +25,10 @@ reports/
 
 # Go workspace file
 go.work
+
+# Docker override file (user-specific)
+docker-compose.override.yml
+
+# Environment files
+.env
+.env.local

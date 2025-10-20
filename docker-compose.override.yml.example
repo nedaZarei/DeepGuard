@@ -1,0 +1,26 @@
+# Example Docker Compose override file for local development
+# Copy this to docker-compose.override.yml and customize for your setup
+# docker-compose.override.yml is automatically loaded by docker-compose
+
+version: '3.8'
+
+services:
+  deepguard:
+    # Override volumes to scan your actual project
+    volumes:
+      # Replace with your project path
+      - /path/to/your/project:/workspace:ro
+      - ./reports:/app/reports
+      # Optional: mount your custom config
+      # - ./my-config.yaml:/app/.deepguard.yaml:ro
+
+    # Override environment variables
+    environment:
+      - DEEPGUARD_OPENAI_MODEL=gpt-4o-mini  # Use cheaper model for testing
+      - DEEPGUARD_BUDGET_CAP=1.0
+      - DEEPGUARD_VERBOSE=true
+      # Set your OpenAI API key
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+
+    # Override command for your specific scan
+    command: scan --path /workspace --languages js,ts
