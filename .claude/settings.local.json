@@ -4,7 +4,10 @@
       "Bash(go mod init github.com/Neda-Zarei/deep-guard)",
       "Bash(mkdir -p cmd/deepguard internal pkg)",
       "Bash(go build ./cmd/deepguard)",
-      "Bash(./deepguard.exe)"
+      "Bash(./deepguard.exe)",
+      "Bash(go get github.com/rs/zerolog)",
+      "Bash(go test -v ./internal/logger/)",
+      "Bash(go build -o deepguard.exe ./cmd/deepguard)"
     ],
     "deny": [],
     "ask": []
