@@ -48,7 +48,10 @@
       "Bash(./deepguard.exe scan --path ./test-project --languages js --verbose)",
       "Bash(./deepguard.exe scan --path \"C:\\Users\\Administrator\\Documents\\bachelor_project\\DeepGuard\\test-project\" --languages js --verbose)",
       "Bash(./deepguard.exe scan --path test-project --languages javascript --verbose)",
-      "Bash(./deepguard.exe scan --path test-project --languages js)"
+      "Bash(./deepguard.exe scan --path test-project --languages js)",
+      "Bash(go test -v ./internal/discovery/ -run TestDetect)",
+      "Bash(go test -v ./internal/discovery/ -run \"TestDetectPythonFrameworks_SetupPy|TestDetectJavaFrameworks_PomXml\")",
+      "Bash(./deepguard.exe scan --path test-project --languages javascript)"
     ],
     "deny": [],
     "ask": []

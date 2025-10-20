@@ -207,11 +207,30 @@ func runScan(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
+	// Detect frameworks
+	projectCtx, err := discovery.DetectFrameworks(cfg.ScanPath)
+	if err != nil {
+		log.Warn().
+			Err(err).
+			Str("component", "scanner").
+			Msg("Framework detection failed, continuing without framework context")
+		projectCtx = &discovery.ProjectContext{Frameworks: make(map[string][]string)}
+	}
+
+	// Display detected frameworks
+	if len(projectCtx.Frameworks) > 0 {
+		fmt.Printf("\nDetected frameworks:\n")
+		for lang, frameworks := range projectCtx.Frameworks {
+			fmt.Printf("  %s: %s\n", lang, strings.Join(frameworks, ", "))
+		}
+		fmt.Printf("\n")
+	}
+
 	// TODO: Wire to parsing and analysis pipeline
 	// This will be implemented in subsequent tasks
 	log.Info().
 		Str("component", "scanner").
-		Msg("Analysis pipeline not yet implemented - file discovery complete")
+		Msg("Analysis pipeline not yet implemented - file discovery and framework detection complete")
 
 	log.Info().
 		Str("component", "scanner").
