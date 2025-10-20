@@ -1,0 +1,46 @@
+# DeepGuard Configuration File
+# Copy this file to .deepguard.yaml and customize as needed
+
+# Target directory to scan for vulnerabilities
+# Can be overridden with --scan-path CLI flag
+# scan_path: "./src"
+
+# Directory where scan reports will be written
+# Default: ./reports/
+output_dir: "./reports/"
+
+# Programming languages to scan
+# Supported values: js, ts, python, java
+# Default: all supported languages
+languages:
+  - js
+  - ts
+  - python
+  - java
+
+# OpenAI model to use for vulnerability analysis
+# Options: gpt-4o (more accurate), gpt-4o-mini (faster/cheaper)
+# Default: gpt-4o
+openai_model: "gpt-4o"
+
+# Maximum cost in USD for a single scan
+# Scanner automatically falls back to gpt-4o-mini if budget is exceeded
+# Default: 3.0
+budget_cap: 3.0
+
+# Minimum confidence score (0.0-1.0) for reporting findings
+# Findings with lower confidence will be filtered out
+# Lower values = more findings (with more false positives)
+# Higher values = fewer findings (with fewer false positives)
+# Default: 0.5
+confidence_threshold: 0.5
+
+# Enable verbose JSON logging to stderr
+# Default: false
+verbose: false
+
+# Note: Configuration precedence (highest to lowest):
+# 1. CLI flags (e.g., --verbose)
+# 2. Environment variables (e.g., DEEPGUARD_VERBOSE=true)
+# 3. Config file (.deepguard.yaml)
+# 4. Default values

@@ -2,43 +2,59 @@ package main
 
 import (
 	"fmt"
-	"time"
 
+	"github.com/Neda-Zarei/deep-guard/internal/config"
 	"github.com/Neda-Zarei/deep-guard/internal/logger"
 	"github.com/rs/zerolog/log"
 )
 
 func main() {
-	// Initialize logger (use --verbose flag in production)
-	verbose := false // Set to true to see JSON logs
-	logger.InitLogger(verbose)
-
 	fmt.Println("DeepGuard v1 - AI-Powered Vulnerability Scanner")
 
-	// Example: Info-level logging
+	// Load configuration from all sources
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to load configuration")
+	}
+
+	// Initialize logger based on config
+	logger.InitLogger(cfg.Verbose)
+
 	log.Info().
 		Str("component", "scanner").
 		Str("operation", "startup").
-		Msg("DeepGuard initialized successfully")
+		Msg("DeepGuard initialized")
 
-	// Example: Using context helpers
-	componentLogger := logger.WithComponent("demo")
-	componentLogger.Info().
-		Str("status", "ready").
-		Msg("Logger system configured")
-
-	// Example: Simulating file processing with timing
-	start := time.Now()
-	time.Sleep(50 * time.Millisecond) // Simulate work
-	duration := time.Since(start).Milliseconds()
-
-	fileLogger := logger.WithContext("parser", "parse_file", "example.js")
-	fileLogger.Debug().
-		Int64("duration_ms", duration).
-		Int("chunks", 3).
-		Msg("File parsed successfully")
+	// Validate configuration
+	if err := cfg.Validate(); err != nil {
+		log.Fatal().
+			Err(err).
+			Str("component", "config").
+			Msg("Invalid configuration")
+	}
 
 	log.Info().
-		Str("component", "scanner").
-		Msg("Ready to scan repositories")
+		Str("component", "config").
+		Msg("Configuration loaded and validated")
+
+	// Display configuration summary
+	log.Info().
+		Str("component", "config").
+		Str("output_dir", cfg.OutputDir).
+		Strs("languages", cfg.Languages).
+		Str("model", cfg.OpenAIModel).
+		Float64("budget_cap", cfg.BudgetCap).
+		Float64("confidence_threshold", cfg.ConfidenceThreshold).
+		Msg("Configuration summary")
+
+	if cfg.ScanPath != "" {
+		log.Info().
+			Str("component", "scanner").
+			Str("path", cfg.ScanPath).
+			Msg("Ready to scan")
+	} else {
+		log.Info().
+			Str("component", "scanner").
+			Msg("Ready (use --scan-path to specify target)")
+	}
 }

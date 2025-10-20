@@ -17,6 +17,9 @@ vendor/
 # DeepGuard runtime artifacts
 .deepguard/
 
+# User-specific config file (keep .deepguard.yaml.example)
+.deepguard.yaml
+
 # Scan output directory
 reports/
 

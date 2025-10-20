@@ -7,7 +7,20 @@
       "Bash(./deepguard.exe)",
       "Bash(go get github.com/rs/zerolog)",
       "Bash(go test -v ./internal/logger/)",
-      "Bash(go build -o deepguard.exe ./cmd/deepguard)"
+      "Bash(go build -o deepguard.exe ./cmd/deepguard)",
+      "Bash(go get github.com/spf13/viper)",
+      "Bash(go version)",
+      "Bash(go get github.com/spf13/viper@v1.16.0)",
+      "Bash(go test -v ./internal/config/)",
+      "Bash(set DEEPGUARD_BUDGET_CAP=10.0)",
+      "Bash(set DEEPGUARD_OPENAI_MODEL=gpt-4o-mini)",
+      "Bash(export DEEPGUARD_BUDGET_CAP=10.0)",
+      "Bash(export DEEPGUARD_OPENAI_MODEL=gpt-4o-mini)",
+      "Bash(export DEEPGUARD_VERBOSE=true)",
+      "Bash(unset DEEPGUARD_VERBOSE)",
+      "Bash(unset DEEPGUARD_BUDGET_CAP)",
+      "Bash(unset DEEPGUARD_OPENAI_MODEL)",
+      "Bash(export DEEPGUARD_OPENAI_MODEL=gpt-3.5-turbo)"
     ],
     "deny": [],
     "ask": []
