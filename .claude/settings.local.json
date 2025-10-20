@@ -37,7 +37,18 @@
       "Bash(./deepguard.exe scan --path . --output ./custom-reports)",
       "Bash(export DEEPGUARD_OUTPUT_DIR=/env/output)",
       "Bash(./deepguard.exe scan --path . --output ./flag-output)",
-      "Bash(unset DEEPGUARD_OUTPUT_DIR)"
+      "Bash(unset DEEPGUARD_OUTPUT_DIR)",
+      "Bash(go test -v ./internal/discovery/)",
+      "Bash(go test -v ./internal/discovery/ -run TestDiscoverFiles_TestDetection)",
+      "Bash(go test ./internal/discovery/)",
+      "Bash(go test -v ./internal/discovery/ -run TestIsTestFile)",
+      "Bash(go test -v ./internal/discovery/ -run TestFilter_CustomIgnoreFile)",
+      "Bash(./deepguard.exe scan --path ./internal --languages python)",
+      "Bash(./deepguard.exe scan --path ./test-project --languages js)",
+      "Bash(./deepguard.exe scan --path ./test-project --languages js --verbose)",
+      "Bash(./deepguard.exe scan --path \"C:\\Users\\Administrator\\Documents\\bachelor_project\\DeepGuard\\test-project\" --languages js --verbose)",
+      "Bash(./deepguard.exe scan --path test-project --languages javascript --verbose)",
+      "Bash(./deepguard.exe scan --path test-project --languages js)"
     ],
     "deny": [],
     "ask": []

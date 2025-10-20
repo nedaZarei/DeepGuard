@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/Neda-Zarei/deep-guard/internal/config"
+	"github.com/Neda-Zarei/deep-guard/internal/discovery"
 	"github.com/Neda-Zarei/deep-guard/internal/logger"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -168,18 +170,55 @@ func runScan(cmd *cobra.Command, args []string) error {
 		Float64("confidence_threshold", cfg.ConfidenceThreshold).
 		Msg("Scan configuration")
 
-	// TODO: Wire to scanning pipeline
-	// This will be implemented in the File Discovery Engine and subsequent tasks
+	// Discover files
+	ignoreFile := filepath.Join(cfg.ScanPath, ".deepguardignore")
+	discoveryConfig := discovery.WalkerConfig{
+		RootPath:       cfg.ScanPath,
+		Languages:      cfg.Languages,
+		IgnoreFile:     ignoreFile,
+		FollowSymlinks: false,
+	}
+
+	result, err := discovery.DiscoverFiles(discoveryConfig)
+	if err != nil {
+		return fmt.Errorf("file discovery failed: %w", err)
+	}
+
 	log.Info().
 		Str("component", "scanner").
-		Msg("Scan pipeline not yet implemented - this is a stub")
+		Int("total_files", result.TotalFiles).
+		Int("test_files", result.TotalTestFiles).
+		Int("skipped_files", result.SkippedFiles).
+		Msg("File discovery completed")
+
+	// Display file counts by language
+	fmt.Printf("\nDiscovered %d files:\n", result.TotalFiles)
+	for lang, count := range result.CountsByLanguage {
+		fmt.Printf("  %s: %d files\n", lang, count)
+	}
+	fmt.Printf("  Test files: %d\n", result.TotalTestFiles)
+	if result.SkippedFiles > 0 {
+		fmt.Printf("  Skipped: %d files\n", result.SkippedFiles)
+	}
+	fmt.Printf("\n")
+
+	if result.TotalFiles == 0 {
+		fmt.Println("No files to scan. Exiting.")
+		return nil
+	}
+
+	// TODO: Wire to parsing and analysis pipeline
+	// This will be implemented in subsequent tasks
+	log.Info().
+		Str("component", "scanner").
+		Msg("Analysis pipeline not yet implemented - file discovery complete")
 
 	log.Info().
 		Str("component", "scanner").
 		Str("operation", "scan_complete").
 		Msg("Scan completed successfully")
 
-	fmt.Printf("\nScan completed! Results will be written to: %s\n", cfg.OutputDir)
+	fmt.Printf("Scan completed! Results will be written to: %s\n", cfg.OutputDir)
 
 	return nil
 }
