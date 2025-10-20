@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # DeepGuard v1
 
 **Fast, AI-powered vulnerability scanner for modern applications**
@@ -211,6 +210,3 @@ _Coming soon_
 ## License
 
 _To be determined_
-=======
-# deep-guard
->>>>>>> 02da64bc9f98ca80f6507a0549d4d65dc63c8cbf

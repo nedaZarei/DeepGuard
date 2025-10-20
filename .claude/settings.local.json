@@ -62,7 +62,17 @@
       "Bash(go get gopkg.in/yaml.v3)",
       "Bash(go test -v ./internal/kb/)",
       "Bash(go test ./internal/kb/)",
-      "Bash(./deepguard.exe kb validate --kb-path ./internal/kb/data/)"
+      "Bash(./deepguard.exe kb validate --kb-path ./internal/kb/data/)",
+      "Bash(go get github.com/blevesearch/bleve/v2@latest)",
+      "Bash(go test -v ./internal/kb/ -run TestNewIndexManager)",
+      "Bash(go mod tidy)",
+      "Bash(go build ./internal/kb/)",
+      "Bash(go get github.com/blevesearch/bleve/v2)",
+      "Bash(go get github.com/blevesearch/bleve)",
+      "Bash(go test -v ./internal/kb/ -run \"TestCalculateKBHash|TestIndexBuild\")",
+      "Bash(go test ./internal/kb/ -run \"Test.*Index|Test.*Hash\")",
+      "Bash(go test -v ./internal/kb/ -run TestRebuildDetection)",
+      "Bash(go run -tags test_index ./internal/kb/test_real_index.go)"
     ],
     "deny": [],
     "ask": []
