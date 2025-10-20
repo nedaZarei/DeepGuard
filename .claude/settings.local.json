@@ -58,7 +58,10 @@
       "Bash(go get github.com/smacker/go-tree-sitter/typescript/typescript)",
       "Bash(go get github.com/smacker/go-tree-sitter/python)",
       "Bash(go get github.com/smacker/go-tree-sitter/java)",
-      "Bash(go test -v ./internal/parser/ -run TestNew)"
+      "Bash(go test -v ./internal/parser/ -run TestNew)",
+      "Bash(go get gopkg.in/yaml.v3)",
+      "Bash(go test -v ./internal/kb/)",
+      "Bash(go test ./internal/kb/)"
     ],
     "deny": [],
     "ask": []

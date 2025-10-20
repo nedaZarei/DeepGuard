@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/Neda-Zarei/deep-guard/internal/kb"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
@@ -49,14 +50,37 @@ func runKBValidate(cmd *cobra.Command, args []string) error {
 		Str("path", kbPath).
 		Msg("Starting knowledge base validation")
 
-	// TODO: Implement KB validation logic
-	// This will be implemented in the Knowledge Base epic
-	fmt.Println("Knowledge Base validation not yet implemented - this is a stub")
-	fmt.Printf("Would validate KB at: %s\n", kbPath)
+	fmt.Printf("Validating knowledge base at: %s\n", kbPath)
 
+	// Load and validate KB directory
+	entries, err := kb.LoadKBDirectory(kbPath)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("component", "kb").
+			Str("path", kbPath).
+			Msg("Knowledge base validation failed")
+
+		fmt.Printf("\n❌ Validation failed: %v\n", err)
+		return err
+	}
+
+	// Success
 	log.Info().
 		Str("component", "kb").
-		Msg("Knowledge base validation placeholder executed")
+		Int("count", len(entries)).
+		Msg("Knowledge base validation successful")
+
+	fmt.Printf("\n✅ Validation successful!\n")
+	fmt.Printf("   Loaded %d vulnerability entries\n", len(entries))
+
+	// List all loaded entries
+	if len(entries) > 0 {
+		fmt.Println("\nKnowledge Base Entries:")
+		for _, entry := range entries {
+			fmt.Printf("  - %s: %s\n", entry.ID, entry.Title)
+		}
+	}
 
 	return nil
 }
