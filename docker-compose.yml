@@ -9,11 +9,8 @@ services:
     container_name: deepguard
 
     volumes:
-      # Mount your project to scan (read-only)
       - ./example-project:/workspace:ro
-      # Mount output directory for reports (read-write)
       - ./reports:/app/reports
-      # Optional: Mount custom config file
       - ./.deepguard.yaml:/app/.deepguard.yaml:ro
 
     environment:
@@ -22,8 +19,7 @@ services:
       - DEEPGUARD_BUDGET_CAP=3.0
       - DEEPGUARD_CONFIDENCE_THRESHOLD=0.5
       - DEEPGUARD_VERBOSE=false
-      # Add your OpenAI API key here or use .env file
-      # - OPENAI_API_KEY=your-key-here
+      # - OPENAI_API_KEY= key-here
 
     # override default command to scan the workspace
     command: scan --path /workspace --languages js,ts,python,java

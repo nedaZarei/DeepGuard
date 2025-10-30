@@ -407,9 +407,9 @@ func TestFindFirstError(t *testing.T) {
 
 	// Parse code with error (bypass the Parse method's error checking)
 	p := parser.parsers["javascript"]
-	tree, err := p.ParseCtx(nil, nil, invalidJSCode)
-	if err != nil {
-		t.Fatalf("ParseCtx failed: %v", err)
+	tree := p.Parse(nil, invalidJSCode)
+	if tree == nil {
+		t.Fatal("Parse returned nil")
 	}
 	defer tree.Close()
 

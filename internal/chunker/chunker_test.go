@@ -394,7 +394,6 @@ func TestSplitLargeChunk(t *testing.T) {
 
 	// Verify function names have part suffixes
 	for i, sc := range splitChunks {
-		expectedName := "large_part" + string(rune('1'+i))
 		if !strings.HasPrefix(sc.FunctionName, "large_part") {
 			t.Errorf("split chunk %d has wrong name: %s", i, sc.FunctionName)
 		}

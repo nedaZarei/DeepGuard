@@ -70,9 +70,9 @@ func (p *TreeSitterParser) Parse(content []byte, language string) (*sitter.Tree,
 		Msg("Parsing code with Tree-sitter")
 
 	// Parse the content
-	tree, err := parser.ParseCtx(nil, nil, content)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse %s code: %w", language, err)
+	tree := parser.Parse(nil, content)
+	if tree == nil {
+		return nil, fmt.Errorf("failed to parse %s code: parser returned nil", language)
 	}
 
 	// Check for syntax errors in the AST
@@ -89,7 +89,6 @@ func (p *TreeSitterParser) Parse(content []byte, language string) (*sitter.Tree,
 func findFirstError(node *sitter.Node, content []byte) string {
 	if node.IsError() || node.IsMissing() {
 		startPoint := node.StartPoint()
-		endPoint := node.EndPoint()
 
 		// Extract the problematic code snippet
 		startByte := node.StartByte()
