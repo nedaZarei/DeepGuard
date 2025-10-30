@@ -26,6 +26,10 @@ type Config struct {
 	// Valid values: "js", "ts", "python", "java"
 	Languages []string `mapstructure:"languages"`
 
+	// OpenAIAPIKey is the API key for OpenAI/GapGPT service
+	// Can be set via environment variable DEEPGUARD_OPENAI_API_KEY
+	OpenAIAPIKey string `mapstructure:"openai_api_key"`
+
 	// OpenAIModel is the OpenAI model to use for analysis
 	// Valid values: "gpt-4o", "gpt-4o-mini"
 	OpenAIModel string `mapstructure:"openai_model"`
@@ -111,7 +115,8 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("scan_path", "")
 	v.SetDefault("output_dir", "./reports/")
 	v.SetDefault("languages", []string{"js", "ts", "python", "java"})
-	v.SetDefault("openai_model", "gpt-4o")
+	v.SetDefault("openai_api_key", "")
+	v.SetDefault("openai_model", "gpt-4o-mini")
 	v.SetDefault("budget_cap", 3.0)
 	v.SetDefault("confidence_threshold", 0.5)
 	v.SetDefault("verbose", false)
@@ -156,6 +161,11 @@ func (c *Config) Validate() error {
 		if !validLanguages[lang] {
 			return fmt.Errorf("invalid language: %s (must be one of: js, ts, python, java)", lang)
 		}
+	}
+
+	// Validate openai_api_key
+	if c.OpenAIAPIKey == "" {
+		return fmt.Errorf("openai_api_key is required (set via DEEPGUARD_OPENAI_API_KEY environment variable or config file)")
 	}
 
 	// Validate openai_model

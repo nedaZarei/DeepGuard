@@ -29,6 +29,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/philhofer/fwd v1.0.0 // indirect
 	github.com/rs/zerolog v1.34.0 // indirect
+	github.com/sashabaranov/go-openai v1.41.2 // indirect
 	github.com/smacker/go-tree-sitter v0.0.0-20240827094217-dd81d9e9be82 // indirect
 	github.com/spf13/afero v1.9.5 // indirect
 	github.com/spf13/cast v1.5.1 // indirect

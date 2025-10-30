@@ -95,7 +95,8 @@
       "Bash(chmod:*)",
       "Bash(./verify_cgo.sh:*)",
       "Bash(CGO_ENABLED=1 /usr/local/go/bin/go run:*)",
-      "Bash(CGO_ENABLED=1 /usr/local/go/bin/go test:*)"
+      "Bash(CGO_ENABLED=1 /usr/local/go/bin/go test:*)",
+      "Bash(CGO_ENABLED=1 /usr/local/go/bin/go get:*)"
     ],
     "deny": [],
     "ask": []
