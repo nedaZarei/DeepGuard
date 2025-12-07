@@ -1,0 +1,84 @@
+{
+  "scan_metadata": {
+    "timestamp": "2025-12-07T20:55:00+03:30",
+    "target_path": "/Users/test/project",
+    "languages": [
+      "go",
+      "javascript"
+    ],
+    "frameworks": [
+      "gin",
+      "express"
+    ],
+    "model_used": "gpt-4o",
+    "total_cost": 2.47,
+    "scan_duration_seconds": 120
+  },
+  "findings": [
+    {
+      "id": "VULN-001",
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 0.98,
+      "file": "app/models/user.go",
+      "line": 142,
+      "column": 15,
+      "function_name": "GetUserByID",
+      "message": "SQL injection vulnerability: User input directly concatenated into SQL query",
+      "recommendation": "Use parameterized queries or an ORM with prepared statements",
+      "code_snippet": "query := \"SELECT * FROM users WHERE id = \" + userID"
+    },
+    {
+      "id": "VULN-002",
+      "type": "xss",
+      "severity": "high",
+      "confidence": 0.92,
+      "file": "app/handlers/profile.go",
+      "line": 87,
+      "column": 22,
+      "function_name": "RenderProfile",
+      "message": "Cross-site scripting (XSS) vulnerability: Unescaped user input in template",
+      "recommendation": "Use proper HTML escaping or a template engine with auto-escaping",
+      "code_snippet": "html := \"<div>\" + userBio + \"</div>\""
+    },
+    {
+      "id": "VULN-003",
+      "type": "path_traversal",
+      "severity": "high",
+      "confidence": 0.85,
+      "file": "app/handlers/files.go",
+      "line": 56,
+      "column": 10,
+      "function_name": "DownloadFile",
+      "message": "Path traversal vulnerability: User-controlled file path without validation",
+      "recommendation": "Validate and sanitize file paths, use allowlist of permitted directories",
+      "code_snippet": "filePath := \"./uploads/\" + filename"
+    },
+    {
+      "id": "VULN-004",
+      "type": "auth_issue",
+      "severity": "medium",
+      "confidence": 0.78,
+      "file": "app/middleware/auth.go",
+      "line": 203,
+      "column": 5,
+      "function_name": "CheckPermissions",
+      "message": "Authorization bypass: Missing permission check for admin actions",
+      "recommendation": "Implement proper role-based access control (RBAC)"
+    }
+  ],
+  "summary": {
+    "total_findings": 4,
+    "by_severity": {
+      "critical": 1,
+      "high": 2,
+      "medium": 1
+    },
+    "by_type": {
+      "auth_issue": 1,
+      "path_traversal": 1,
+      "sql_injection": 1,
+      "xss": 1
+    }
+  }
+}
