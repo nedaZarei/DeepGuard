@@ -49,14 +49,14 @@ DeepGuard/
 Docker provides the easiest setup with all dependencies pre-configured:
 
 ```bash
-# Clone the repository
+# clone the repository
 git clone https://github.com/Neda-Zarei/deep-guard.git
 cd deep-guard
 
-# Build the Docker image
+# build the Docker image
 docker-compose build
 
-# Run a scan
+# run a scan
 docker-compose run --rm deepguard scan --path /workspace --languages js,ts,python,java
 ```
 
@@ -70,17 +70,17 @@ docker-compose run --rm deepguard scan --path /workspace --languages js,ts,pytho
   - **Windows**: Install MinGW-w64 or TDM-GCC
 
 ```bash
-# Clone the repository
+# clone the repository
 git clone https://github.com/Neda-Zarei/deep-guard.git
 cd deep-guard
 
-# Install dependencies
+# install dependencies
 go mod download
 
-# Build the application (CGO required for Tree-sitter)
+# build the application (CGO required for Tree-sitter)
 CGO_ENABLED=1 go build -o deepguard ./cmd/deepguard
 
-# Run the scanner
+# run the scanner
 ./deepguard scan --path ./your-project
 ```
 
@@ -91,8 +91,8 @@ CGO_ENABLED=1 go build -o deepguard ./cmd/deepguard
 **Basic scan with Docker Compose:**
 
 ```bash
-# Edit docker-compose.yml to configure your project path and settings
-# Then run:
+# edit docker-compose.yml to configure your project path and settings
+# then run:
 docker-compose up deepguard
 ```
 
@@ -111,7 +111,6 @@ docker run --rm \
 
 ```bash
 docker-compose --profile interactive run --rm deepguard-interactive
-# Inside container:
 deepguard scan --path /workspace --verbose
 ```
 
@@ -120,25 +119,25 @@ deepguard scan --path /workspace --verbose
 **Available Commands:**
 
 ```bash
-# Display help
+# display help
 deepguard --help
 
-# Scan a project
+# scan a project
 deepguard scan --path ./my-project --languages js,ts,python,java
 
-# Scan with custom output directory
+# scan with custom output directory
 deepguard scan --path ./my-project --output ./security-reports
 
-# Scan with verbose logging
+# scan with verbose logging
 deepguard scan --path ./my-project --verbose
 
-# Filter by specific languages
+# filter by specific languages
 deepguard scan --path ./my-project --languages js,python
 
-# Display version information
+# display version information
 deepguard version
 
-# Validate knowledge base (for KB contributors)
+# validate knowledge base (for KB contributors)
 deepguard kb validate
 ```
 
@@ -154,13 +153,12 @@ DeepGuard supports multiple configuration sources (priority order):
 **Example `.deepguard.yaml`:**
 
 ```yaml
-# Target directory to scan
+# target directory to scan
 scan_path: "./src"
 
-# Output directory for reports
+# output directory for reports
 output_dir: "./reports/"
 
-# Languages to scan
 languages:
   - js
   - ts
@@ -170,13 +168,13 @@ languages:
 # OpenAI model (gpt-4o or gpt-4o-mini)
 openai_model: "gpt-4o"
 
-# Maximum cost per scan (USD)
+# maximum cost per scan (USD)
 budget_cap: 3.0
 
-# Minimum confidence score (0.0-1.0)
+# minimum confidence score (0.0-1.0)
 confidence_threshold: 0.5
 
-# Enable verbose logging
+# enable verbose logging
 verbose: false
 ```
 
