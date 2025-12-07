@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/Neda-Zarei/deep-guard/internal/budget"
 	"github.com/Neda-Zarei/deep-guard/internal/kb"
 	"github.com/Neda-Zarei/deep-guard/internal/llm"
 	"github.com/rs/zerolog/log"
@@ -18,7 +19,8 @@ func analyzeWorker(
 	kbManager interface{}, // KB manager for retrieving context
 	workChan <-chan WorkItem,
 	resultsChan chan<- WorkResult,
-	budgetCap float64,
+	budgetTracker *budget.BudgetTracker,
+	fallbackManager *budget.FallbackManager,
 	errorTracker *ErrorTracker,
 	progressTracker *ProgressTracker,
 ) {
@@ -48,7 +50,7 @@ func analyzeWorker(
 			}
 
 			// Process the work item
-			result := processChunk(ctx, workerID, client, renderer, work, budgetCap)
+			result := processChunk(ctx, workerID, client, renderer, work, budgetTracker, fallbackManager)
 
 			// Update trackers
 			if result.Success {
@@ -89,7 +91,8 @@ func processChunk(
 	client *llm.Client,
 	renderer *llm.PromptRenderer,
 	work WorkItem,
-	budgetCap float64,
+	budgetTracker *budget.BudgetTracker,
+	fallbackManager *budget.FallbackManager,
 ) WorkResult {
 	startTime := time.Now()
 
@@ -101,13 +104,20 @@ func processChunk(
 		Str("function", work.Chunk.FunctionName).
 		Msg("processing chunk")
 
-	// Check budget before API call
-	if client.ExceedsBudget(budgetCap) {
+	// Get current cumulative cost
+	cumulativeCost := budgetTracker.GetCumulativeCost()
+
+	// Select model based on current cost (automatic fallback)
+	selectedModel := fallbackManager.SelectModel(cumulativeCost)
+
+	// Check if budget exceeded (hard stop)
+	if budgetTracker.ExceedsBudget() {
 		log.Warn().
 			Str("component", "orchestrator").
 			Int("worker_id", workerID).
 			Str("chunk_id", work.Chunk.ID).
-			Float64("budget_cap", budgetCap).
+			Float64("budget_cap", budgetTracker.GetBudgetCap()).
+			Float64("cumulative_cost", cumulativeCost).
 			Msg("budget cap exceeded, skipping chunk")
 
 		return WorkResult{
@@ -145,10 +155,43 @@ func processChunk(
 		}
 	}
 
+	// Set the selected model before API call
+	client.SetModel(selectedModel)
+
+	log.Debug().
+		Str("component", "orchestrator").
+		Int("worker_id", workerID).
+		Str("chunk_id", work.Chunk.ID).
+		Str("model", selectedModel).
+		Float64("cumulative_cost", cumulativeCost).
+		Msg("calling API with selected model")
+
 	// Call API with parsing
 	parsedResponse, response, err := client.AnalyzeWithParsing(ctx, work.Chunk, kbContext, prompt)
 
 	duration := time.Since(startTime)
+
+	// Record usage in budget tracker if we have response data
+	if response != nil {
+		usage := budget.UsageMetrics{
+			PromptTokens:     response.PromptTokens,
+			CompletionTokens: response.CompletionTokens,
+			Model:            response.ModelUsed,
+			Cost:             response.Cost,
+			Timestamp:        time.Now(),
+		}
+		if recordErr := budgetTracker.RecordUsage(usage); recordErr != nil {
+			log.Error().
+				Str("component", "orchestrator").
+				Int("worker_id", workerID).
+				Str("chunk_id", work.Chunk.ID).
+				Err(recordErr).
+				Msg("failed to record usage in budget tracker")
+		}
+
+		// Record chunk analyzed in fallback manager
+		fallbackManager.RecordChunkAnalyzed(response.ModelUsed)
+	}
 
 	if err != nil {
 		// Analysis failed (could be API error, parsing error, etc.)

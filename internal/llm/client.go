@@ -266,6 +266,16 @@ func (c *Client) GetTracker() *Tracker {
 	return c.tracker
 }
 
+// SetModel changes the model used for API calls
+func (c *Client) SetModel(model string) {
+	c.model = model
+}
+
+// GetModel returns the current model
+func (c *Client) GetModel() string {
+	return c.model
+}
+
 // exceedsBudget checks if the cumulative cost exceeds the budget cap
 func (c *Client) ExceedsBudget(budgetCap float64) bool {
 	return c.tracker.ExceedsBudget(budgetCap)

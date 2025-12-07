@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/Neda-Zarei/deep-guard/internal/budget"
 	"github.com/Neda-Zarei/deep-guard/internal/chunker"
 	"github.com/Neda-Zarei/deep-guard/internal/llm"
 	"github.com/Neda-Zarei/deep-guard/pkg/types"
@@ -29,6 +30,8 @@ type Orchestrator struct {
 	client          *llm.Client
 	renderer        *llm.PromptRenderer
 	model           string // Model name for progress reporting
+	budgetTracker   *budget.BudgetTracker
+	fallbackManager *budget.FallbackManager
 	errorTracker    *ErrorTracker
 	progressTracker *ProgressTracker
 }
@@ -45,11 +48,21 @@ func NewOrchestrator(config *OrchestratorConfig, client *llm.Client, model strin
 		return nil, fmt.Errorf("failed to create prompt renderer: %w", err)
 	}
 
+	// Create budget tracker
+	budgetTracker := budget.NewBudgetTracker(config.BudgetCap)
+
+	// Create fallback manager with default config
+	fallbackConfig := budget.DefaultFallbackConfig()
+	fallbackConfig.BudgetCap = config.BudgetCap
+	fallbackManager := budget.NewFallbackManager(fallbackConfig)
+
 	return &Orchestrator{
-		config:   config,
-		client:   client,
-		renderer: renderer,
-		model:    model,
+		config:          config,
+		client:          client,
+		renderer:        renderer,
+		model:           model,
+		budgetTracker:   budgetTracker,
+		fallbackManager: fallbackManager,
 	}, nil
 }
 
@@ -100,7 +113,8 @@ func (o *Orchestrator) AnalyzeRepository(
 				nil, // KB manager not yet integrated
 				workChan,
 				resultsChan,
-				o.config.BudgetCap,
+				o.budgetTracker,
+				o.fallbackManager,
 				o.errorTracker,
 				o.progressTracker,
 			)
@@ -183,6 +197,11 @@ func (o *Orchestrator) AnalyzeRepository(
 	// Report final statistics
 	processed, total, findingsCount := o.progressTracker.GetStats()
 	ReportFinalStats(total, processed, findingsCount, o.client.GetTracker(), o.errorTracker)
+
+	// Report model usage
+	budgetStatus := o.budgetTracker.GetCurrentStatus()
+	modelUsageReport := o.fallbackManager.GetModelUsageReport(budgetStatus)
+	budget.LogModelUsageReport(modelUsageReport)
 
 	// Check if we stopped early due to errors
 	if o.errorTracker.ShouldStop() {
