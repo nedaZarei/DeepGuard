@@ -1,0 +1,11 @@
+{
+  "name": "test-samples-js",
+  "version": "1.0.0",
+  "description": "Test samples for DeepGuard SQLi detection",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mysql": "^2.18.1",
+    "@prisma/client": "^5.0.0",
+    "sequelize": "^6.32.1"
+  }
+}
