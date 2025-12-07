@@ -1,6 +1,6 @@
 module github.com/Neda-Zarei/deep-guard
 
-go 1.21
+go 1.24.0
 
 require (
 	github.com/RoaringBitmap/roaring v0.4.23 // indirect
@@ -42,7 +42,8 @@ require (
 	github.com/tinylib/msgp v1.1.0 // indirect
 	github.com/willf/bitset v1.1.10 // indirect
 	go.etcd.io/bbolt v1.3.5 // indirect
-	golang.org/x/sys v0.12.0 // indirect
+	golang.org/x/sys v0.38.0 // indirect
+	golang.org/x/term v0.37.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect

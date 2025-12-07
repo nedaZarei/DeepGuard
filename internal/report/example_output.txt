@@ -1,0 +1,51 @@
+Sample Terminal Output (without colors):
+================================================================================
+
+                          ┌─────────────────────────────────────┐
+                          │ DeepGuard Security Scanner - v1.0.0 │
+                          └─────────────────────────────────────┘
+
+SCAN METADATA
+────────────────────────────────────────────────────────────────────────────────
+  Target Path                                                 /home/user/project
+  Languages                                                     go, javascript
+  Frameworks                                                      express, gin
+  Model Used                                                            gpt-4o
+
+SCAN RESULTS
+────────────────────────────────────────────────────────────────────────────────
+  Total Findings                                                              2
+
+  By Severity:
+    Critical:                                                                 1
+    High:                                                                     1
+
+  Top Vulnerability Types:
+    Sql Injection:                                                            1
+    Xss:                                                                      1
+
+SCAN SUMMARY
+────────────────────────────────────────────────────────────────────────────────
+  Total Cost                                                             $2.47
+  Duration                                                             7m 23s
+
+────────────────────────────────────────────────────────────────────────────────
+
+
+With Colors (in terminal):
+- Critical findings shown in BOLD RED
+- High findings shown in BOLD ORANGE
+- Medium findings shown in YELLOW
+- Low findings shown in BLUE
+- Section titles shown in BOLD CYAN
+- Box drawing characters used for visual structure
+
+Features:
+- Automatic terminal width detection (defaults to 80 columns)
+- TTY detection for color mode (colors disabled when piping to files)
+- Right-aligned numbers for clean presentation
+- Duration formatted as "Xm Ys" instead of raw seconds
+- Cost always shown with 2 decimal places
+- Vulnerability types sorted by count (descending)
+- Shows top 10 vulnerability types
+- Snake_case converted to Title Case for better readability
