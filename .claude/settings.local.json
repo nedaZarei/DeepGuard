@@ -97,7 +97,9 @@
       "Bash(CGO_ENABLED=1 /usr/local/go/bin/go run:*)",
       "Bash(CGO_ENABLED=1 /usr/local/go/bin/go test:*)",
       "Bash(CGO_ENABLED=1 /usr/local/go/bin/go get:*)",
-      "Bash(CGO_ENABLED=1 /usr/local/go/bin/go build:*)"
+      "Bash(CGO_ENABLED=1 /usr/local/go/bin/go build:*)",
+      "Bash(node:*)",
+      "Bash(node -c:*)"
     ],
     "deny": [],
     "ask": []
