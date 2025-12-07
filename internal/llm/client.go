@@ -92,6 +92,91 @@ func (c *Client) Analyze(ctx context.Context, chunk chunker.CodeChunk, kbContext
 	return response, analyzeErr
 }
 
+// AnalyzeWithParsing sends a code chunk for analysis and parses the response into structured findings
+// Implements retry logic with stricter prompts if parsing fails
+// Returns: (parsed findings, response metadata, error)
+func (c *Client) AnalyzeWithParsing(ctx context.Context, chunk chunker.CodeChunk, kbContext []kb.KBEntry, prompt string) (*APIResponse, *Response, error) {
+	log.Debug().
+		Str("component", "llm").
+		Str("chunk_id", chunk.ID).
+		Str("function", chunk.FunctionName).
+		Str("file", chunk.FilePath).
+		Msg("starting llm analysis with parsing")
+
+	// First attempt with original prompt
+	response, err := c.Analyze(ctx, chunk, kbContext, prompt)
+	if err != nil {
+		return nil, nil, fmt.Errorf("first API call failed: %w", err)
+	}
+
+	// Try parsing the response (lenient first)
+	parsedResponse, shouldRetry, parseErr := ParseResponseWithRetry(response.Findings, 1)
+
+	if parseErr == nil {
+		// Success! Enrich findings with context
+		EnrichFindings(parsedResponse, &chunk)
+		log.Info().
+			Str("component", "llm").
+			Str("chunk_id", chunk.ID).
+			Int("findings_count", len(parsedResponse.Findings)).
+			Msg("successfully parsed response on first attempt")
+		return parsedResponse, response, nil
+	}
+
+	// First attempt failed - retry with stricter prompt if needed
+	if shouldRetry {
+		log.Warn().
+			Str("component", "llm").
+			Str("chunk_id", chunk.ID).
+			Err(parseErr).
+			Msg("retrying with stricter prompt")
+
+		stricterPrompt := CreateStricterPrompt(prompt)
+		response2, err := c.Analyze(ctx, chunk, kbContext, stricterPrompt)
+		if err != nil {
+			log.Error().
+				Str("component", "llm").
+				Str("chunk_id", chunk.ID).
+				Err(err).
+				Msg("second API call failed, skipping chunk")
+			return nil, response, fmt.Errorf("retry API call failed: %w", err)
+		}
+
+		// Try parsing the second response
+		parsedResponse2, _, parseErr2 := ParseResponseWithRetry(response2.Findings, 2)
+		if parseErr2 == nil {
+			// Success on retry! Enrich findings with context
+			EnrichFindings(parsedResponse2, &chunk)
+			log.Info().
+				Str("component", "llm").
+				Str("chunk_id", chunk.ID).
+				Int("findings_count", len(parsedResponse2.Findings)).
+				Msg("successfully parsed response on retry attempt")
+			return parsedResponse2, response2, nil
+		}
+
+		// Second attempt also failed - skip chunk
+		log.Error().
+			Str("component", "llm").
+			Str("chunk_id", chunk.ID).
+			Str("file", chunk.FilePath).
+			Str("function", chunk.FunctionName).
+			Err(parseErr2).
+			Msg("failed to parse response after retry, skipping chunk")
+		return nil, response2, fmt.Errorf("parsing failed after retry: %w", parseErr2)
+	}
+
+	// No retry needed (second attempt), just fail
+	log.Error().
+		Str("component", "llm").
+		Str("chunk_id", chunk.ID).
+		Str("file", chunk.FilePath).
+		Str("function", chunk.FunctionName).
+		Err(parseErr).
+		Msg("parsing failed, skipping chunk")
+	return nil, response, fmt.Errorf("parsing failed: %w", parseErr)
+}
+
 // callAPI makes a single api call to openai/gapgpt
 func (c *Client) callAPI(ctx context.Context, prompt string) (*Response, error) {
 	// create chat completion request
