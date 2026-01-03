@@ -47,11 +47,13 @@ func init() {
 	// Optional flags
 	scanCmd.Flags().StringP("output", "o", "./reports/", "output directory for scan reports")
 	scanCmd.Flags().StringSliceP("languages", "l", []string{"js", "ts", "python", "java"}, "languages to scan (comma-separated)")
+	scanCmd.Flags().Float64("confidence-threshold", 0.5, "minimum confidence score (0.0-1.0) for reporting findings")
 
 	// Bind flags to viper config keys
 	viper.BindPFlag("scan_path", scanCmd.Flags().Lookup("path"))
 	viper.BindPFlag("output_dir", scanCmd.Flags().Lookup("output"))
 	viper.BindPFlag("languages", scanCmd.Flags().Lookup("languages"))
+	viper.BindPFlag("confidence_threshold", scanCmd.Flags().Lookup("confidence-threshold"))
 }
 
 // validateScanFlags validates all scan command flags before execution

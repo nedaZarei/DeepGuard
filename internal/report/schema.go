@@ -14,13 +14,23 @@ type ScanReport struct {
 
 // ScanMetadata contains metadata about the scan execution
 type ScanMetadata struct {
-	Timestamp           string   `json:"timestamp"`             // RFC3339 format
-	TargetPath          string   `json:"target_path"`
-	Languages           []string `json:"languages"`
-	Frameworks          []string `json:"frameworks"`
-	ModelUsed           string   `json:"model_used"`
-	TotalCost           float64  `json:"total_cost"`
-	ScanDurationSeconds int      `json:"scan_duration_seconds"`
+	Timestamp           string          `json:"timestamp"`             // RFC3339 format
+	TargetPath          string          `json:"target_path"`
+	Languages           []string        `json:"languages"`
+	Frameworks          []string        `json:"frameworks"`
+	ModelUsed           string          `json:"model_used"`
+	TotalCost           float64         `json:"total_cost"`
+	ScanDurationSeconds int             `json:"scan_duration_seconds"`
+	Filtering           *FilteringStats `json:"filtering,omitempty"` // Optional filtering statistics
+}
+
+// FilteringStats contains statistics about finding filtering
+type FilteringStats struct {
+	Enabled          bool    `json:"enabled"`
+	ThresholdUsed    float64 `json:"threshold_used"`
+	TotalFindings    int     `json:"total_findings"`     // Before filtering
+	FilteredFindings int     `json:"filtered_findings"`  // Number filtered out
+	KeptFindings     int     `json:"kept_findings"`      // Number kept (in report)
 }
 
 // Finding represents a single vulnerability finding

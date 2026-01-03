@@ -101,7 +101,8 @@
       "Bash(node:*)",
       "Bash(node -c:*)",
       "Bash(./deepguard cache:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(./deepguard scan:*)"
     ],
     "deny": [],
     "ask": []

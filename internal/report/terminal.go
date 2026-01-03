@@ -103,8 +103,16 @@ func (tr *TerminalReporter) printMetadata(metadata ScanMetadata) {
 func (tr *TerminalReporter) printResults(report ScanReport) {
 	tr.printSectionTitle("SCAN RESULTS")
 
-	// Total findings
-	tr.printKeyValue("Total Findings", fmt.Sprintf("%d", report.Summary.TotalFindings))
+	// Total findings (with filtering info if applicable)
+	if report.ScanMetadata.Filtering != nil && report.ScanMetadata.Filtering.Enabled {
+		findingsText := fmt.Sprintf("%d (%d filtered)",
+			report.Summary.TotalFindings,
+			report.ScanMetadata.Filtering.FilteredFindings)
+		tr.printKeyValue("Total Findings", findingsText)
+		tr.printKeyValue("  Confidence Threshold", fmt.Sprintf("%.2f", report.ScanMetadata.Filtering.ThresholdUsed))
+	} else {
+		tr.printKeyValue("Total Findings", fmt.Sprintf("%d", report.Summary.TotalFindings))
+	}
 	tr.println("")
 
 	// Severity breakdown

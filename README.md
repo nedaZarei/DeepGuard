@@ -486,6 +486,94 @@ describe('SQL injection detection', () => {
 
 ---
 
+## Confidence Threshold Tuning
+
+DeepGuard assigns a confidence score (0.0-1.0) to each finding based on the AI's certainty. You can filter findings by adjusting the confidence threshold.
+
+### Threshold Levels
+
+**Low Threshold (0.3-0.4):** More findings, higher false positive rate
+- Use when exploring a new codebase
+- Catches borderline cases that might be worth investigating
+- Expect 20-30% false positives
+
+**Default Threshold (0.5):** Balanced precision and recall
+- Recommended for most scans
+- Good balance between catching real issues and minimizing false positives
+- Expect 10-15% false positives
+
+**High Threshold (0.7-0.8):** Fewer findings, higher precision
+- Use when you want high confidence findings only
+- Best for automated security gates in CI/CD
+- Expect <5% false positives
+
+**No Filtering (0.0):** Include all findings
+- Useful for analysis and tuning
+- Review all findings to understand the scanner's behavior
+- Can help identify patterns in false positives
+
+### Configuration
+
+**CLI Flag:**
+```bash
+deepguard scan --path ./src --confidence-threshold 0.7
+```
+
+**Config File:**
+```yaml
+confidence_threshold: 0.7
+```
+
+**Environment Variable:**
+```bash
+export DEEPGUARD_CONFIDENCE_THRESHOLD=0.7
+```
+
+### Reading Filtered Results
+
+When filtering is active, the terminal output shows both kept and filtered counts:
+
+```
+SCAN RESULTS
+────────────────────────────────────────────────────────────────────────────────
+Total Findings                                               15 (5 filtered)
+  Confidence Threshold                                       0.70
+
+  By Severity:
+    Critical:                                                10
+    High:                                                    5
+```
+
+The JSON report includes detailed filtering statistics:
+
+```json
+{
+  "scan_metadata": {
+    "filtering": {
+      "enabled": true,
+      "threshold_used": 0.7,
+      "total_findings": 20,
+      "filtered_findings": 5,
+      "kept_findings": 15
+    }
+  }
+}
+```
+
+### Tuning Guidelines
+
+1. **Start with default (0.5)** for initial scans
+2. **Lower to 0.3-0.4** if you're missing known issues
+3. **Raise to 0.7-0.8** if seeing too many false positives
+4. **Use 0.0** to analyze all findings and identify patterns
+
+**Debug logs** show each filtered finding:
+```bash
+deepguard scan --path ./src --confidence-threshold 0.7 --verbose
+```
+
+---
+
 ## Cost & Performance
 
 DeepGuard is designed to keep scans fast and affordable.
