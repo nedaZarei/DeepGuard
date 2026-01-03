@@ -39,6 +39,11 @@ jobs:
       - name: Run go vet
         run: go vet ./...
 
+      - name: Validate Knowledge Base
+        env:
+          CGO_ENABLED: 1
+        run: go run ./cmd/deepguard kb validate --kb-path ./internal/kb/data/
+
       - name: Run tests with coverage
         env:
           CGO_ENABLED: 1

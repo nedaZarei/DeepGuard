@@ -36,8 +36,8 @@ func init() {
 	rootCmd.AddCommand(kbCmd)
 	kbCmd.AddCommand(kbValidateCmd)
 
-	// KB path flag (optional, defaults to .deepguard/kb/)
-	kbValidateCmd.Flags().String("kb-path", ".deepguard/kb/", "path to knowledge base directory")
+	// KB path flag (optional, defaults to internal/kb/data/)
+	kbValidateCmd.Flags().String("kb-path", "./internal/kb/data/", "path to knowledge base directory")
 }
 
 // runKBValidate validates the knowledge base

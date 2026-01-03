@@ -108,7 +108,8 @@
       "Bash(CGO_ENABLED=1 go build:*)",
       "Bash(./deepguard version:*)",
       "Bash(python3:*)",
-      "Bash(CGO_ENABLED=1 go test:*)"
+      "Bash(CGO_ENABLED=1 go test:*)",
+      "Bash(CGO_ENABLED=1 go run:*)"
     ],
     "deny": [],
     "ask": []

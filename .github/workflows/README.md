@@ -15,11 +15,12 @@ The CI workflow automatically runs on:
 3. **Download dependencies** - Fetches Go module dependencies
 4. **Check formatting** - Verifies all Go code is properly formatted with `gofmt`
 5. **Run go vet** - Performs static analysis to catch suspicious constructs
-6. **Run tests with coverage** - Executes unit tests with race detection and generates coverage report
-7. **Upload coverage report** - Uploads `coverage.out` as a workflow artifact (7-day retention)
-8. **Build binary** - Compiles the DeepGuard binary for linux-amd64
-9. **Upload binary artifact** - Uploads the compiled binary as a workflow artifact (7-day retention)
-10. **Display build info** - Shows binary details and version information
+6. **Validate Knowledge Base** - Validates KB YAML schema and checks for duplicate IDs
+7. **Run tests with coverage** - Executes unit tests with race detection and generates coverage report
+8. **Upload coverage report** - Uploads `coverage.out` as a workflow artifact (7-day retention)
+9. **Build binary** - Compiles the DeepGuard binary for linux-amd64
+10. **Upload binary artifact** - Uploads the compiled binary as a workflow artifact (7-day retention)
+11. **Display build info** - Shows binary details and version information
 
 ### Environment Requirements
 
@@ -46,6 +47,7 @@ The workflow enforces the following quality standards:
 
 - ✅ All code must be formatted with `gofmt -s`
 - ✅ No issues reported by `go vet`
+- ✅ Knowledge Base YAML files must be valid and have no duplicate IDs
 - ✅ All unit tests must pass
 - ✅ Race conditions are detected and prevented
 - ✅ Binary must compile successfully
@@ -71,6 +73,9 @@ gofmt -s -w .
 # Run go vet
 go vet ./...
 
+# Validate Knowledge Base
+CGO_ENABLED=1 go run ./cmd/deepguard kb validate --kb-path ./internal/kb/data/
+
 # Run tests with coverage
 CGO_ENABLED=1 go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
 
@@ -90,6 +95,13 @@ CGO_ENABLED=1 go build -o deepguard ./cmd/deepguard
 **Go vet warnings:**
 - Review the reported issues
 - Fix suspicious constructs or add justification comments
+
+**KB validation failures:**
+- Check YAML syntax in `internal/kb/data/*.yaml` files
+- Ensure all required fields are present (id, title, description, code_patterns)
+- Verify IDs are lowercase alphanumeric with hyphens only
+- Check for duplicate IDs across all KB files
+- Ensure code_patterns contains at least one entry
 
 **Test failures:**
 - Review test output for specific failing tests
