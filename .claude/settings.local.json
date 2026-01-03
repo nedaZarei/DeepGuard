@@ -99,7 +99,9 @@
       "Bash(CGO_ENABLED=1 /usr/local/go/bin/go get:*)",
       "Bash(CGO_ENABLED=1 /usr/local/go/bin/go build:*)",
       "Bash(node:*)",
-      "Bash(node -c:*)"
+      "Bash(node -c:*)",
+      "Bash(./deepguard cache:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

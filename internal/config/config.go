@@ -44,6 +44,11 @@ type Config struct {
 
 	// Verbose enables detailed JSON logging to stderr
 	Verbose bool `mapstructure:"verbose"`
+
+	// CacheAPIResponses enables caching of OpenAI API responses (development only)
+	// When enabled, repeated scans of the same code will use cached responses
+	// WARNING: Only enable in development/testing environments
+	CacheAPIResponses bool `mapstructure:"cache_api_responses"`
 }
 
 // LoadConfig loads configuration from all sources in order of precedence:
@@ -120,6 +125,7 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("budget_cap", 3.0)
 	v.SetDefault("confidence_threshold", 0.5)
 	v.SetDefault("verbose", false)
+	v.SetDefault("cache_api_responses", false) // Disabled by default
 }
 
 // Validate checks that all configuration values are valid.
