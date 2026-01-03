@@ -188,3 +188,102 @@ func TestTerminalReporter_ZeroFindings(t *testing.T) {
 		t.Error("Expected '0 (5 filtered)' when all findings are filtered out")
 	}
 }
+
+func TestTerminalReporter_WithSuppression(t *testing.T) {
+	var buf bytes.Buffer
+	reporter := NewTerminalReporterWithWriter(&buf, 80, false)
+
+	report := ScanReport{
+		ScanMetadata: ScanMetadata{
+			Timestamp:           "2025-01-07T10:30:00+03:30",
+			TargetPath:          "/test/project",
+			Languages:           []string{"javascript"},
+			Frameworks:          []string{"express"},
+			ModelUsed:           "gpt-4o",
+			TotalCost:           2.50,
+			ScanDurationSeconds: 180,
+			Suppression: &SuppressionStats{
+				TotalFindings:      10,
+				SuppressedFindings: 3,
+				KeptFindings:       7,
+			},
+		},
+		Findings: []Finding{
+			{ID: "1", Type: "sql_injection", Severity: SeverityCritical, Confidence: 0.9, File: "test.js", Line: 10, Message: "test"},
+		},
+		Summary: Summary{
+			TotalFindings: 1,
+			BySeverity: map[string]int{
+				SeverityCritical: 1,
+			},
+			ByType: map[string]int{
+				"sql_injection": 1,
+			},
+		},
+	}
+
+	reporter.PrintSummary(report)
+	output := buf.String()
+
+	// Check for suppression info in output
+	if !strings.Contains(output, "1 (3 suppressed)") {
+		t.Errorf("Expected '1 (3 suppressed)' in output, got:\n%s", output)
+	}
+}
+
+func TestTerminalReporter_WithFilteringAndSuppression(t *testing.T) {
+	var buf bytes.Buffer
+	reporter := NewTerminalReporterWithWriter(&buf, 80, false)
+
+	report := ScanReport{
+		ScanMetadata: ScanMetadata{
+			Timestamp:           "2025-01-07T10:30:00+03:30",
+			TargetPath:          "/test/project",
+			Languages:           []string{"javascript"},
+			Frameworks:          []string{"express"},
+			ModelUsed:           "gpt-4o",
+			TotalCost:           2.50,
+			ScanDurationSeconds: 180,
+			Filtering: &FilteringStats{
+				Enabled:          true,
+				ThresholdUsed:    0.7,
+				TotalFindings:    25,
+				FilteredFindings: 10,
+				KeptFindings:     15,
+			},
+			Suppression: &SuppressionStats{
+				TotalFindings:      15,
+				SuppressedFindings: 5,
+				KeptFindings:       10,
+			},
+		},
+		Findings: []Finding{
+			{ID: "1", Type: "sql_injection", Severity: SeverityCritical, Confidence: 0.9, File: "test.js", Line: 10, Message: "test"},
+		},
+		Summary: Summary{
+			TotalFindings: 1,
+			BySeverity: map[string]int{
+				SeverityCritical: 1,
+			},
+			ByType: map[string]int{
+				"sql_injection": 1,
+			},
+		},
+	}
+
+	reporter.PrintSummary(report)
+	output := buf.String()
+
+	// Check for both filtering and suppression info in output
+	if !strings.Contains(output, "1 (10 filtered, 5 suppressed)") {
+		t.Errorf("Expected '1 (10 filtered, 5 suppressed)' in output, got:\n%s", output)
+	}
+
+	if !strings.Contains(output, "Confidence Threshold") {
+		t.Error("Expected 'Confidence Threshold' label in output")
+	}
+
+	if !strings.Contains(output, "0.70") {
+		t.Error("Expected threshold value '0.70' in output")
+	}
+}

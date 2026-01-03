@@ -14,14 +14,15 @@ type ScanReport struct {
 
 // ScanMetadata contains metadata about the scan execution
 type ScanMetadata struct {
-	Timestamp           string          `json:"timestamp"`             // RFC3339 format
-	TargetPath          string          `json:"target_path"`
-	Languages           []string        `json:"languages"`
-	Frameworks          []string        `json:"frameworks"`
-	ModelUsed           string          `json:"model_used"`
-	TotalCost           float64         `json:"total_cost"`
-	ScanDurationSeconds int             `json:"scan_duration_seconds"`
-	Filtering           *FilteringStats `json:"filtering,omitempty"` // Optional filtering statistics
+	Timestamp           string             `json:"timestamp"`              // RFC3339 format
+	TargetPath          string             `json:"target_path"`
+	Languages           []string           `json:"languages"`
+	Frameworks          []string           `json:"frameworks"`
+	ModelUsed           string             `json:"model_used"`
+	TotalCost           float64            `json:"total_cost"`
+	ScanDurationSeconds int                `json:"scan_duration_seconds"`
+	Filtering           *FilteringStats    `json:"filtering,omitempty"`    // Optional filtering statistics
+	Suppression         *SuppressionStats  `json:"suppression,omitempty"`  // Optional suppression statistics
 }
 
 // FilteringStats contains statistics about finding filtering
@@ -31,6 +32,13 @@ type FilteringStats struct {
 	TotalFindings    int     `json:"total_findings"`     // Before filtering
 	FilteredFindings int     `json:"filtered_findings"`  // Number filtered out
 	KeptFindings     int     `json:"kept_findings"`      // Number kept (in report)
+}
+
+// SuppressionStats contains statistics about suppressed findings
+type SuppressionStats struct {
+	TotalFindings      int `json:"total_findings"`      // Findings checked for suppression
+	SuppressedFindings int `json:"suppressed_findings"` // Number suppressed by inline comments
+	KeptFindings       int `json:"kept_findings"`       // Number kept after suppression
 }
 
 // Finding represents a single vulnerability finding

@@ -103,16 +103,37 @@ func (tr *TerminalReporter) printMetadata(metadata ScanMetadata) {
 func (tr *TerminalReporter) printResults(report ScanReport) {
 	tr.printSectionTitle("SCAN RESULTS")
 
-	// Total findings (with filtering info if applicable)
+	// Total findings (with filtering and suppression info if applicable)
+	findingsText := fmt.Sprintf("%d", report.Summary.TotalFindings)
+
+	// Add filtering count if applicable
 	if report.ScanMetadata.Filtering != nil && report.ScanMetadata.Filtering.Enabled {
-		findingsText := fmt.Sprintf("%d (%d filtered)",
+		findingsText = fmt.Sprintf("%d (%d filtered)",
 			report.Summary.TotalFindings,
 			report.ScanMetadata.Filtering.FilteredFindings)
-		tr.printKeyValue("Total Findings", findingsText)
-		tr.printKeyValue("  Confidence Threshold", fmt.Sprintf("%.2f", report.ScanMetadata.Filtering.ThresholdUsed))
-	} else {
-		tr.printKeyValue("Total Findings", fmt.Sprintf("%d", report.Summary.TotalFindings))
 	}
+
+	// Add suppression count if applicable
+	if report.ScanMetadata.Suppression != nil && report.ScanMetadata.Suppression.SuppressedFindings > 0 {
+		if report.ScanMetadata.Filtering != nil && report.ScanMetadata.Filtering.Enabled {
+			findingsText = fmt.Sprintf("%d (%d filtered, %d suppressed)",
+				report.Summary.TotalFindings,
+				report.ScanMetadata.Filtering.FilteredFindings,
+				report.ScanMetadata.Suppression.SuppressedFindings)
+		} else {
+			findingsText = fmt.Sprintf("%d (%d suppressed)",
+				report.Summary.TotalFindings,
+				report.ScanMetadata.Suppression.SuppressedFindings)
+		}
+	}
+
+	tr.printKeyValue("Total Findings", findingsText)
+
+	// Show confidence threshold if filtering is enabled
+	if report.ScanMetadata.Filtering != nil && report.ScanMetadata.Filtering.Enabled {
+		tr.printKeyValue("  Confidence Threshold", fmt.Sprintf("%.2f", report.ScanMetadata.Filtering.ThresholdUsed))
+	}
+
 	tr.println("")
 
 	// Severity breakdown

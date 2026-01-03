@@ -6,21 +6,23 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Neda-Zarei/deep-guard/internal/suppression"
 	sitter "github.com/smacker/go-tree-sitter"
 )
 
 // CodeChunk represents a parsed function or method extracted from source code
 type CodeChunk struct {
-	ID            string            // SHA256 hash of normalized source
-	FilePath      string            // Absolute file path
-	StartLine     int               // 1-indexed start line
-	EndLine       int               // 1-indexed end line
-	FunctionName  string            // Function/method name
-	Language      string            // Programming language (javascript, python, java, typescript)
-	Source        string            // Original source code
-	Tokens        int               // Estimated token count (len/4)
-	Frameworks    []string          // Detected frameworks for this file
-	NormalizedSrc string            // Normalized source for hashing
+	ID              string                      // SHA256 hash of normalized source
+	FilePath        string                      // Absolute file path
+	StartLine       int                         // 1-indexed start line
+	EndLine         int                         // 1-indexed end line
+	FunctionName    string                      // Function/method name
+	Language        string                      // Programming language (javascript, python, java, typescript)
+	Source          string                      // Original source code
+	Tokens          int                         // Estimated token count (len/4)
+	Frameworks      []string                    // Detected frameworks for this file
+	NormalizedSrc   string                      // Normalized source for hashing
+	SuppressedLines []suppression.SuppressionInfo // Suppression directives found in this chunk
 }
 
 // Chunker extracts code chunks from parsed ASTs
@@ -57,6 +59,10 @@ func (c *ASTChunker) ChunkFile(tree *sitter.Tree, content []byte, filePath strin
 
 	var chunks []CodeChunk
 
+	// Extract comments and parse suppression directives
+	comments := suppression.ExtractCommentsFromSource(string(content), language)
+	allSuppressions := suppression.ParseComments(comments)
+
 	// Extract function nodes based on language
 	functionNodes := c.extractFunctionNodes(rootNode, language)
 
@@ -79,18 +85,27 @@ func (c *ASTChunker) ChunkFile(tree *sitter.Tree, content []byte, filePath strin
 		// Estimate tokens (rough heuristic: 1 token ≈ 4 characters)
 		tokens := estimateTokens(source)
 
+		// Filter suppressions that apply to this chunk's line range
+		var chunkSuppressions []suppression.SuppressionInfo
+		for _, sup := range allSuppressions {
+			if sup.Line >= startLine && sup.Line <= endLine {
+				chunkSuppressions = append(chunkSuppressions, sup)
+			}
+		}
+
 		// Create chunk
 		chunk := CodeChunk{
-			ID:            id,
-			FilePath:      filePath,
-			StartLine:     startLine,
-			EndLine:       endLine,
-			FunctionName:  functionName,
-			Language:      language,
-			Source:        source,
-			Tokens:        tokens,
-			Frameworks:    frameworks,
-			NormalizedSrc: normalized,
+			ID:              id,
+			FilePath:        filePath,
+			StartLine:       startLine,
+			EndLine:         endLine,
+			FunctionName:    functionName,
+			Language:        language,
+			Source:          source,
+			Tokens:          tokens,
+			Frameworks:      frameworks,
+			NormalizedSrc:   normalized,
+			SuppressedLines: chunkSuppressions,
 		}
 
 		// Split large chunks if they exceed maxTokens
@@ -271,17 +286,28 @@ func (c *ASTChunker) splitLargeChunk(chunk CodeChunk) []CodeChunk {
 			normalized := normalizeSource(partSource, chunk.Language)
 			hash := sha256.Sum256([]byte(normalized))
 
+			// Filter suppressions for this part's line range
+			partStartLine := chunk.StartLine
+			partEndLine := chunk.StartLine + len(currentLines) - 1
+			var partSuppressions []suppression.SuppressionInfo
+			for _, sup := range chunk.SuppressedLines {
+				if sup.Line >= partStartLine && sup.Line <= partEndLine {
+					partSuppressions = append(partSuppressions, sup)
+				}
+			}
+
 			partChunk := CodeChunk{
-				ID:            hex.EncodeToString(hash[:]),
-				FilePath:      chunk.FilePath,
-				StartLine:     chunk.StartLine,
-				EndLine:       chunk.StartLine + len(currentLines) - 1,
-				FunctionName:  fmt.Sprintf("%s_part%d", chunk.FunctionName, partNum),
-				Language:      chunk.Language,
-				Source:        partSource,
-				Tokens:        currentTokens,
-				Frameworks:    chunk.Frameworks,
-				NormalizedSrc: normalized,
+				ID:              hex.EncodeToString(hash[:]),
+				FilePath:        chunk.FilePath,
+				StartLine:       partStartLine,
+				EndLine:         partEndLine,
+				FunctionName:    fmt.Sprintf("%s_part%d", chunk.FunctionName, partNum),
+				Language:        chunk.Language,
+				Source:          partSource,
+				Tokens:          currentTokens,
+				Frameworks:      chunk.Frameworks,
+				NormalizedSrc:   normalized,
+				SuppressedLines: partSuppressions,
 			}
 			chunks = append(chunks, partChunk)
 
@@ -301,17 +327,28 @@ func (c *ASTChunker) splitLargeChunk(chunk CodeChunk) []CodeChunk {
 		normalized := normalizeSource(partSource, chunk.Language)
 		hash := sha256.Sum256([]byte(normalized))
 
+		// Filter suppressions for final part's line range
+		partStartLine := chunk.StartLine + len(lines) - len(currentLines)
+		partEndLine := chunk.EndLine
+		var partSuppressions []suppression.SuppressionInfo
+		for _, sup := range chunk.SuppressedLines {
+			if sup.Line >= partStartLine && sup.Line <= partEndLine {
+				partSuppressions = append(partSuppressions, sup)
+			}
+		}
+
 		partChunk := CodeChunk{
-			ID:            hex.EncodeToString(hash[:]),
-			FilePath:      chunk.FilePath,
-			StartLine:     chunk.StartLine + len(lines) - len(currentLines),
-			EndLine:       chunk.EndLine,
-			FunctionName:  fmt.Sprintf("%s_part%d", chunk.FunctionName, partNum),
-			Language:      chunk.Language,
-			Source:        partSource,
-			Tokens:        currentTokens,
-			Frameworks:    chunk.Frameworks,
-			NormalizedSrc: normalized,
+			ID:              hex.EncodeToString(hash[:]),
+			FilePath:        chunk.FilePath,
+			StartLine:       partStartLine,
+			EndLine:         partEndLine,
+			FunctionName:    fmt.Sprintf("%s_part%d", chunk.FunctionName, partNum),
+			Language:        chunk.Language,
+			Source:          partSource,
+			Tokens:          currentTokens,
+			Frameworks:      chunk.Frameworks,
+			NormalizedSrc:   normalized,
+			SuppressedLines: partSuppressions,
 		}
 		chunks = append(chunks, partChunk)
 	}
