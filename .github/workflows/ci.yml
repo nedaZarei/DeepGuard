@@ -44,6 +44,9 @@ jobs:
           CGO_ENABLED: 1
         run: go run ./cmd/deepguard kb validate --kb-path ./internal/kb/data/
 
+      - name: Run smoke tests
+        run: ./scripts/smoke-test.sh
+
       - name: Run tests with coverage
         env:
           CGO_ENABLED: 1
