@@ -18,19 +18,19 @@ func TestRedactAWSKeys(t *testing.T) {
 	r := New(log)
 
 	tests := []struct {
-		name     string
-		source   string
-		expected string
+		name           string
+		source         string
+		expected       string
 		wantRedactions int
 	}{
 		{
-			name:     "AWS Access Key",
-			source:   `const accessKey = "AKIAIOSFODNN7EXAMPLE";`,
-			expected: `const accessKey = "[REDACTED_AWS_ACCESS_KEY]";`,
+			name:           "AWS Access Key",
+			source:         `const accessKey = "AKIAIOSFODNN7EXAMPLE";`,
+			expected:       `const accessKey = "[REDACTED_AWS_ACCESS_KEY]";`,
 			wantRedactions: 1,
 		},
 		{
-			name:     "AWS keys in config",
+			name: "AWS keys in config",
 			source: `{
   "aws_access_key_id": "AKIAIOSFODNN7EXAMPLE",
   "aws_secret_access_key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
@@ -63,33 +63,33 @@ func TestRedactAPIKeys(t *testing.T) {
 	r := New(log)
 
 	tests := []struct {
-		name     string
-		source   string
+		name         string
+		source       string
 		shouldRedact bool
 	}{
 		{
-			name:     "Generic API key in JavaScript",
-			source:   `const apiKey = "sk_live_1234567890abcdefghij";`,
+			name:         "Generic API key in JavaScript",
+			source:       `const apiKey = "sk_live_1234567890abcdefghij";`,
 			shouldRedact: true,
 		},
 		{
-			name:     "API key with underscore",
-			source:   `api_key = "abcd1234efgh5678ijkl9012";`,
+			name:         "API key with underscore",
+			source:       `api_key = "abcd1234efgh5678ijkl9012";`,
 			shouldRedact: true,
 		},
 		{
-			name:     "API key in object",
-			source:   `config = { apiKey: "test_key_abc123def456" };`,
+			name:         "API key in object",
+			source:       `config = { apiKey: "test_key_abc123def456" };`,
 			shouldRedact: true,
 		},
 		{
-			name:     "GitHub token",
-			source:   `token = "ghp_1234567890abcdefghijklmnopqrstuv";`,
+			name:         "GitHub token",
+			source:       `token = "ghp_1234567890abcdefghijklmnopqrstuv";`,
 			shouldRedact: true,
 		},
 		{
-			name:     "Slack token",
-			source:   `slackToken = "xoxb-1234567890-abcdefghijklmnop";`,
+			name:         "Slack token",
+			source:       `slackToken = "xoxb-1234567890-abcdefghijklmnop";`,
 			shouldRedact: true,
 		},
 	}
@@ -170,23 +170,23 @@ func TestRedactConnectionStrings(t *testing.T) {
 	r := New(log)
 
 	tests := []struct {
-		name     string
-		source   string
+		name         string
+		source       string
 		shouldRedact bool
 	}{
 		{
-			name:     "MySQL connection string",
-			source:   `conn = "mysql://user:password123@localhost:3306/mydb";`,
+			name:         "MySQL connection string",
+			source:       `conn = "mysql://user:password123@localhost:3306/mydb";`,
 			shouldRedact: true,
 		},
 		{
-			name:     "PostgreSQL connection string",
-			source:   `db = "postgresql://admin:secret456@db.example.com/production";`,
+			name:         "PostgreSQL connection string",
+			source:       `db = "postgresql://admin:secret456@db.example.com/production";`,
 			shouldRedact: true,
 		},
 		{
-			name:     "MongoDB connection string",
-			source:   `uri = "mongodb://username:pass789@cluster.mongodb.net/app";`,
+			name:         "MongoDB connection string",
+			source:       `uri = "mongodb://username:pass789@cluster.mongodb.net/app";`,
 			shouldRedact: true,
 		},
 	}
@@ -241,33 +241,33 @@ func TestFalsePositives(t *testing.T) {
 	r := New(log)
 
 	tests := []struct {
-		name     string
-		source   string
+		name            string
+		source          string
 		shouldNotRedact bool
 	}{
 		{
-			name:     "Placeholder API key",
-			source:   `apiKey = "your_api_key_here";`,
+			name:            "Placeholder API key",
+			source:          `apiKey = "your_api_key_here";`,
 			shouldNotRedact: true,
 		},
 		{
-			name:     "Example password",
-			source:   `password = "example";`,
+			name:            "Example password",
+			source:          `password = "example";`,
 			shouldNotRedact: true,
 		},
 		{
-			name:     "Environment variable reference",
-			source:   `const key = process.env.API_KEY;`,
+			name:            "Environment variable reference",
+			source:          `const key = process.env.API_KEY;`,
 			shouldNotRedact: true,
 		},
 		{
-			name:     "Template placeholder",
-			source:   `token = "${API_KEY}";`,
+			name:            "Template placeholder",
+			source:          `token = "${API_KEY}";`,
 			shouldNotRedact: true,
 		},
 		{
-			name:     "Comment with API key mention",
-			source:   `// Set your API_KEY here`,
+			name:            "Comment with API key mention",
+			source:          `// Set your API_KEY here`,
 			shouldNotRedact: true,
 		},
 	}

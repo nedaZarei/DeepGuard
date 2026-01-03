@@ -327,18 +327,18 @@ func TestExtractJSONFromMarkdown(t *testing.T) {
 		expected string
 	}{
 		{
-			name: "JSON in markdown code block",
-			input: "Here's the analysis:\n```json\n{\"findings\": []}\n```",
+			name:     "JSON in markdown code block",
+			input:    "Here's the analysis:\n```json\n{\"findings\": []}\n```",
 			expected: `{"findings": []}`,
 		},
 		{
-			name: "JSON in code block without language",
-			input: "```\n{\"findings\": []}\n```",
+			name:     "JSON in code block without language",
+			input:    "```\n{\"findings\": []}\n```",
 			expected: `{"findings": []}`,
 		},
 		{
-			name: "No markdown block",
-			input: `{"findings": []}`,
+			name:     "No markdown block",
+			input:    `{"findings": []}`,
 			expected: `{"findings": []}`,
 		},
 	}

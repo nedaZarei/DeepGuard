@@ -136,9 +136,9 @@ func (e *ValidationError) WithFilename(filename string) *ValidationError {
 
 // DuplicateIDError represents a duplicate ID error
 type DuplicateIDError struct {
-	ID        string
-	File1     string
-	File2     string
+	ID    string
+	File1 string
+	File2 string
 }
 
 // NewDuplicateIDError creates a new DuplicateIDError

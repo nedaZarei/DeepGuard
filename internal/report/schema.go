@@ -14,24 +14,24 @@ type ScanReport struct {
 
 // ScanMetadata contains metadata about the scan execution
 type ScanMetadata struct {
-	Timestamp           string             `json:"timestamp"`              // RFC3339 format
-	TargetPath          string             `json:"target_path"`
-	Languages           []string           `json:"languages"`
-	Frameworks          []string           `json:"frameworks"`
-	ModelUsed           string             `json:"model_used"`
-	TotalCost           float64            `json:"total_cost"`
-	ScanDurationSeconds int                `json:"scan_duration_seconds"`
-	Filtering           *FilteringStats    `json:"filtering,omitempty"`    // Optional filtering statistics
-	Suppression         *SuppressionStats  `json:"suppression,omitempty"`  // Optional suppression statistics
+	Timestamp           string            `json:"timestamp"` // RFC3339 format
+	TargetPath          string            `json:"target_path"`
+	Languages           []string          `json:"languages"`
+	Frameworks          []string          `json:"frameworks"`
+	ModelUsed           string            `json:"model_used"`
+	TotalCost           float64           `json:"total_cost"`
+	ScanDurationSeconds int               `json:"scan_duration_seconds"`
+	Filtering           *FilteringStats   `json:"filtering,omitempty"`   // Optional filtering statistics
+	Suppression         *SuppressionStats `json:"suppression,omitempty"` // Optional suppression statistics
 }
 
 // FilteringStats contains statistics about finding filtering
 type FilteringStats struct {
 	Enabled          bool    `json:"enabled"`
 	ThresholdUsed    float64 `json:"threshold_used"`
-	TotalFindings    int     `json:"total_findings"`     // Before filtering
-	FilteredFindings int     `json:"filtered_findings"`  // Number filtered out
-	KeptFindings     int     `json:"kept_findings"`      // Number kept (in report)
+	TotalFindings    int     `json:"total_findings"`    // Before filtering
+	FilteredFindings int     `json:"filtered_findings"` // Number filtered out
+	KeptFindings     int     `json:"kept_findings"`     // Number kept (in report)
 }
 
 // SuppressionStats contains statistics about suppressed findings
@@ -43,17 +43,17 @@ type SuppressionStats struct {
 
 // Finding represents a single vulnerability finding
 type Finding struct {
-	ID           string  `json:"id"`
-	Type         string  `json:"type"`
-	Severity     string  `json:"severity"`
-	Confidence   float64 `json:"confidence"`
-	File         string  `json:"file"`
-	Line         int     `json:"line"`
-	Column       int     `json:"column,omitempty"`
-	FunctionName string  `json:"function_name,omitempty"`
-	Message      string  `json:"message"`
-	Recommendation string `json:"recommendation"`
-	CodeSnippet  string  `json:"code_snippet,omitempty"`
+	ID             string  `json:"id"`
+	Type           string  `json:"type"`
+	Severity       string  `json:"severity"`
+	Confidence     float64 `json:"confidence"`
+	File           string  `json:"file"`
+	Line           int     `json:"line"`
+	Column         int     `json:"column,omitempty"`
+	FunctionName   string  `json:"function_name,omitempty"`
+	Message        string  `json:"message"`
+	Recommendation string  `json:"recommendation"`
+	CodeSnippet    string  `json:"code_snippet,omitempty"`
 }
 
 // Summary contains aggregate statistics about findings

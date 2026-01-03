@@ -74,7 +74,7 @@ func NewPromptRenderer() (*PromptRenderer, error) {
 		templateName := getTemplateName(vulnType)
 		templatePath := fmt.Sprintf("templates/%s.tmpl", templateName)
 
-		tmpl, err := template.New(templateName + ".tmpl").Funcs(funcMap).ParseFS(templateFS, templatePath)
+		tmpl, err := template.New(templateName+".tmpl").Funcs(funcMap).ParseFS(templateFS, templatePath)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse template %s: %w", templatePath, err)
 		}

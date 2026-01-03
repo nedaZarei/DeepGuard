@@ -39,7 +39,7 @@ func setupTestDirectory(t *testing.T) string {
 		"src/components/button.test.js": "test('button', () => {});",
 		"src/__tests__/app.test.ts":     "describe('app', () => {});",
 		"tests/integration.spec.js":     "it('works', () => {});",
-		"tests/helper.py":                "# test helper",
+		"tests/helper.py":               "# test helper",
 		"src/bundle.min.js":             "/* minified */",
 		"dist/output.js":                "// compiled output",
 		"node_modules/library/index.js": "module.exports = {};",
@@ -242,8 +242,8 @@ func TestFilter_DefaultExclusions(t *testing.T) {
 	}
 
 	tests := []struct {
-		path      string
-		isDir     bool
+		path          string
+		isDir         bool
 		shouldExclude bool
 	}{
 		{"node_modules", true, true},
@@ -290,8 +290,8 @@ temp
 
 	// Test custom patterns
 	tests := []struct {
-		path      string
-		isDir     bool
+		path          string
+		isDir         bool
 		shouldExclude bool
 	}{
 		// Custom patterns

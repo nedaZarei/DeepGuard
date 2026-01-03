@@ -13,16 +13,16 @@ func TestIsRetryable(t *testing.T) {
 		statusCode int
 		retryable  bool
 	}{
-		{http.StatusOK, false},                  // 200
-		{http.StatusBadRequest, false},          // 400
-		{http.StatusUnauthorized, false},        // 401
-		{http.StatusForbidden, false},           // 403
-		{http.StatusNotFound, false},            // 404
-		{http.StatusTooManyRequests, true},      // 429 - rate limit
-		{http.StatusInternalServerError, true},  // 500
-		{http.StatusBadGateway, true},           // 502
-		{http.StatusServiceUnavailable, true},   // 503
-		{http.StatusGatewayTimeout, true},       // 504
+		{http.StatusOK, false},                 // 200
+		{http.StatusBadRequest, false},         // 400
+		{http.StatusUnauthorized, false},       // 401
+		{http.StatusForbidden, false},          // 403
+		{http.StatusNotFound, false},           // 404
+		{http.StatusTooManyRequests, true},     // 429 - rate limit
+		{http.StatusInternalServerError, true}, // 500
+		{http.StatusBadGateway, true},          // 502
+		{http.StatusServiceUnavailable, true},  // 503
+		{http.StatusGatewayTimeout, true},      // 504
 	}
 
 	for _, tt := range tests {
@@ -37,11 +37,11 @@ func TestIsRetryable(t *testing.T) {
 
 func TestGetRetryDelay(t *testing.T) {
 	tests := []struct {
-		name         string
-		attempt      int
-		retryAfter   time.Duration
-		expectedMin  time.Duration
-		expectedMax  time.Duration
+		name        string
+		attempt     int
+		retryAfter  time.Duration
+		expectedMin time.Duration
+		expectedMax time.Duration
 	}{
 		{
 			name:        "attempt 0 no retry-after",

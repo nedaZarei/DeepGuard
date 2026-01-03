@@ -62,7 +62,8 @@ var cacheStatsCmd = &cobra.Command{
 	Long:  `Display statistics about cached data including entry counts, size, and hit rates.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Println("DeepGuard Cache Statistics")
-		fmt.Println("===========================\n")
+		fmt.Println("===========================")
+		fmt.Println()
 
 		// KB Index Cache Stats
 		fmt.Println("KB Index Cache:")

@@ -70,11 +70,11 @@ func TestConstructQuery(t *testing.T) {
 // Test token budget enforcement
 func TestApplyTokenBudget(t *testing.T) {
 	tests := []struct {
-		name          string
-		result        RetrievalResult
-		tokenBudget   int
-		expectTrunc   bool
-		maxChars      int
+		name        string
+		result      RetrievalResult
+		tokenBudget int
+		expectTrunc bool
+		maxChars    int
 	}{
 		{
 			name: "within budget - no truncation",
@@ -97,15 +97,15 @@ func TestApplyTokenBudget(t *testing.T) {
 			result: RetrievalResult{
 				Entries: []kb.KBEntry{
 					{
-						ID:          "kb-001",
-						Title:       "Long Entry 1",
-						Description: string(make([]byte, 3000)), // 3000 chars
+						ID:           "kb-001",
+						Title:        "Long Entry 1",
+						Description:  string(make([]byte, 3000)), // 3000 chars
 						CodePatterns: []string{"pattern1", "pattern2"},
 					},
 					{
-						ID:          "kb-002",
-						Title:       "Long Entry 2",
-						Description: string(make([]byte, 3000)), // 3000 chars
+						ID:           "kb-002",
+						Title:        "Long Entry 2",
+						Description:  string(make([]byte, 3000)), // 3000 chars
 						CodePatterns: []string{"pattern3", "pattern4"},
 					},
 				},
@@ -119,21 +119,21 @@ func TestApplyTokenBudget(t *testing.T) {
 			result: RetrievalResult{
 				Entries: []kb.KBEntry{
 					{
-						ID:          "kb-001",
-						Title:       "Entry 1",
-						Description: string(make([]byte, 2000)), // 2000 chars
+						ID:           "kb-001",
+						Title:        "Entry 1",
+						Description:  string(make([]byte, 2000)), // 2000 chars
 						CodePatterns: []string{"pattern1"},
 					},
 					{
-						ID:          "kb-002",
-						Title:       "Entry 2",
-						Description: string(make([]byte, 4000)), // 4000 chars
+						ID:           "kb-002",
+						Title:        "Entry 2",
+						Description:  string(make([]byte, 4000)), // 4000 chars
 						CodePatterns: []string{"pattern2"},
 					},
 					{
-						ID:          "kb-003",
-						Title:       "Entry 3",
-						Description: string(make([]byte, 2000)), // 2000 chars
+						ID:           "kb-003",
+						Title:        "Entry 3",
+						Description:  string(make([]byte, 2000)), // 2000 chars
 						CodePatterns: []string{"pattern3"},
 					},
 				},

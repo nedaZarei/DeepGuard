@@ -23,11 +23,11 @@ const (
 
 // Box drawing characters
 const (
-	BoxHorizontal = "─"
-	BoxVertical   = "│"
-	BoxTopLeft    = "┌"
-	BoxTopRight   = "┐"
-	BoxBottomLeft = "└"
+	BoxHorizontal  = "─"
+	BoxVertical    = "│"
+	BoxTopLeft     = "┌"
+	BoxTopRight    = "┐"
+	BoxBottomLeft  = "└"
 	BoxBottomRight = "┘"
 	BoxT           = "┬"
 	BoxBT          = "┴"

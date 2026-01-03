@@ -12,48 +12,48 @@ import (
 
 // GoldenFile represents the expected findings for a test case
 type GoldenFile struct {
-	Description  string              `json:"description"`
-	ScanMetadata GoldenMetadata      `json:"scan_metadata"`
-	Expected     []ExpectedFinding   `json:"expected_findings"`
-	Severity     map[string]int      `json:"severity_breakdown"`
-	Framework    map[string]int      `json:"framework_breakdown"`
+	Description  string            `json:"description"`
+	ScanMetadata GoldenMetadata    `json:"scan_metadata"`
+	Expected     []ExpectedFinding `json:"expected_findings"`
+	Severity     map[string]int    `json:"severity_breakdown"`
+	Framework    map[string]int    `json:"framework_breakdown"`
 }
 
 // GoldenMetadata contains metadata about the expected scan
 type GoldenMetadata struct {
-	TargetPath           string  `json:"target_path"`
-	VulnerabilityType    string  `json:"vulnerability_type"`
-	ConfidenceThreshold  float64 `json:"confidence_threshold"`
+	TargetPath            string  `json:"target_path"`
+	VulnerabilityType     string  `json:"vulnerability_type"`
+	ConfidenceThreshold   float64 `json:"confidence_threshold"`
 	TotalExpectedFindings int     `json:"total_expected_findings"`
 }
 
 // ExpectedFinding represents a single expected vulnerability
 type ExpectedFinding struct {
-	File           string  `json:"file"`
-	Line           int     `json:"line"`
-	Type           string  `json:"type"`
-	Severity       string  `json:"severity"`
-	ConfidenceMin  float64 `json:"confidence_min"`
-	Pattern        string  `json:"pattern"`
-	Description    string  `json:"description"`
-	CodePattern    string  `json:"code_pattern"`
+	File          string  `json:"file"`
+	Line          int     `json:"line"`
+	Type          string  `json:"type"`
+	Severity      string  `json:"severity"`
+	ConfidenceMin float64 `json:"confidence_min"`
+	Pattern       string  `json:"pattern"`
+	Description   string  `json:"description"`
+	CodePattern   string  `json:"code_pattern"`
 }
 
 // ComparisonResult contains the results of comparing actual vs expected findings
 type ComparisonResult struct {
-	TotalExpected       int
-	TotalActual         int
-	Matched             int
-	Missing             []ExpectedFinding
-	Extra               []report.Finding
+	TotalExpected        int
+	TotalActual          int
+	Matched              int
+	Missing              []ExpectedFinding
+	Extra                []report.Finding
 	ConfidenceMismatches []ConfidenceMismatch
-	Success             bool
+	Success              bool
 }
 
 // ConfidenceMismatch represents a finding that was detected but with lower confidence than expected
 type ConfidenceMismatch struct {
-	Expected   ExpectedFinding
-	Actual     report.Finding
+	Expected     ExpectedFinding
+	Actual       report.Finding
 	ExpectedConf float64
 	ActualConf   float64
 }
@@ -86,10 +86,10 @@ func LoadGoldenFile(path string) (*GoldenFile, error) {
 // CompareResults compares actual scan results against expected findings
 func CompareResults(golden *GoldenFile, actual report.ScanReport, lineTolerance int) *ComparisonResult {
 	result := &ComparisonResult{
-		TotalExpected: len(golden.Expected),
-		TotalActual:   len(actual.Findings),
-		Missing:       []ExpectedFinding{},
-		Extra:         []report.Finding{},
+		TotalExpected:        len(golden.Expected),
+		TotalActual:          len(actual.Findings),
+		Missing:              []ExpectedFinding{},
+		Extra:                []report.Finding{},
 		ConfidenceMismatches: []ConfidenceMismatch{},
 	}
 

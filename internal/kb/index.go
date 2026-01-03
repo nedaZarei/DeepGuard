@@ -19,10 +19,10 @@ import (
 
 const (
 	// Index metadata keys
-	metadataKBHash      = "kb_hash"
-	metadataBuildTime   = "build_time"
-	defaultIndexPath    = ".deepguard/kb-index"
-	defaultKBDataPath   = "internal/kb/data"
+	metadataKBHash    = "kb_hash"
+	metadataBuildTime = "build_time"
+	defaultIndexPath  = ".deepguard/kb-index"
+	defaultKBDataPath = "internal/kb/data"
 )
 
 // IndexManager manages the Bleve search index for vulnerability patterns

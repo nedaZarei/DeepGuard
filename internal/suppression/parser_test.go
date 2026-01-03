@@ -127,11 +127,11 @@ func TestParseComments_WithJustification(t *testing.T) {
 
 func TestParseComments_InvalidFormats(t *testing.T) {
 	comments := []CommentLocation{
-		{Line: 10, Text: "// deep guard:ignore"},        // Space in keyword
-		{Line: 20, Text: "// deepguardignore"},          // Missing colon
-		{Line: 30, Text: "// some other comment"},       // Not a suppression
-		{Line: 40, Text: "// deepguard ignore"},         // Space instead of colon
-		{Line: 50, Text: "// adeepguard:ignore"},        // Preceded by letter (should not match)
+		{Line: 10, Text: "// deep guard:ignore"},  // Space in keyword
+		{Line: 20, Text: "// deepguardignore"},    // Missing colon
+		{Line: 30, Text: "// some other comment"}, // Not a suppression
+		{Line: 40, Text: "// deepguard ignore"},   // Space instead of colon
+		{Line: 50, Text: "// adeepguard:ignore"},  // Preceded by letter (should not match)
 	}
 
 	suppressions := ParseComments(comments)

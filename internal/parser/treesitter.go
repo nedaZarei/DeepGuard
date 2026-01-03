@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/rs/zerolog/log"
 	sitter "github.com/smacker/go-tree-sitter"
 	"github.com/smacker/go-tree-sitter/java"
 	"github.com/smacker/go-tree-sitter/javascript"
 	"github.com/smacker/go-tree-sitter/python"
 	"github.com/smacker/go-tree-sitter/typescript/typescript"
-	"github.com/rs/zerolog/log"
 )
 
 // Parser interface defines the contract for parsing source code into ASTs

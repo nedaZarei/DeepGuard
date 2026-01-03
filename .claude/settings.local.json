@@ -102,7 +102,13 @@
       "Bash(node -c:*)",
       "Bash(./deepguard cache:*)",
       "Bash(grep:*)",
-      "Bash(./deepguard scan:*)"
+      "Bash(./deepguard scan:*)",
+      "Bash(gofmt:*)",
+      "Bash(go vet:*)",
+      "Bash(CGO_ENABLED=1 go build:*)",
+      "Bash(./deepguard version:*)",
+      "Bash(python3:*)",
+      "Bash(CGO_ENABLED=1 go test:*)"
     ],
     "deny": [],
     "ask": []

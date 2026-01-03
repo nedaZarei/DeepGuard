@@ -10,10 +10,10 @@ import (
 
 // WorkItem represents a code chunk to be analyzed
 type WorkItem struct {
-	Chunk      chunker.CodeChunk
-	VulnType   string // Vulnerability type to scan for
-	KBEntries  interface{} // KB context entries (type depends on implementation)
-	Prompt     string // Rendered prompt for this chunk
+	Chunk     chunker.CodeChunk
+	VulnType  string      // Vulnerability type to scan for
+	KBEntries interface{} // KB context entries (type depends on implementation)
+	Prompt    string      // Rendered prompt for this chunk
 }
 
 // WorkResult represents the result of analyzing a single chunk
@@ -30,10 +30,10 @@ type WorkResult struct {
 
 // ErrorTracker tracks failed chunks and determines when to stop due to excessive errors
 type ErrorTracker struct {
-	mu                sync.Mutex
-	failedChunks      []string // IDs of failed chunks
-	consecutiveFails  int
-	errorThreshold    int // Max consecutive failures before stopping
+	mu               sync.Mutex
+	failedChunks     []string // IDs of failed chunks
+	consecutiveFails int
+	errorThreshold   int // Max consecutive failures before stopping
 }
 
 // NewErrorTracker creates a new error tracker with the specified threshold
@@ -84,14 +84,14 @@ func (et *ErrorTracker) GetStats() (int, int, int) {
 
 // ProgressTracker tracks analysis progress and provides periodic updates
 type ProgressTracker struct {
-	mu                 sync.Mutex
-	totalChunks        int
-	processedChunks    int
-	findingsCount      int
-	lastReportTime     time.Time
-	lastReportChunks   int
-	reportInterval     time.Duration // Report every N seconds
-	reportChunkStep    int           // Report every N chunks
+	mu               sync.Mutex
+	totalChunks      int
+	processedChunks  int
+	findingsCount    int
+	lastReportTime   time.Time
+	lastReportChunks int
+	reportInterval   time.Duration // Report every N seconds
+	reportChunkStep  int           // Report every N chunks
 }
 
 // NewProgressTracker creates a new progress tracker
@@ -158,10 +158,10 @@ func (pt *ProgressTracker) GetPercentage() float64 {
 
 // OrchestratorConfig holds configuration for the analysis orchestrator
 type OrchestratorConfig struct {
-	WorkerCount      int     // Number of concurrent workers (default: 5)
-	BudgetCap        float64 // Budget cap in USD (default: 5.0)
-	ErrorThreshold   int     // Max consecutive errors before stopping (default: 10)
-	WorkChannelSize  int     // Size of work channel buffer (default: 100)
+	WorkerCount       int     // Number of concurrent workers (default: 5)
+	BudgetCap         float64 // Budget cap in USD (default: 5.0)
+	ErrorThreshold    int     // Max consecutive errors before stopping (default: 10)
+	WorkChannelSize   int     // Size of work channel buffer (default: 100)
 	ResultChannelSize int     // Size of result channel buffer (default: 100)
 }
 

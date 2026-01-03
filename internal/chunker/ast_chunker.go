@@ -12,16 +12,16 @@ import (
 
 // CodeChunk represents a parsed function or method extracted from source code
 type CodeChunk struct {
-	ID              string                      // SHA256 hash of normalized source
-	FilePath        string                      // Absolute file path
-	StartLine       int                         // 1-indexed start line
-	EndLine         int                         // 1-indexed end line
-	FunctionName    string                      // Function/method name
-	Language        string                      // Programming language (javascript, python, java, typescript)
-	Source          string                      // Original source code
-	Tokens          int                         // Estimated token count (len/4)
-	Frameworks      []string                    // Detected frameworks for this file
-	NormalizedSrc   string                      // Normalized source for hashing
+	ID              string                        // SHA256 hash of normalized source
+	FilePath        string                        // Absolute file path
+	StartLine       int                           // 1-indexed start line
+	EndLine         int                           // 1-indexed end line
+	FunctionName    string                        // Function/method name
+	Language        string                        // Programming language (javascript, python, java, typescript)
+	Source          string                        // Original source code
+	Tokens          int                           // Estimated token count (len/4)
+	Frameworks      []string                      // Detected frameworks for this file
+	NormalizedSrc   string                        // Normalized source for hashing
 	SuppressedLines []suppression.SuppressionInfo // Suppression directives found in this chunk
 }
 

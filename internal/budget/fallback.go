@@ -9,28 +9,28 @@ import (
 
 // ModelTransition represents a single model switch event
 type ModelTransition struct {
-	FromModel   string
-	ToModel     string
-	Reason      string
+	FromModel    string
+	ToModel      string
+	Reason       string
 	CostAtSwitch float64
-	Timestamp   time.Time
+	Timestamp    time.Time
 }
 
 // ModelUsageStats tracks usage statistics for a single model
 type ModelUsageStats struct {
-	Model        string
+	Model          string
 	ChunksAnalyzed int
-	TotalCost    float64
-	TokensUsed   int
+	TotalCost      float64
+	TokensUsed     int
 }
 
 // ModelUsageReport provides a summary of model usage across the scan
 type ModelUsageReport struct {
-	Transitions    []ModelTransition
-	ModelStats     map[string]ModelUsageStats
-	FinalModel     string
-	TotalCost      float64
-	TotalChunks    int
+	Transitions []ModelTransition
+	ModelStats  map[string]ModelUsageStats
+	FinalModel  string
+	TotalCost   float64
+	TotalChunks int
 }
 
 // FallbackManager handles automatic model switching based on budget thresholds
@@ -38,32 +38,32 @@ type FallbackManager struct {
 	mu sync.Mutex
 
 	// Configuration
-	budgetCap           float64
-	softCapThreshold    float64 // 80% of budget ($2.40 for $3.00 cap)
-	switchThreshold     float64 // Model switch threshold ($3.00 default)
-	primaryModel        string  // Primary model (gpt-4o)
-	fallbackModel       string  // Fallback model (gpt-4o-mini)
+	budgetCap        float64
+	softCapThreshold float64 // 80% of budget ($2.40 for $3.00 cap)
+	switchThreshold  float64 // Model switch threshold ($3.00 default)
+	primaryModel     string  // Primary model (gpt-4o)
+	fallbackModel    string  // Fallback model (gpt-4o-mini)
 
 	// State tracking
-	currentModel        string
-	transitions         []ModelTransition
-	modelChunkCounts    map[string]int
+	currentModel         string
+	transitions          []ModelTransition
+	modelChunkCounts     map[string]int
 	softCapWarningLogged bool
 }
 
 // FallbackConfig holds configuration for the fallback manager
 type FallbackConfig struct {
-	BudgetCap        float64
-	SwitchThreshold  float64
-	PrimaryModel     string
-	FallbackModel    string
+	BudgetCap       float64
+	SwitchThreshold float64
+	PrimaryModel    string
+	FallbackModel   string
 }
 
 // DefaultFallbackConfig returns the default fallback configuration
 func DefaultFallbackConfig() *FallbackConfig {
 	return &FallbackConfig{
-		BudgetCap:       5.0,          // $5.00 hard cap
-		SwitchThreshold: 3.0,          // Switch at $3.00
+		BudgetCap:       5.0, // $5.00 hard cap
+		SwitchThreshold: 3.0, // Switch at $3.00
 		PrimaryModel:    "gpt-4o",
 		FallbackModel:   "gpt-4o-mini",
 	}
@@ -79,14 +79,14 @@ func NewFallbackManager(config *FallbackConfig) *FallbackManager {
 	softCapThreshold := config.SwitchThreshold * 0.8
 
 	return &FallbackManager{
-		budgetCap:           config.BudgetCap,
-		softCapThreshold:    softCapThreshold,
-		switchThreshold:     config.SwitchThreshold,
-		primaryModel:        config.PrimaryModel,
-		fallbackModel:       config.FallbackModel,
-		currentModel:        config.PrimaryModel,
-		transitions:         make([]ModelTransition, 0),
-		modelChunkCounts:    make(map[string]int),
+		budgetCap:            config.BudgetCap,
+		softCapThreshold:     softCapThreshold,
+		switchThreshold:      config.SwitchThreshold,
+		primaryModel:         config.PrimaryModel,
+		fallbackModel:        config.FallbackModel,
+		currentModel:         config.PrimaryModel,
+		transitions:          make([]ModelTransition, 0),
+		modelChunkCounts:     make(map[string]int),
 		softCapWarningLogged: false,
 	}
 }

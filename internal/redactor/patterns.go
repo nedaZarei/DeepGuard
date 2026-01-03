@@ -9,14 +9,14 @@ import (
 type SecretType string
 
 const (
-	SecretTypeAPIKey            SecretType = "api_key"
-	SecretTypeAWSKey            SecretType = "aws_key"
-	SecretTypePassword          SecretType = "password"
-	SecretTypeJWT               SecretType = "jwt_token"
-	SecretTypeConnectionString  SecretType = "connection_string"
-	SecretTypeBearerToken       SecretType = "bearer_token"
-	SecretTypePrivateKey        SecretType = "private_key"
-	SecretTypeGenericSecret     SecretType = "generic_secret"
+	SecretTypeAPIKey           SecretType = "api_key"
+	SecretTypeAWSKey           SecretType = "aws_key"
+	SecretTypePassword         SecretType = "password"
+	SecretTypeJWT              SecretType = "jwt_token"
+	SecretTypeConnectionString SecretType = "connection_string"
+	SecretTypeBearerToken      SecretType = "bearer_token"
+	SecretTypePrivateKey       SecretType = "private_key"
+	SecretTypeGenericSecret    SecretType = "generic_secret"
 )
 
 // Pattern represents a regex pattern for detecting sensitive data

@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+          cache: true
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Check formatting
+        run: |
+          if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+            echo "The following files are not formatted:"
+            gofmt -s -l .
+            exit 1
+          fi
+
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Run tests with coverage
+        env:
+          CGO_ENABLED: 1
+        run: go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage.out
+          retention-days: 7
+
+      - name: Build binary
+        env:
+          CGO_ENABLED: 1
+        run: go build -o deepguard ./cmd/deepguard
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: deepguard-linux-amd64
+          path: deepguard
+          retention-days: 7
+
+      - name: Display build info
+        run: |
+          echo "Build completed successfully"
+          ls -lh deepguard
+          ./deepguard version || echo "Binary created"

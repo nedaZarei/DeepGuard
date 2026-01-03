@@ -19,12 +19,12 @@ type UsageMetrics struct {
 
 // BudgetStatus represents the current budget status
 type BudgetStatus struct {
-	CumulativeCost  float64
-	TotalTokens     int
-	PromptTokens    int
+	CumulativeCost   float64
+	TotalTokens      int
+	PromptTokens     int
 	CompletionTokens int
-	CallCount       int
-	ModelBreakdown  map[string]ModelCost
+	CallCount        int
+	ModelBreakdown   map[string]ModelCost
 }
 
 // ModelCost tracks costs for a specific model
@@ -43,10 +43,10 @@ type BudgetTracker struct {
 	budgetCap float64
 
 	// Cumulative totals
-	cumulativeCost       float64
-	totalPromptTokens    int
+	cumulativeCost        float64
+	totalPromptTokens     int
 	totalCompletionTokens int
-	callCount            int
+	callCount             int
 
 	// Per-model breakdown
 	modelCosts map[string]*ModelCost
@@ -224,12 +224,12 @@ func (bt *BudgetTracker) GetCurrentStatus() BudgetStatus {
 	}
 
 	return BudgetStatus{
-		CumulativeCost:    bt.cumulativeCost,
-		TotalTokens:       bt.totalPromptTokens + bt.totalCompletionTokens,
-		PromptTokens:      bt.totalPromptTokens,
-		CompletionTokens:  bt.totalCompletionTokens,
-		CallCount:         bt.callCount,
-		ModelBreakdown:    modelBreakdown,
+		CumulativeCost:   bt.cumulativeCost,
+		TotalTokens:      bt.totalPromptTokens + bt.totalCompletionTokens,
+		PromptTokens:     bt.totalPromptTokens,
+		CompletionTokens: bt.totalCompletionTokens,
+		CallCount:        bt.callCount,
+		ModelBreakdown:   modelBreakdown,
 	}
 }
 

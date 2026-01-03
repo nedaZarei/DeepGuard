@@ -10,18 +10,18 @@ import (
 
 // RedactionEvent represents a single redaction operation
 type RedactionEvent struct {
-	File         string     `json:"file"`
-	Line         int        `json:"line"`
-	Type         SecretType `json:"type"`
-	Description  string     `json:"description"`
-	OriginalLength int      `json:"original_length"`
+	File           string     `json:"file"`
+	Line           int        `json:"line"`
+	Type           SecretType `json:"type"`
+	Description    string     `json:"description"`
+	OriginalLength int        `json:"original_length"`
 }
 
 // RedactionResult contains the redacted source and metadata
 type RedactionResult struct {
-	RedactedSource string           `json:"redacted_source"`
-	Events         []RedactionEvent `json:"events"`
-	TotalRedactions int             `json:"total_redactions"`
+	RedactedSource  string           `json:"redacted_source"`
+	Events          []RedactionEvent `json:"events"`
+	TotalRedactions int              `json:"total_redactions"`
 }
 
 // Redactor handles sensitive data redaction in source code
@@ -42,8 +42,8 @@ func New(log zerolog.Logger) *Redactor {
 // Language parameter helps avoid false positives in comments
 func (r *Redactor) Redact(source string, language string, filePath string) RedactionResult {
 	result := RedactionResult{
-		RedactedSource: source,
-		Events:         []RedactionEvent{},
+		RedactedSource:  source,
+		Events:          []RedactionEvent{},
 		TotalRedactions: 0,
 	}
 
@@ -79,7 +79,7 @@ func (r *Redactor) Redact(source string, language string, filePath string) Redac
 				continue
 			}
 
-				// Redact the entire matched text
+			// Redact the entire matched text
 			// This is simpler and more robust than trying to parse capture groups
 			originalValue := matchedText
 			redactStartIdx := startIdx

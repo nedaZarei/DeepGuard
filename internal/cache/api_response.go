@@ -26,12 +26,12 @@ const (
 
 // APICacheEntry represents a cached API response
 type APICacheEntry struct {
-	ChunkHash       string                 `json:"chunk_hash"`
-	PromptTemplate  string                 `json:"prompt_template"`
-	Model           string                 `json:"model"`
-	Timestamp       time.Time              `json:"timestamp"`
-	Response        map[string]interface{} `json:"response"` // Full OpenAI response
-	TokensUsed      TokenUsage             `json:"tokens_used"`
+	ChunkHash      string                 `json:"chunk_hash"`
+	PromptTemplate string                 `json:"prompt_template"`
+	Model          string                 `json:"model"`
+	Timestamp      time.Time              `json:"timestamp"`
+	Response       map[string]interface{} `json:"response"` // Full OpenAI response
+	TokensUsed     TokenUsage             `json:"tokens_used"`
 }
 
 // TokenUsage represents token consumption for a cached response

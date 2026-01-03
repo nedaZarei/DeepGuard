@@ -16,22 +16,22 @@ import (
 
 const (
 	// Token budget constants
-	defaultTokenBudget     = 1500 // ~1.5k tokens
-	charsPerToken          = 4    // Conservative estimate: 4 chars per token
-	defaultCharBudget      = defaultTokenBudget * charsPerToken // 6000 chars
-	defaultTopK            = 3    // Number of KB entries to retrieve per chunk
-	functionNameBoost      = 2.0  // Boost weight for function name matches
-	defaultCacheSize       = 1000 // Maximum cache entries (LRU)
-	codeSnippetLength      = 200  // First N chars of source code for query
+	defaultTokenBudget = 1500                               // ~1.5k tokens
+	charsPerToken      = 4                                  // Conservative estimate: 4 chars per token
+	defaultCharBudget  = defaultTokenBudget * charsPerToken // 6000 chars
+	defaultTopK        = 3                                  // Number of KB entries to retrieve per chunk
+	functionNameBoost  = 2.0                                // Boost weight for function name matches
+	defaultCacheSize   = 1000                               // Maximum cache entries (LRU)
+	codeSnippetLength  = 200                                // First N chars of source code for query
 )
 
 // RetrievalResult contains KB entries retrieved for a code chunk
 type RetrievalResult struct {
-	KBIDs           []string  // KB entry IDs
-	RelevanceScores []float64 // BM25 relevance scores
+	KBIDs           []string     // KB entry IDs
+	RelevanceScores []float64    // BM25 relevance scores
 	Entries         []kb.KBEntry // Full KB entries
-	TotalChars      int       // Total character count of all entries
-	Truncated       bool      // Whether entries were truncated
+	TotalChars      int          // Total character count of all entries
+	Truncated       bool         // Whether entries were truncated
 }
 
 // RetrieverConfig configures the retrieval engine
@@ -51,12 +51,12 @@ type Retriever struct {
 
 // retrievalCache implements an in-memory LRU cache for retrieval results
 type retrievalCache struct {
-	mu       sync.RWMutex
-	entries  map[string]*cacheEntry
-	lruList  []string // Simple LRU tracking (most recent at end)
-	maxSize  int
-	hits     int64
-	misses   int64
+	mu      sync.RWMutex
+	entries map[string]*cacheEntry
+	lruList []string // Simple LRU tracking (most recent at end)
+	maxSize int
+	hits    int64
+	misses  int64
 }
 
 type cacheEntry struct {

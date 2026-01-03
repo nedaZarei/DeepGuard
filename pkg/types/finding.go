@@ -45,12 +45,12 @@ type Finding struct {
 type VulnerabilityType string
 
 const (
-	VulnTypeSQLInjection          VulnerabilityType = "sql_injection"
-	VulnTypeXSS                   VulnerabilityType = "xss"
-	VulnTypePathTraversal         VulnerabilityType = "path_traversal"
+	VulnTypeSQLInjection            VulnerabilityType = "sql_injection"
+	VulnTypeXSS                     VulnerabilityType = "xss"
+	VulnTypePathTraversal           VulnerabilityType = "path_traversal"
 	VulnTypeInsecureDeserialization VulnerabilityType = "insecure_deserialization"
-	VulnTypeAuthIssue             VulnerabilityType = "auth_issue"
-	VulnTypeCryptoIssue           VulnerabilityType = "crypto_issue"
+	VulnTypeAuthIssue               VulnerabilityType = "auth_issue"
+	VulnTypeCryptoIssue             VulnerabilityType = "crypto_issue"
 )
 
 // SeverityLevel represents allowed severity levels

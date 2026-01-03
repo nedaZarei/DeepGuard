@@ -7,11 +7,11 @@ import (
 
 // SuppressionInfo represents a suppression comment found in code
 type SuppressionInfo struct {
-	Line          int    `json:"line"`           // Line number where suppression applies
-	Type          string `json:"type"`           // "all" or specific type like "sql_injection"
-	Justification string `json:"justification"`  // Optional text after "-"
-	AppliesTo     string `json:"applies_to"`     // "same" or "next"
-	SourceLine    int    `json:"source_line"`    // Line where the comment appears
+	Line          int    `json:"line"`          // Line number where suppression applies
+	Type          string `json:"type"`          // "all" or specific type like "sql_injection"
+	Justification string `json:"justification"` // Optional text after "-"
+	AppliesTo     string `json:"applies_to"`    // "same" or "next"
+	SourceLine    int    `json:"source_line"`   // Line where the comment appears
 }
 
 // Suppression comment patterns

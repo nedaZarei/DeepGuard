@@ -12,10 +12,10 @@ import (
 
 const (
 	// retry configuration
-	maxRetries      = 5
-	baseDelay       = 2 * time.Second
-	maxDelay        = 64 * time.Second
-	requestTimeout  = 60 * time.Second
+	maxRetries     = 5
+	baseDelay      = 2 * time.Second
+	maxDelay       = 64 * time.Second
+	requestTimeout = 60 * time.Second
 )
 
 // retryableError represents an error that can be retried

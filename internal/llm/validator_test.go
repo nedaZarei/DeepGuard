@@ -25,9 +25,9 @@ func TestValidateFinding_Valid(t *testing.T) {
 
 func TestValidateFinding_InvalidType(t *testing.T) {
 	tests := []struct {
-		name     string
-		typeVal  string
-		wantErr  bool
+		name    string
+		typeVal string
+		wantErr bool
 	}{
 		{"empty type", "", true},
 		{"invalid type", "buffer_overflow", true},
