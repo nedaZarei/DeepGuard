@@ -9,6 +9,7 @@ import (
 	"github.com/Neda-Zarei/deep-guard/internal/budget"
 	"github.com/Neda-Zarei/deep-guard/internal/chunker"
 	"github.com/Neda-Zarei/deep-guard/internal/llm"
+	"github.com/Neda-Zarei/deep-guard/internal/rag"
 	"github.com/Neda-Zarei/deep-guard/pkg/types"
 	"github.com/rs/zerolog/log"
 )
@@ -34,6 +35,12 @@ type Orchestrator struct {
 	fallbackManager *budget.FallbackManager
 	errorTracker    *ErrorTracker
 	progressTracker *ProgressTracker
+	retriever       *rag.Retriever
+}
+
+// SetRetriever attaches a RAG retriever to the orchestrator for KB context injection.
+func (o *Orchestrator) SetRetriever(r *rag.Retriever) {
+	o.retriever = r
 }
 
 // NewOrchestrator creates a new analysis orchestrator
@@ -110,7 +117,7 @@ func (o *Orchestrator) AnalyzeRepository(
 				workerID,
 				o.client,
 				o.renderer,
-				nil, // KB manager not yet integrated
+				o.retriever,
 				workChan,
 				resultsChan,
 				o.budgetTracker,

@@ -1,14 +1,25 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
+	"github.com/Neda-Zarei/deep-guard/internal/chunker"
 	"github.com/Neda-Zarei/deep-guard/internal/config"
 	"github.com/Neda-Zarei/deep-guard/internal/discovery"
+	"github.com/Neda-Zarei/deep-guard/internal/kb"
+	"github.com/Neda-Zarei/deep-guard/internal/llm"
 	"github.com/Neda-Zarei/deep-guard/internal/logger"
+	"github.com/Neda-Zarei/deep-guard/internal/orchestrator"
+	"github.com/Neda-Zarei/deep-guard/internal/parser"
+	"github.com/Neda-Zarei/deep-guard/internal/rag"
+	"github.com/Neda-Zarei/deep-guard/internal/report"
+	"github.com/Neda-Zarei/deep-guard/internal/reporting"
+	"github.com/Neda-Zarei/deep-guard/pkg/types"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -228,18 +239,201 @@ func runScan(cmd *cobra.Command, args []string) error {
 		fmt.Printf("\n")
 	}
 
-	// TODO: Wire to parsing and analysis pipeline
-	// This will be implemented in subsequent tasks
-	log.Info().
-		Str("component", "scanner").
-		Msg("Analysis pipeline not yet implemented - file discovery and framework detection complete")
+	// Initialize KB index
+	indexManager := kb.NewIndexManager("", "")
+	if err := indexManager.Initialize(); err != nil {
+		return fmt.Errorf("failed to initialize KB index: %w", err)
+	}
+	defer indexManager.Close()
+
+	// Initialize RAG retriever with caching
+	retriever := rag.NewRetriever(indexManager, rag.RetrieverConfig{
+		EnableCache: true,
+	})
+
+	// Initialize LLM client
+	llmClient := llm.NewClient(cfg.OpenAIAPIKey, cfg.OpenAIModel)
+
+	// Initialize orchestrator
+	orchConfig := orchestrator.DefaultConfig()
+	orchConfig.BudgetCap = cfg.BudgetCap
+	orc, err := orchestrator.NewOrchestrator(orchConfig, llmClient, cfg.OpenAIModel)
+	if err != nil {
+		return fmt.Errorf("failed to create orchestrator: %w", err)
+	}
+	orc.SetRetriever(retriever)
+
+	// Initialize parser and chunker
+	tsParser, err := parser.NewTreeSitterParser()
+	if err != nil {
+		return fmt.Errorf("failed to create parser: %w", err)
+	}
+	defer tsParser.Close()
+	astChunker := chunker.NewASTChunker(0)
+
+	// Parse and chunk all discovered files
+	fmt.Printf("Parsing files...\n")
+	var allChunks []chunker.CodeChunk
+	chunksByFuncName := make(map[string]chunker.CodeChunk)
+	parseErrors := 0
+
+	for _, file := range result.Files {
+		absPath := filepath.Join(cfg.ScanPath, file.Path)
+		content, err := os.ReadFile(absPath)
+		if err != nil {
+			log.Warn().Err(err).Str("file", file.Path).Msg("failed to read file, skipping")
+			parseErrors++
+			continue
+		}
+
+		tree, err := tsParser.Parse(content, file.Language)
+		if err != nil {
+			log.Warn().Err(err).Str("file", file.Path).Msg("failed to parse file, skipping")
+			parseErrors++
+			continue
+		}
+
+		frameworks := projectCtx.Frameworks[file.Language]
+		fileChunks, err := astChunker.ChunkFile(tree, content, absPath, file.Language, frameworks)
+		tree.Close()
+		if err != nil {
+			log.Warn().Err(err).Str("file", file.Path).Msg("failed to chunk file, skipping")
+			parseErrors++
+			continue
+		}
+
+		for _, chunk := range fileChunks {
+			allChunks = append(allChunks, chunk)
+			chunksByFuncName[chunk.FunctionName] = chunk
+		}
+	}
+
+	fmt.Printf("Extracted %d chunks from %d files", len(allChunks), result.TotalFiles-parseErrors)
+	if parseErrors > 0 {
+		fmt.Printf(" (%d files skipped due to parse errors)", parseErrors)
+	}
+	fmt.Printf("\n\n")
+
+	if len(allChunks) == 0 {
+		fmt.Println("No code chunks to analyze. Exiting.")
+		return nil
+	}
+
+	// Run LLM analysis across all vulnerability types
+	fmt.Printf("Running vulnerability analysis (this may take a while)...\n")
+	startTime := time.Now()
+	ctx := context.Background()
+
+	typeFindings, analysisErr := orc.AnalyzeRepositoryAllTypes(ctx, allChunks)
+	if analysisErr != nil && len(typeFindings) == 0 {
+		return fmt.Errorf("analysis failed: %w", analysisErr)
+	}
+	if analysisErr != nil {
+		log.Warn().Err(analysisErr).Msg("analysis completed with errors, partial results available")
+	}
+
+	// Convert types.Finding → report.Finding
+	reportFindings := convertFindings(typeFindings)
+
+	// Apply confidence threshold filtering
+	filteredFindings, filterStats := reporting.FilterFindingsByConfidence(
+		reportFindings, cfg.ConfidenceThreshold, log.Logger,
+	)
+
+	// Apply inline suppression filtering
+	finalFindings, suppressStats := reporting.FilterSuppressedFindings(
+		filteredFindings, chunksByFuncName, log.Logger,
+	)
+
+	// Flatten detected frameworks for metadata
+	var allFrameworks []string
+	seen := make(map[string]bool)
+	for _, fws := range projectCtx.Frameworks {
+		for _, fw := range fws {
+			if !seen[fw] {
+				allFrameworks = append(allFrameworks, fw)
+				seen[fw] = true
+			}
+		}
+	}
+
+	// Get total cost from tracker
+	_, _, _, totalCost, _ := llmClient.GetTracker().GetTotals()
+
+	scanReport := report.ScanReport{
+		ScanMetadata: report.ScanMetadata{
+			Timestamp:           time.Now().UTC().Format(time.RFC3339),
+			TargetPath:          cfg.ScanPath,
+			Languages:           cfg.Languages,
+			Frameworks:          allFrameworks,
+			ModelUsed:           cfg.OpenAIModel,
+			TotalCost:           totalCost,
+			ScanDurationSeconds: int(time.Since(startTime).Seconds()),
+			Filtering: &report.FilteringStats{
+				Enabled:          filterStats.Enabled,
+				ThresholdUsed:    filterStats.ThresholdUsed,
+				TotalFindings:    filterStats.TotalFindings,
+				FilteredFindings: filterStats.FilteredFindings,
+				KeptFindings:     filterStats.KeptFindings,
+			},
+			Suppression: &report.SuppressionStats{
+				TotalFindings:      suppressStats.TotalFindings,
+				SuppressedFindings: suppressStats.SuppressedFindings,
+				KeptFindings:       suppressStats.KeptFindings,
+			},
+		},
+		Findings: finalFindings,
+		Summary:  report.GenerateSummary(finalFindings),
+	}
+
+	outputPath, err := report.WriteReport(scanReport, cfg.OutputDir)
+	if err != nil {
+		return fmt.Errorf("failed to write report: %w", err)
+	}
+
+	duration := time.Since(startTime)
+	fmt.Printf("\nScan complete!\n")
+	fmt.Printf("  Findings:  %d (critical: %d, high: %d, medium: %d, low: %d)\n",
+		len(finalFindings),
+		scanReport.Summary.BySeverity["critical"],
+		scanReport.Summary.BySeverity["high"],
+		scanReport.Summary.BySeverity["medium"],
+		scanReport.Summary.BySeverity["low"],
+	)
+	fmt.Printf("  Duration:  %s\n", duration.Round(time.Second))
+	fmt.Printf("  Cost:      $%.4f\n", totalCost)
+	fmt.Printf("  Report:    %s\n", outputPath)
 
 	log.Info().
 		Str("component", "scanner").
 		Str("operation", "scan_complete").
+		Int("findings", len(finalFindings)).
+		Float64("cost", totalCost).
+		Str("output", outputPath).
 		Msg("Scan completed successfully")
 
-	fmt.Printf("Scan completed! Results will be written to: %s\n", cfg.OutputDir)
-
 	return nil
+}
+
+// convertFindings maps types.Finding (LLM output) to report.Finding (report schema).
+func convertFindings(typeFindings []types.Finding) []report.Finding {
+	findings := make([]report.Finding, 0, len(typeFindings))
+	for i, f := range typeFindings {
+		id := fmt.Sprintf("%d-%s-%d", i, f.Type, f.AbsoluteLine)
+		if len(f.ChunkID) >= 8 {
+			id = fmt.Sprintf("%s-%s-%d", f.ChunkID[:8], f.Type, f.AbsoluteLine)
+		}
+		findings = append(findings, report.Finding{
+			ID:             id,
+			Type:           f.Type,
+			Severity:       f.Severity,
+			Confidence:     f.Confidence,
+			File:           f.FilePath,
+			Line:           f.AbsoluteLine,
+			FunctionName:   f.FunctionName,
+			Message:        f.Message,
+			Recommendation: f.Recommendation,
+		})
+	}
+	return findings
 }

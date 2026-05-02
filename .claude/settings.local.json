@@ -109,7 +109,10 @@
       "Bash(./deepguard version:*)",
       "Bash(python3:*)",
       "Bash(CGO_ENABLED=1 go test:*)",
-      "Bash(CGO_ENABLED=1 go run:*)"
+      "Bash(CGO_ENABLED=1 go run:*)",
+      "Bash(./scripts/smoke-test.sh:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: add smoke tests for vulnerability detection\n\nAdded comprehensive smoke test suite to validate DeepGuard''s ability to detect vulnerabilities across multiple languages without requiring API calls. Tests verify the presence of vulnerable code patterns in sample files.\n\n- Created test samples with known vulnerabilities for JS/TS, Python, and Java\n- Implemented shell-based test runner with pattern matching validation\n- Added smoke test step to CI workflow between KB validation and unit tests\n- All 21 smoke tests passing (directory structure, file counts, vulnerability patterns)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []

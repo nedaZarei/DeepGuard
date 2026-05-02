@@ -7,6 +7,7 @@ import (
 	"github.com/Neda-Zarei/deep-guard/internal/budget"
 	"github.com/Neda-Zarei/deep-guard/internal/kb"
 	"github.com/Neda-Zarei/deep-guard/internal/llm"
+	"github.com/Neda-Zarei/deep-guard/internal/rag"
 	"github.com/rs/zerolog/log"
 )
 
@@ -16,7 +17,7 @@ func analyzeWorker(
 	workerID int,
 	client *llm.Client,
 	renderer *llm.PromptRenderer,
-	kbManager interface{}, // KB manager for retrieving context
+	retriever *rag.Retriever,
 	workChan <-chan WorkItem,
 	resultsChan chan<- WorkResult,
 	budgetTracker *budget.BudgetTracker,
@@ -50,7 +51,7 @@ func analyzeWorker(
 			}
 
 			// Process the work item
-			result := processChunk(ctx, workerID, client, renderer, work, budgetTracker, fallbackManager)
+			result := processChunk(ctx, workerID, client, renderer, retriever, work, budgetTracker, fallbackManager)
 
 			// Update trackers
 			if result.Success {
@@ -90,6 +91,7 @@ func processChunk(
 	workerID int,
 	client *llm.Client,
 	renderer *llm.PromptRenderer,
+	retriever *rag.Retriever,
 	work WorkItem,
 	budgetTracker *budget.BudgetTracker,
 	fallbackManager *budget.FallbackManager,
@@ -130,9 +132,20 @@ func processChunk(
 		}
 	}
 
-	// For now, we'll use empty KB context until KB manager is integrated
-	// TODO: Retrieve relevant KB entries based on work.VulnType
+	// Retrieve relevant KB entries for this chunk via BM25 RAG
 	kbContext := []kb.KBEntry{}
+	if retriever != nil {
+		if ragResult, err := retriever.Retrieve(work.Chunk); err == nil {
+			kbContext = ragResult.Entries
+		} else {
+			log.Warn().
+				Str("component", "orchestrator").
+				Int("worker_id", workerID).
+				Str("chunk_id", work.Chunk.ID).
+				Err(err).
+				Msg("KB retrieval failed, continuing without context")
+		}
+	}
 
 	// Render prompt for this chunk
 	vulnType := llm.VulnerabilityType(work.VulnType)
