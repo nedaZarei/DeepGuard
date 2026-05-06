@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"sync"
 
 	"github.com/Neda-Zarei/deep-guard/internal/budget"
@@ -238,6 +239,8 @@ func (o *Orchestrator) AnalyzeRepositoryAllTypes(
 		string(llm.VulnTypeInsecureDeserialization),
 		string(llm.VulnTypeAuthIssue),
 		string(llm.VulnTypeCryptoIssue),
+		string(llm.VulnTypeCommandInjection),
+		string(llm.VulnTypeSSRF),
 	}
 
 	allFindings := make([]types.Finding, 0)
@@ -271,5 +274,55 @@ func (o *Orchestrator) AnalyzeRepositoryAllTypes(
 		}
 	}
 
-	return allFindings, nil
+	deduplicated := deduplicateFindings(allFindings)
+	log.Info().
+		Str("component", "orchestrator").
+		Int("before", len(allFindings)).
+		Int("after", len(deduplicated)).
+		Msg("deduplication complete")
+
+	return deduplicated, nil
+}
+
+// deduplicateFindings removes duplicate findings of the same vulnerability type in the same
+// file at nearly the same line. Within each (file, type) group, findings whose absolute line
+// numbers are within 5 lines of the previous kept finding are merged — keeping the one with
+// the highest confidence score.
+func deduplicateFindings(findings []types.Finding) []types.Finding {
+	if len(findings) == 0 {
+		return findings
+	}
+
+	type groupKey struct {
+		file     string
+		vulnType string
+	}
+
+	groups := make(map[groupKey][]types.Finding)
+	for _, f := range findings {
+		k := groupKey{file: f.FilePath, vulnType: f.Type}
+		groups[k] = append(groups[k], f)
+	}
+
+	result := make([]types.Finding, 0, len(findings))
+	for _, group := range groups {
+		sort.Slice(group, func(i, j int) bool {
+			return group[i].AbsoluteLine < group[j].AbsoluteLine
+		})
+
+		merged := group[:1]
+		for _, f := range group[1:] {
+			last := &merged[len(merged)-1]
+			if f.AbsoluteLine-last.AbsoluteLine <= 5 {
+				if f.Confidence > last.Confidence {
+					*last = f
+				}
+			} else {
+				merged = append(merged, f)
+			}
+		}
+		result = append(result, merged...)
+	}
+
+	return result
 }

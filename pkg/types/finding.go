@@ -51,6 +51,8 @@ const (
 	VulnTypeInsecureDeserialization VulnerabilityType = "insecure_deserialization"
 	VulnTypeAuthIssue               VulnerabilityType = "auth_issue"
 	VulnTypeCryptoIssue             VulnerabilityType = "crypto_issue"
+	VulnTypeCommandInjection        VulnerabilityType = "command_injection"
+	VulnTypeSSRF                    VulnerabilityType = "ssrf"
 )
 
 // SeverityLevel represents allowed severity levels
@@ -67,7 +69,8 @@ const (
 func IsValidVulnerabilityType(t string) bool {
 	switch VulnerabilityType(t) {
 	case VulnTypeSQLInjection, VulnTypeXSS, VulnTypePathTraversal,
-		VulnTypeInsecureDeserialization, VulnTypeAuthIssue, VulnTypeCryptoIssue:
+		VulnTypeInsecureDeserialization, VulnTypeAuthIssue, VulnTypeCryptoIssue,
+		VulnTypeCommandInjection, VulnTypeSSRF:
 		return true
 	default:
 		return false

@@ -68,6 +68,8 @@ func NewPromptRenderer() (*PromptRenderer, error) {
 		VulnTypeInsecureDeserialization,
 		VulnTypeAuthIssue,
 		VulnTypeCryptoIssue,
+		VulnTypeCommandInjection,
+		VulnTypeSSRF,
 	}
 
 	for _, vulnType := range vulnTypes {
@@ -147,6 +149,10 @@ func getTemplateName(vulnType VulnerabilityType) string {
 		return "auth"
 	case VulnTypeCryptoIssue:
 		return "crypto"
+	case VulnTypeCommandInjection:
+		return "cmdi"
+	case VulnTypeSSRF:
+		return "ssrf"
 	default:
 		return "unknown"
 	}

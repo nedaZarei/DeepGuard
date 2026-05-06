@@ -18,6 +18,8 @@ const (
 	VulnTypeInsecureDeserialization VulnerabilityType = "insecure_deserialization"
 	VulnTypeAuthIssue               VulnerabilityType = "auth_issue"
 	VulnTypeCryptoIssue             VulnerabilityType = "crypto_issue"
+	VulnTypeCommandInjection        VulnerabilityType = "command_injection"
+	VulnTypeSSRF                    VulnerabilityType = "ssrf"
 )
 
 // frameworkHintsMap contains framework-specific guidance for each vulnerability type
@@ -31,6 +33,8 @@ var frameworkHintsMap = map[string]FrameworkHints{
 			VulnTypeInsecureDeserialization: "Check JSON.parse() with untrusted input, especially with reviver functions. Look for eval() or Function() constructor usage.",
 			VulnTypeAuthIssue:               "Check JWT verification (jwt.verify without secret validation), session middleware configuration, missing authentication middleware on protected routes.",
 			VulnTypeCryptoIssue:             "Check crypto.createHash() for weak algorithms (MD5, SHA1), hardcoded secrets in crypto operations, insecure random number generation.",
+			VulnTypeCommandInjection:        "Check child_process.exec(), execSync(), spawn() with req.query/req.params/req.body. Unsafe: exec('ping ' + req.query.host). Safe: execFile('ping', ['-c','1', validatedHost]).",
+			VulnTypeSSRF:                    "Check fetch(), axios.get(), http.request(), got() called with URLs from req.query, req.params, or req.body. Validate URL host against an allowlist before making the request.",
 		},
 	},
 	"prisma": {
@@ -64,6 +68,8 @@ var frameworkHintsMap = map[string]FrameworkHints{
 			VulnTypeInsecureDeserialization: "Check pickle.loads(), yaml.load() without SafeLoader, eval() usage.",
 			VulnTypeAuthIssue:               "Check @login_required decorator usage, permission_required, missing authentication on views, improper session configuration.",
 			VulnTypeCryptoIssue:             "Check make_password() usage, SECRET_KEY configuration, use of MD5/SHA1 for passwords.",
+			VulnTypeCommandInjection:        "Check os.system(), os.popen(), subprocess.call/run/Popen() with request.GET/POST values. Unsafe: subprocess.call(cmd, shell=True) with user input. Safe: subprocess.run(['ping', '-c', '1', validated_host], shell=False).",
+			VulnTypeSSRF:                    "Check requests.get/post(), urllib.request.urlopen() called with request.GET/POST values as the URL. Validate URL scheme and host against an allowlist before fetching.",
 		},
 	},
 	"flask": {
@@ -75,6 +81,8 @@ var frameworkHintsMap = map[string]FrameworkHints{
 			VulnTypeInsecureDeserialization: "Check pickle.loads(), yaml.load(), eval() with flask.request data.",
 			VulnTypeAuthIssue:               "Check @login_required usage, session configuration (SESSION_COOKIE_SECURE, SESSION_COOKIE_HTTPONLY), JWT verification.",
 			VulnTypeCryptoIssue:             "Check SECRET_KEY configuration, werkzeug.security functions, use of MD5/SHA1.",
+			VulnTypeCommandInjection:        "Check os.system(), os.popen(), subprocess.call/run() with request.args/form values. Unsafe: os.popen('curl ' + request.args.get('url')). Safe: subprocess.run(['curl', validated_url], shell=False).",
+			VulnTypeSSRF:                    "Check requests.get/post(), urllib.request.urlopen(), httpx.get() called with request.args/form values as the URL. Validate URL against allowlist of permitted hosts.",
 		},
 	},
 	"sqlalchemy": {
@@ -97,6 +105,8 @@ var frameworkHintsMap = map[string]FrameworkHints{
 			VulnTypeInsecureDeserialization: "Check ObjectInputStream usage, @RequestBody with untrusted JSON, XStream configuration.",
 			VulnTypeAuthIssue:               "Check @PreAuthorize, @Secured annotations, SecurityContext usage, JWT validation in filters.",
 			VulnTypeCryptoIssue:             "Check PasswordEncoder configuration (ensure BCryptPasswordEncoder), MessageDigest for weak algorithms, hardcoded keys.",
+			VulnTypeCommandInjection:        "Check Runtime.getRuntime().exec() and ProcessBuilder with @RequestParam or @PathVariable values. Safe: new ProcessBuilder('ping', '-c', '1', validatedHost).start(). Unsafe: Runtime.getRuntime().exec('ping ' + host).",
+			VulnTypeSSRF:                    "Check RestTemplate.getForObject/postForObject(), WebClient.get().uri(), HttpClient with URLs derived from @RequestParam or @RequestBody. Validate URL against allowlist before fetching.",
 		},
 	},
 	"jpa": {
@@ -108,6 +118,8 @@ var frameworkHintsMap = map[string]FrameworkHints{
 			VulnTypeInsecureDeserialization: "Check @Lob fields with untrusted binary data.",
 			VulnTypeAuthIssue:               "Check @PreAuthorize on repository methods, missing user filtering in queries.",
 			VulnTypeCryptoIssue:             "Check password hashing in entity lifecycle hooks. Ensure BCrypt usage.",
+			VulnTypeCommandInjection:        "Not commonly applicable to JPA. Check any service methods that invoke OS commands alongside database operations.",
+			VulnTypeSSRF:                    "JPA handles database operations. Check any service methods that make HTTP calls with data loaded from the database or user input.",
 		},
 	},
 }
