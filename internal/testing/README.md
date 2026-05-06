@@ -52,7 +52,7 @@ Golden files are JSON documents in this format:
     "target_path": "test-samples/js-ts-sqli/",
     "vulnerability_type": "sql_injection",
     "confidence_threshold": 0.5,
-    "total_expected_findings": 42
+    "total_expected_findings": 45
   },
   "expected_findings": [
     {
@@ -104,9 +104,9 @@ Test passes if:
 
 ```
 === Golden Test Comparison Results ===
-Expected findings: 42
-Actual findings:   45
-Matched:           42
+Expected findings: 45
+Actual findings:   57
+Matched:           45
 Missing:           0
 Extra (high/crit): 3
 Confidence issues: 0

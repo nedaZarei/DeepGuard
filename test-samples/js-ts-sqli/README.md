@@ -75,17 +75,17 @@ npm run typecheck
 
 ## Expected Detection Results
 
-DeepGuard should detect **42 SQL injection vulnerabilities** across these samples:
+DeepGuard should detect **45 SQL injection vulnerabilities** across these samples:
 
-- **Express vulnerabilities**: 8 findings (4 in express-routes.js, 4 in express-complex.js)
-- **Prisma vulnerabilities**: 11 findings (6 in prisma-service.js, 5 in prisma-unsafe.js)
+- **Express vulnerabilities**: 10 findings (4 in express-routes.js, 6 in express-complex.js)
+- **Prisma vulnerabilities**: 12 findings (7 in prisma-service.js, 5 in prisma-unsafe.js)
 - **Sequelize vulnerabilities**: 11 findings (5 in sequelize-models.js, 6 in sequelize-dynamic.js)
 - **TypeScript vulnerabilities**: 12 findings (4 in typescript-express.ts, 8 in typescript-prisma.ts)
 
 ### Severity Breakdown
 
-- **Critical**: 36 vulnerabilities
-- **High**: 6 vulnerabilities
+- **Critical**: 34 vulnerabilities
+- **High**: 11 vulnerabilities
 
 ## Vulnerability Patterns Covered
 

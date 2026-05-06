@@ -148,38 +148,29 @@ func (c *ASTChunker) extractFunctionNodes(rootNode *sitter.Node, language string
 		return nodes
 	}
 
-	// Traverse the AST using cursor
-	cursor := sitter.NewTreeCursor(rootNode)
-	defer cursor.Close()
-
-	c.traverseForFunctions(cursor, functionTypes, &nodes)
-
+	c.traverseForFunctions(rootNode, functionTypes, &nodes)
 	return nodes
 }
 
-// traverseForFunctions recursively traverses the AST to find function nodes
-func (c *ASTChunker) traverseForFunctions(cursor *sitter.TreeCursor, functionTypes []string, nodes *[]*sitter.Node) {
-	node := cursor.CurrentNode()
+// traverseForFunctions recursively walks the AST by iterating node.Child(i) directly,
+// which avoids the shared-cursor state bug where early-returning after adding a function
+// node would silently drop all its siblings at the same level.
+func (c *ASTChunker) traverseForFunctions(node *sitter.Node, functionTypes []string, nodes *[]*sitter.Node) {
+	if node == nil {
+		return
+	}
 
-	// Check if current node is a function type
 	nodeType := node.Type()
 	for _, ft := range functionTypes {
 		if nodeType == ft {
 			*nodes = append(*nodes, node)
-			// Don't traverse children of function nodes (avoid nested functions for now)
+			// Don't recurse into function bodies to avoid extracting nested closures
 			return
 		}
 	}
 
-	// Traverse children
-	if cursor.GoToFirstChild() {
-		c.traverseForFunctions(cursor, functionTypes, nodes)
-		cursor.GoToParent()
-	}
-
-	// Traverse siblings
-	if cursor.GoToNextSibling() {
-		c.traverseForFunctions(cursor, functionTypes, nodes)
+	for i := 0; i < int(node.ChildCount()); i++ {
+		c.traverseForFunctions(node.Child(i), functionTypes, nodes)
 	}
 }
 
@@ -201,8 +192,8 @@ func (c *ASTChunker) extractFunctionName(node *sitter.Node, language string, con
 func (c *ASTChunker) extractJSFunctionName(node *sitter.Node, content []byte) string {
 	nodeType := node.Type()
 
-	// Function declaration: look for identifier child
-	if nodeType == "function_declaration" || nodeType == "function_expression" {
+	// Named function declarations and named function expressions: identifier is a direct child
+	if nodeType == "function_declaration" || nodeType == "function_expression" || nodeType == "function" {
 		for i := 0; i < int(node.ChildCount()); i++ {
 			child := node.Child(i)
 			if child.Type() == "identifier" {
@@ -221,8 +212,9 @@ func (c *ASTChunker) extractJSFunctionName(node *sitter.Node, content []byte) st
 		}
 	}
 
-	// Arrow function: try to get name from parent assignment
-	if nodeType == "arrow_function" {
+	// Arrow functions and anonymous function expressions assigned to a variable:
+	// `const fn = () => {}` or `const fn = function() {}`
+	if nodeType == "arrow_function" || nodeType == "function_expression" || nodeType == "function" {
 		parent := node.Parent()
 		if parent != nil && parent.Type() == "variable_declarator" {
 			for i := 0; i < int(parent.ChildCount()); i++ {
@@ -276,19 +268,19 @@ func (c *ASTChunker) splitLargeChunk(chunk CodeChunk) []CodeChunk {
 	var currentLines []string
 	currentTokens := 0
 	partNum := 1
+	linesEmitted := 0 // tracks how many lines have been flushed into completed chunks
 
 	for _, line := range lines {
 		lineTokens := estimateTokens(line)
 
 		if currentTokens+lineTokens > c.maxTokens && len(currentLines) > 0 {
-			// Create chunk from accumulated lines
+			// Flush accumulated lines as a new part chunk
 			partSource := strings.Join(currentLines, "\n")
 			normalized := normalizeSource(partSource, chunk.Language)
-			hash := sha256.Sum256([]byte(normalized))
-
-			// Filter suppressions for this part's line range
-			partStartLine := chunk.StartLine
-			partEndLine := chunk.StartLine + len(currentLines) - 1
+			partStartLine := chunk.StartLine + linesEmitted
+			partEndLine := partStartLine + len(currentLines) - 1
+			// Include file path and start line so identical content at different line positions gets unique IDs
+			hash := sha256.Sum256([]byte(fmt.Sprintf("%s:%d:%s", chunk.FilePath, partStartLine, normalized)))
 			var partSuppressions []suppression.SuppressionInfo
 			for _, sup := range chunk.SuppressedLines {
 				if sup.Line >= partStartLine && sup.Line <= partEndLine {
@@ -311,7 +303,7 @@ func (c *ASTChunker) splitLargeChunk(chunk CodeChunk) []CodeChunk {
 			}
 			chunks = append(chunks, partChunk)
 
-			// Reset for next part
+			linesEmitted += len(currentLines)
 			currentLines = []string{line}
 			currentTokens = lineTokens
 			partNum++
@@ -321,15 +313,13 @@ func (c *ASTChunker) splitLargeChunk(chunk CodeChunk) []CodeChunk {
 		}
 	}
 
-	// Add remaining lines
+	// Flush remaining lines
 	if len(currentLines) > 0 {
 		partSource := strings.Join(currentLines, "\n")
 		normalized := normalizeSource(partSource, chunk.Language)
-		hash := sha256.Sum256([]byte(normalized))
-
-		// Filter suppressions for final part's line range
-		partStartLine := chunk.StartLine + len(lines) - len(currentLines)
+		partStartLine := chunk.StartLine + linesEmitted
 		partEndLine := chunk.EndLine
+		hash := sha256.Sum256([]byte(fmt.Sprintf("%s:%d:%s", chunk.FilePath, partStartLine, normalized)))
 		var partSuppressions []suppression.SuppressionInfo
 		for _, sup := range chunk.SuppressedLines {
 			if sup.Line >= partStartLine && sup.Line <= partEndLine {
