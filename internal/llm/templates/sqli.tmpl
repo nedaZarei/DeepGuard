@@ -99,7 +99,8 @@ Example Response:
 **Output Requirements:**
 - Return ONLY valid JSON matching the schema above
 - Include a finding for each distinct vulnerability instance
-- Use line numbers from the code snippet (relative to the function start)
+- **Line number rule**: report the line where user-controlled input is first concatenated or interpolated into the SQL string (the *construction* line), NOT the line where the query is executed (e.g. `db.query(...)`, `cursor.execute(...)`, `prisma.$queryRaw(...)`). For example, if `const q = "SELECT * FROM t WHERE id=" + userId` is on line 3 and `db.query(q)` is on line 7, report line 3. If a template literal spans multiple lines, report the opening backtick line.
+- If a function contains multiple distinct vulnerable assignments or concatenations, report each one as a separate finding with its own line number.
 - Keep messages concise (max 100 characters)
 - Provide actionable recommendations specific to the detected framework
 

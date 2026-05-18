@@ -31,7 +31,7 @@ type Config struct {
 	OpenAIAPIKey string `mapstructure:"openai_api_key"`
 
 	// OpenAIModel is the OpenAI model to use for analysis
-	// Valid values: "gpt-4o", "gpt-4o-mini"
+	// Model name passed to the API endpoint (any model supported by the provider)
 	OpenAIModel string `mapstructure:"openai_model"`
 
 	// BudgetCap is the maximum cost in USD for a single scan
@@ -174,9 +174,9 @@ func (c *Config) Validate() error {
 		return fmt.Errorf("openai_api_key is required (set via DEEPGUARD_OPENAI_API_KEY environment variable or config file)")
 	}
 
-	// Validate openai_model
-	if c.OpenAIModel != "gpt-4o" && c.OpenAIModel != "gpt-4o-mini" {
-		return fmt.Errorf("invalid openai_model: %s (must be gpt-4o or gpt-4o-mini)", c.OpenAIModel)
+	// Validate openai_model: any non-empty string is accepted (GapGPT proxy supports many models)
+	if c.OpenAIModel == "" {
+		return fmt.Errorf("openai_model must not be empty")
 	}
 
 	// Validate budget_cap

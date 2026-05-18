@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DeepGuard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0d1117;
+      --surface:    #161b22;
+      --surface-2:  #1c2128;
+      --border:     #30363d;
+      --border-sub: #21262d;
+      --text:       #e6edf3;
+      --text-sec:   #8b949e;
+      --text-mut:   #6e7681;
+
+      --crit:       #f85149;
+      --crit-bg:    rgba(248,81,73,.13);
+      --high:       #d29922;
+      --high-bg:    rgba(210,153,34,.13);
+      --med:        #58a6ff;
+      --med-bg:     rgba(88,166,255,.13);
+      --low:        #3fb950;
+      --low-bg:     rgba(63,185,80,.13);
+
+      --accent:     #539bf5;
+      --r:          6px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ── Header ─────────────────────────────────── */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      height: 52px;
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -.2px;
+      color: var(--text);
+    }
+    .logo svg { color: var(--accent); flex-shrink: 0; }
+
+    .spacer { flex: 1; }
+
+    .report-sel {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: var(--r);
+      padding: 5px 8px;
+      font-size: 13px;
+      max-width: 300px;
+      cursor: pointer;
+    }
+    .report-sel:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-sec);
+      border-radius: var(--r);
+      padding: 5px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color .12s, border-color .12s;
+    }
+    .btn:hover { color: var(--text); border-color: var(--text-sec); }
+
+    /* ── Layout ──────────────────────────────────── */
+    .main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 20px 24px 80px;
+    }
+
+    /* ── Meta bar ────────────────────────────────── */
+    .meta-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 10px 16px;
+      margin-bottom: 14px;
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .meta-item {
+      padding: 4px 16px;
+      border-right: 1px solid var(--border-sub);
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .meta-item:first-child { padding-left: 0; }
+    .meta-item:last-child { border-right: none; }
+
+    .meta-k {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: var(--text-mut);
+      font-weight: 500;
+    }
+    .meta-v {
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 500;
+    }
+    .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+
+    /* ── Stats row ───────────────────────────────── */
+    .stats {
+      display: grid;
+      grid-template-columns: 2fr repeat(6, 1fr);
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px;
+    }
+
+    .stat-num {
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-lbl {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--text-mut);
+    }
+
+    .stat-total-inner { display: flex; align-items: center; gap: 20px; }
+
+    .sev-bars {
+      display: flex;
+      gap: 2px;
+      height: 4px;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    .sev-seg { height: 4px; }
+
+    .stat.c .stat-num { color: var(--crit); }
+    .stat.h .stat-num { color: var(--high); }
+    .stat.m .stat-num { color: var(--med); }
+    .stat.l .stat-num { color: var(--low); }
+
+    /* ── Viz row ─────────────────────────────────── */
+    .viz {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 18px 20px;
+    }
+
+    .card-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: var(--text-mut);
+      margin-bottom: 16px;
+    }
+
+    /* Donut */
+    .donut-wrap { display: flex; align-items: center; gap: 20px; }
+    .donut-legend { flex: 1; display: flex; flex-direction: column; gap: 9px; }
+    .leg { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+    .leg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .leg-lbl { flex: 1; color: var(--text-sec); }
+    .leg-n { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+    /* Type breakdown */
+    .type-list { display: flex; flex-direction: column; gap: 9px; }
+    .type-row {
+      display: grid;
+      grid-template-columns: 1fr 36px 120px;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+    .type-lbl { color: var(--text-sec); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .type-n { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+    .bar-track { height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 3px; background: var(--accent); transition: width .5s ease; }
+
+    /* ── Findings ────────────────────────────────── */
+    .findings-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .findings-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: var(--text-mut);
+    }
+
+    .pill {
+      font-size: 11px;
+      color: var(--text-mut);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1px 8px;
+    }
+
+    .filter-group { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+
+    .fbtn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-mut);
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all .12s;
+    }
+    .fbtn:hover { color: var(--text); border-color: var(--text-sec); background: var(--surface); }
+    .fbtn.on { color: var(--text); border-color: var(--text-sec); background: var(--surface-2); }
+    .fbtn.on.c { color: var(--crit); border-color: var(--crit); background: var(--crit-bg); }
+    .fbtn.on.h { color: var(--high); border-color: var(--high); background: var(--high-bg); }
+    .fbtn.on.m { color: var(--med);  border-color: var(--med);  background: var(--med-bg); }
+    .fbtn.on.l { color: var(--low);  border-color: var(--low);  background: var(--low-bg); }
+
+    .search-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: var(--r);
+      padding: 4px 10px;
+      font-size: 12px;
+      width: 200px;
+    }
+    .search-box::placeholder { color: var(--text-mut); }
+    .search-box:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    /* ── Finding card ────────────────────────────── */
+    .fi {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      margin-bottom: 6px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color .15s;
+    }
+    .fi:hover { border-color: var(--text-sec); }
+    .fi.open { border-color: var(--accent); }
+
+    .fi-top {
+      display: grid;
+      grid-template-columns: auto auto 1fr auto auto auto;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 14px;
+    }
+
+    .badge {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .badge.c { color: var(--crit); background: var(--crit-bg); }
+    .badge.h { color: var(--high); background: var(--high-bg); }
+    .badge.m { color: var(--med);  background: var(--med-bg); }
+    .badge.l { color: var(--low);  background: var(--low-bg); }
+
+    .fi-type { font-size: 12px; font-weight: 600; white-space: nowrap; }
+    .fi-msg  { font-size: 13px; color: var(--text-sec); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .fi-loc  {
+      font-size: 11px;
+      color: var(--text-mut);
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .conf-track { width: 44px; height: 4px; background: var(--surface-2); border-radius: 2px; overflow: hidden; flex-shrink: 0; }
+    .conf-fill  { height: 100%; border-radius: 2px; background: var(--accent); }
+
+    .chevron { color: var(--text-mut); font-size: 14px; transition: transform .2s; flex-shrink: 0; line-height: 1; }
+    .fi.open .chevron { transform: rotate(90deg); }
+
+    /* Finding body */
+    .fi-body {
+      display: none;
+      border-top: 1px solid var(--border-sub);
+      padding: 14px 16px;
+    }
+    .fi.open .fi-body { display: block; }
+
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px; }
+
+    .dlbl {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--text-mut);
+      margin-bottom: 3px;
+    }
+    .dval { font-size: 13px; color: var(--text); }
+    .dval.mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; }
+    .dfn  { font-size: 12px; color: var(--text-mut); margin-top: 2px; }
+
+    .code-block {
+      background: var(--bg);
+      border: 1px solid var(--border-sub);
+      border-radius: var(--r);
+      padding: 12px;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 12px;
+      line-height: 1.65;
+      color: #e06c75;
+      overflow-x: auto;
+      white-space: pre;
+      margin-bottom: 10px;
+    }
+
+    .rec-box {
+      background: rgba(88,166,255,.05);
+      border: 1px solid rgba(88,166,255,.2);
+      border-radius: var(--r);
+      padding: 10px 12px;
+      font-size: 13px;
+      color: var(--text-sec);
+      line-height: 1.65;
+    }
+    .rec-head {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--med);
+      margin-bottom: 4px;
+    }
+
+    /* ── Empty / loading states ──────────────────── */
+    .empty {
+      text-align: center;
+      padding: 80px 24px;
+      color: var(--text-mut);
+    }
+    .empty h3 { font-size: 16px; color: var(--text-sec); margin-bottom: 8px; }
+    .empty p  { font-size: 13px; line-height: 1.7; }
+    .empty code {
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 12px;
+    }
+
+    .loading { color: var(--text-mut); padding: 64px; text-align: center; font-size: 13px; }
+
+    .no-findings {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 40px;
+      text-align: center;
+      color: var(--text-mut);
+      font-size: 13px;
+    }
+
+    /* ── Responsive ──────────────────────────────── */
+    @media (max-width: 960px) {
+      .stats { grid-template-columns: repeat(4, 1fr); }
+      .stats .stat:first-child { grid-column: span 4; }
+      .viz { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .main { padding: 12px; }
+      .fi-top { grid-template-columns: auto auto 1fr auto; }
+      .fi-loc, .conf-track { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      <polyline points="9 12 11 14 15 10"/>
+    </svg>
+    DeepGuard
+  </div>
+  <div class="spacer"></div>
+  <select class="report-sel" id="reportSel"></select>
+  <button class="btn" id="refreshBtn">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <polyline points="23 4 23 10 17 10"/>
+      <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+    </svg>
+    Refresh
+  </button>
+</header>
+
+<main class="main" id="app">
+  <div class="loading">Connecting to DeepGuard…</div>
+</main>
+
+<script>
+'use strict';
+
+let report   = null;
+let activeSev = 'all';
+let searchQ  = '';
+
+const $  = id => document.getElementById(id);
+const esc = s => String(s ?? '')
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+// ── Bootstrap ──────────────────────────────────────────────────────────────────
+
+async function init() {
+  $('refreshBtn').addEventListener('click', init);
+  $('reportSel').addEventListener('change', e => loadReport(e.target.value));
+
+  try {
+    const res = await fetch('/api/reports');
+    if (!res.ok) throw new Error();
+    const list = await res.json();
+
+    const sel = $('reportSel');
+    sel.innerHTML = '';
+
+    if (!list?.length) {
+      sel.innerHTML = '<option value="">No reports found</option>';
+      showEmpty();
+      return;
+    }
+
+    list.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r.name;
+      opt.textContent = fmtReportName(r.name);
+      sel.appendChild(opt);
+    });
+
+    await loadReport(list[0].name);
+  } catch {
+    $('app').innerHTML = `<div class="empty">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
+           style="opacity:.25;margin-bottom:16px">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      <h3>Cannot reach DeepGuard</h3>
+      <p>Make sure <code>deepguard serve</code> is running,<br>then refresh this page.</p>
+    </div>`;
+  }
+}
+
+async function loadReport(name) {
+  if (!name) return;
+  $('app').innerHTML = '<div class="loading">Loading report…</div>';
+  try {
+    const res = await fetch('/api/reports/' + encodeURIComponent(name));
+    if (!res.ok) throw new Error();
+    report    = await res.json();
+    activeSev = 'all';
+    searchQ   = '';
+    renderAll();
+  } catch {
+    $('app').innerHTML = `<div class="empty"><h3>Failed to load report</h3></div>`;
+  }
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────────
+
+function renderAll() {
+  const m = report.scan_metadata ?? {};
+  const s = report.summary ?? {};
+
+  const crit  = s.by_severity?.critical ?? 0;
+  const high  = s.by_severity?.high     ?? 0;
+  const med   = s.by_severity?.medium   ?? 0;
+  const low   = s.by_severity?.low      ?? 0;
+  const total = s.total_findings        ?? 0;
+
+  const types  = Object.entries(s.by_type ?? {}).sort((a, b) => b[1] - a[1]);
+  const maxT   = types.length ? types[0][1] : 1;
+
+  const date  = fmtDate(m.timestamp);
+  const dur   = fmtDur(m.scan_duration_seconds);
+  const cost  = m.total_cost > 0 ? `$${m.total_cost.toFixed(3)}` : '—';
+  const langs = (m.languages ?? []).map(l => l.toUpperCase()).join(' · ') || '—';
+  const fwk   = (m.frameworks ?? []).join(', ') || '—';
+
+  const filteringNote = (() => {
+    const f = m.filtering;
+    if (!f?.enabled || !f.filtered_findings) return '';
+    return `<span style="font-size:12px;color:var(--text-mut);margin-left:8px">(${f.filtered_findings} filtered below threshold)</span>`;
+  })();
+
+  $('app').innerHTML = `
+    <!-- Meta bar -->
+    <div class="meta-bar">
+      <div class="meta-item">
+        <div class="meta-k">Target</div>
+        <div class="meta-v mono">${esc(m.target_path ?? '—')}</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-k">Languages</div>
+        <div class="meta-v">${esc(langs)}</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-k">Frameworks</div>
+        <div class="meta-v">${esc(fwk)}</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-k">Model</div>
+        <div class="meta-v">${esc(m.model_used ?? '—')}</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-k">Scanned</div>
+        <div class="meta-v">${date}</div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-total-inner">
+          <div>
+            <div class="stat-num" style="font-size:42px">${total}</div>
+            <div class="stat-lbl">Findings ${filteringNote}</div>
+            ${total > 0 ? `
+              <div class="sev-bars">
+                ${crit > 0 ? `<div class="sev-seg" style="flex:${crit};background:var(--crit)"></div>` : ''}
+                ${high > 0 ? `<div class="sev-seg" style="flex:${high};background:var(--high)"></div>` : ''}
+                ${med  > 0 ? `<div class="sev-seg" style="flex:${med} ;background:var(--med)"></div>`  : ''}
+                ${low  > 0 ? `<div class="sev-seg" style="flex:${low} ;background:var(--low)"></div>`  : ''}
+              </div>` : ''}
+          </div>
+        </div>
+      </div>
+      <div class="stat c"><div class="stat-num">${crit}</div><div class="stat-lbl">Critical</div></div>
+      <div class="stat h"><div class="stat-num">${high}</div><div class="stat-lbl">High</div></div>
+      <div class="stat m"><div class="stat-num">${med}</div> <div class="stat-lbl">Medium</div></div>
+      <div class="stat l"><div class="stat-num">${low}</div> <div class="stat-lbl">Low</div></div>
+      <div class="stat">
+        <div class="stat-num" style="font-size:20px;margin-top:2px">${cost}</div>
+        <div class="stat-lbl">Cost</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" style="font-size:20px;margin-top:2px">${dur}</div>
+        <div class="stat-lbl">Duration</div>
+      </div>
+    </div>
+
+    <!-- Viz -->
+    <div class="viz">
+      <div class="card">
+        <div class="card-title">Severity Distribution</div>
+        <div class="donut-wrap">
+          ${drawDonut(crit, high, med, low)}
+          <div class="donut-legend">
+            ${legRow('Critical', crit, 'var(--crit)')}
+            ${legRow('High',     high, 'var(--high)')}
+            ${legRow('Medium',   med,  'var(--med)')}
+            ${legRow('Low',      low,  'var(--low)')}
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Vulnerability Types</div>
+        ${types.length ? `<div class="type-list">
+          ${types.map(([t, n]) => `
+            <div class="type-row">
+              <div class="type-lbl">${esc(fmtType(t))}</div>
+              <div class="type-n">${n}</div>
+              <div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/maxT*100)}%"></div></div>
+            </div>`).join('')}
+        </div>` : '<p style="color:var(--text-mut);font-size:13px">No findings</p>'}
+      </div>
+    </div>
+
+    <!-- Findings -->
+    <div>
+      <div class="findings-head">
+        <div class="findings-title">Findings</div>
+        <div class="pill" id="fcnt">${(report.findings ?? []).length}</div>
+        <div class="filter-group">
+          <button class="fbtn on" data-sev="all">All</button>
+          ${crit > 0 ? `<button class="fbtn c" data-sev="critical">Critical</button>` : ''}
+          ${high > 0 ? `<button class="fbtn h" data-sev="high">High</button>`         : ''}
+          ${med  > 0 ? `<button class="fbtn m" data-sev="medium">Medium</button>`     : ''}
+          ${low  > 0 ? `<button class="fbtn l" data-sev="low">Low</button>`           : ''}
+          <input class="search-box" type="search" id="searchBox"
+                 placeholder="Filter by file, type, or message…">
+        </div>
+      </div>
+      <div id="flist"></div>
+    </div>
+  `;
+
+  // Event wiring
+  document.querySelectorAll('.fbtn').forEach(b =>
+    b.addEventListener('click', () => setSev(b.dataset.sev))
+  );
+  $('searchBox').addEventListener('input', e => {
+    searchQ = e.target.value.toLowerCase();
+    renderFindings();
+  });
+  $('flist').addEventListener('click', e => {
+    const fi = e.target.closest('.fi');
+    if (fi) fi.classList.toggle('open');
+  });
+
+  renderFindings();
+}
+
+// ── Findings list ──────────────────────────────────────────────────────────────
+
+function renderFindings() {
+  let list = report.findings ?? [];
+  const hasAny = list.length > 0;
+
+  if (activeSev !== 'all') list = list.filter(f => f.severity === activeSev);
+  if (searchQ) list = list.filter(f =>
+    (f.file    ?? '').toLowerCase().includes(searchQ) ||
+    (f.type    ?? '').toLowerCase().includes(searchQ) ||
+    (f.message ?? '').toLowerCase().includes(searchQ)
+  );
+
+  const cnt = $('fcnt');
+  if (cnt) cnt.textContent = list.length;
+
+  const el = $('flist');
+  if (!el) return;
+
+  if (!list.length) {
+    el.innerHTML = hasAny
+      ? `<div class="no-findings">No findings match the current filter.</div>`
+      : `<div class="no-findings" style="color:var(--low)">
+           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" style="margin-bottom:8px;opacity:.7">
+             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+             <polyline points="9 12 11 14 15 10"/>
+           </svg><br>
+           No vulnerabilities detected
+         </div>`;
+    return;
+  }
+
+  el.innerHTML = list.map(f => {
+    const cls  = (f.severity ?? 'low')[0]; // c / h / m / l
+    const conf = Math.round((f.confidence ?? 0) * 100);
+    const confLabel = conf >= 80 ? 'High certainty' : conf >= 60 ? 'Medium certainty' : 'Low certainty';
+
+    return `<div class="fi">
+      <div class="fi-top">
+        <span class="badge ${cls}">${esc(f.severity)}</span>
+        <span class="fi-type">${esc(fmtType(f.type))}</span>
+        <span class="fi-msg">${esc(f.message ?? '')}</span>
+        <span class="fi-loc">${esc(f.file ?? '—')}:${f.line ?? '?'}</span>
+        <div class="conf-track" title="${conf}% confidence">
+          <div class="conf-fill" style="width:${conf}%"></div>
+        </div>
+        <span class="chevron">›</span>
+      </div>
+      <div class="fi-body">
+        <div class="detail-grid">
+          <div>
+            <div class="dlbl">Location</div>
+            <div class="dval mono">${esc(f.file ?? '—')}:${f.line ?? '?'}${f.column ? ':' + f.column : ''}</div>
+            ${f.function_name ? `<div class="dfn">in ${esc(f.function_name)}()</div>` : ''}
+          </div>
+          <div>
+            <div class="dlbl">Confidence</div>
+            <div class="dval">${conf}% &mdash; ${confLabel}</div>
+          </div>
+        </div>
+        ${f.code_snippet ? `<div class="code-block">${esc(f.code_snippet)}</div>` : ''}
+        ${f.recommendation ? `<div class="rec-box"><div class="rec-head">Recommendation</div>${esc(f.recommendation)}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Interactions ───────────────────────────────────────────────────────────────
+
+function setSev(sev) {
+  activeSev = sev;
+  document.querySelectorAll('.fbtn').forEach(b => {
+    b.classList.toggle('on', b.dataset.sev === sev);
+  });
+  renderFindings();
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+function drawDonut(crit, high, med, low) {
+  const total = crit + high + med + low;
+  const cx = 60, cy = 60, r = 46, sw = 15;
+  const circ = 2 * Math.PI * r;
+
+  if (total === 0) {
+    return `<svg width="120" height="120" viewBox="0 0 120 120" style="flex-shrink:0">
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--border)" stroke-width="${sw}"/>
+      <text x="${cx}" y="${cy+5}" text-anchor="middle" fill="var(--text-mut)" font-size="13"
+            font-family="system-ui">—</text>
+    </svg>`;
+  }
+
+  const segs = [
+    [crit, 'var(--crit)'], [high, 'var(--high)'],
+    [med,  'var(--med)'],  [low,  'var(--low)'],
+  ].filter(([n]) => n > 0);
+
+  let offset = -circ * 0.25; // start at 12 o'clock
+  const arcs = segs.map(([n, color]) => {
+    const dash = (n / total) * circ;
+    const gap  = circ - dash;
+    const arc  = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none"
+      stroke="${color}" stroke-width="${sw}"
+      stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}"
+      stroke-dashoffset="${(-offset).toFixed(2)}"
+      stroke-linecap="butt"/>`;
+    offset += dash;
+    return arc;
+  }).join('');
+
+  return `<svg width="120" height="120" viewBox="0 0 120 120" style="flex-shrink:0">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--border-sub)" stroke-width="${sw}"/>
+    ${arcs}
+    <text x="${cx}" y="${cy - 5}" text-anchor="middle" fill="var(--text)"
+          font-size="20" font-weight="700" font-family="system-ui">${total}</text>
+    <text x="${cx}" y="${cy + 14}" text-anchor="middle" fill="var(--text-mut)"
+          font-size="9" font-family="system-ui" letter-spacing="0.5">TOTAL</text>
+  </svg>`;
+}
+
+function legRow(label, n, color) {
+  return `<div class="leg">
+    <div class="leg-dot" style="background:${color}"></div>
+    <div class="leg-lbl">${label}</div>
+    <div class="leg-n" style="color:${color}">${n}</div>
+  </div>`;
+}
+
+const TYPE_NAMES = {
+  sql_injection:              'SQL Injection',
+  sqli:                       'SQL Injection',
+  xss:                        'Cross-Site Scripting',
+  cross_site_scripting:       'Cross-Site Scripting',
+  path_traversal:             'Path Traversal',
+  ssrf:                       'SSRF',
+  cmdi:                       'Command Injection',
+  command_injection:          'Command Injection',
+  auth_issue:                 'Auth Issue',
+  auth:                       'Auth Issue',
+  insecure_deserialization:   'Insecure Deserialization',
+  insecure_deser:             'Insecure Deserialization',
+  crypto:                     'Weak Cryptography',
+  xxe:                        'XXE',
+  idor:                       'IDOR',
+  mass_assignment:            'Mass Assignment',
+  secrets:                    'Secrets Exposure',
+};
+
+function fmtType(t) {
+  return TYPE_NAMES[t] ?? (t ?? '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function fmtDate(ts) {
+  if (!ts) return '—';
+  try {
+    return new Date(ts).toLocaleString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    });
+  } catch { return ts; }
+}
+
+function fmtDur(s) {
+  if (s == null || s === '') return '—';
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60), rem = s % 60;
+  return rem > 0 ? `${m}m ${rem}s` : `${m}m`;
+}
+
+function fmtReportName(name) {
+  const m = name.match(/scan-(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})/);
+  if (m) return `${m[1]}-${m[2]}-${m[3]}  ${m[4]}:${m[5]}:${m[6]}`;
+  return name.replace('.json', '');
+}
+
+function showEmpty() {
+  $('app').innerHTML = `<div class="empty">
+    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
+         style="opacity:.25;margin-bottom:16px">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </svg>
+    <h3>No scan reports found</h3>
+    <p>Run <code>deepguard scan --path ./your-project</code> to generate a report,<br>then click Refresh.</p>
+  </div>`;
+}
+
+init();
+</script>
+</body>
+</html>

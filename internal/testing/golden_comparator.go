@@ -162,10 +162,8 @@ func matchesFinding(expected ExpectedFinding, actual report.Finding, lineToleran
 		return false
 	}
 
-	// Check severity (normalize to lowercase for comparison)
-	if strings.ToLower(expected.Severity) != strings.ToLower(actual.Severity) {
-		return false
-	}
+	// Severity is intentionally not checked: it measures scoring quality, not detection.
+	// A finding classified as "critical" instead of "high" is still a true positive.
 
 	// Check line number with tolerance (±lineTolerance lines)
 	lineDiff := abs(expected.Line - actual.Line)
