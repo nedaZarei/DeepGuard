@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"math"
 	"strings"
 	"sync"
 
@@ -315,9 +316,17 @@ func (r *Retriever) applyTokenBudget(result *RetrievalResult) error {
 		return r.truncateCodePatterns(result, excessChars)
 	}
 
-	// Truncate each description proportionally
+	// Truncate each description proportionally. Shares are computed against the
+	// original excess (rounded up) so they sum to >= excessChars regardless of
+	// how many entries actually get cut — using a shrinking remainder here would
+	// under-cut due to compounding rounding loss across entries.
+	const truncationSuffix = "..."
+	suffixLen := len(truncationSuffix)
+	originalExcess := excessChars
+	remaining := excessChars
+
 	for i := range result.Entries {
-		if excessChars <= 0 {
+		if remaining <= 0 {
 			break
 		}
 
@@ -326,23 +335,29 @@ func (r *Retriever) applyTokenBudget(result *RetrievalResult) error {
 			continue
 		}
 
-		// Calculate this entry's share of truncation
-		proportionalCut := int(float64(excessChars) * (float64(descLen) / float64(totalDescLen)))
+		// This entry's share of the original excess, rounded up so the sum of all
+		// shares covers the excess even after integer truncation.
+		share := int(math.Ceil(float64(originalExcess) * float64(descLen) / float64(totalDescLen)))
+		if share > remaining {
+			share = remaining
+		}
 
-		// Ensure we leave at least some description
+		// Removing `share + suffixLen` raw characters and appending the suffix back
+		// yields a net reduction of exactly `share` characters.
 		minDescLen := 100
-		actualCut := proportionalCut
-		if descLen-actualCut < minDescLen {
-			actualCut = descLen - minDescLen
-			if actualCut < 0 {
-				actualCut = 0
+		rawCut := share + suffixLen
+		if descLen-rawCut < minDescLen {
+			rawCut = descLen - minDescLen
+			if rawCut < 0 {
+				rawCut = 0
 			}
 		}
 
-		if actualCut > 0 {
-			newLen := descLen - actualCut
-			result.Entries[i].Description = result.Entries[i].Description[:newLen] + "..."
-			excessChars -= actualCut
+		if rawCut > 0 {
+			newLen := descLen - rawCut
+			result.Entries[i].Description = result.Entries[i].Description[:newLen] + truncationSuffix
+			netReduction := descLen - (newLen + suffixLen)
+			remaining -= netReduction
 		}
 	}
 

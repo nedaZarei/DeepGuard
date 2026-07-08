@@ -25,6 +25,11 @@ type Pattern struct {
 	Regex       *regexp.Regexp
 	Placeholder string
 	Description string
+	// ValueGroup is the 1-based index of the capture group holding just the secret
+	// value. When > 0, only that group's span is replaced with the placeholder,
+	// preserving surrounding syntax like `password = "...";`. When 0, the entire
+	// match is replaced (used for bare tokens/keys with no surrounding structure).
+	ValueGroup int
 }
 
 // All compiled regex patterns for secret detection
@@ -69,7 +74,10 @@ var (
 	oauthPattern = regexp.MustCompile(`(?i)(client_secret|oauth[_-]?token)(['"]?\s*[:=]\s*['"])([a-zA-Z0-9_\-]{16,})(['"])`)
 
 	// GitHub tokens - ghp_, gho_, ghu_, ghs_, ghr_
-	githubTokenPattern = regexp.MustCompile(`\b(gh[pousr]_[a-zA-Z0-9]{36,})\b`)
+	// Real classic PATs are gh*_ + 36 chars, but fine-grained/legacy tokens and
+	// truncated copies in code can be shorter — favor catching too much over
+	// missing a real token.
+	githubTokenPattern = regexp.MustCompile(`\b(gh[pousr]_[a-zA-Z0-9]{20,})\b`)
 
 	// Slack tokens - xox[baprs]-
 	slackTokenPattern = regexp.MustCompile(`\b(xox[baprs]-[a-zA-Z0-9-]+)\b`)
@@ -99,6 +107,7 @@ func GetPatterns() []Pattern {
 			Regex:       genericAPIKeyPattern,
 			Placeholder: "[REDACTED_API_KEY]",
 			Description: "Generic API Key",
+			ValueGroup:  3,
 		},
 		{
 			Type:        SecretTypeBearerToken,
@@ -117,6 +126,7 @@ func GetPatterns() []Pattern {
 			Regex:       passwordVarPattern,
 			Placeholder: "[REDACTED_PASSWORD]",
 			Description: "Password Variable",
+			ValueGroup:  3,
 		},
 		{
 			Type:        SecretTypeConnectionString,
@@ -129,6 +139,7 @@ func GetPatterns() []Pattern {
 			Regex:       dbPasswordPattern,
 			Placeholder: "[REDACTED_PASSWORD]",
 			Description: "Database Password Parameter",
+			ValueGroup:  2,
 		},
 		{
 			Type:        SecretTypePrivateKey,
@@ -141,12 +152,14 @@ func GetPatterns() []Pattern {
 			Regex:       genericSecretPattern,
 			Placeholder: "[REDACTED_SECRET]",
 			Description: "Generic Secret Variable",
+			ValueGroup:  3,
 		},
 		{
 			Type:        SecretTypeAPIKey,
 			Regex:       oauthPattern,
 			Placeholder: "[REDACTED_OAUTH_TOKEN]",
 			Description: "OAuth Token/Client Secret",
+			ValueGroup:  3,
 		},
 		{
 			Type:        SecretTypeAPIKey,

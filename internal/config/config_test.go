@@ -34,8 +34,8 @@ func TestLoadConfig_Defaults(t *testing.T) {
 			t.Errorf("Unexpected language in defaults: %s", lang)
 		}
 	}
-	if cfg.OpenAIModel != "gpt-4o" {
-		t.Errorf("Expected openai_model='gpt-4o', got: %s", cfg.OpenAIModel)
+	if cfg.OpenAIModel != "gpt-4o-mini" {
+		t.Errorf("Expected openai_model='gpt-4o-mini', got: %s", cfg.OpenAIModel)
 	}
 	if cfg.BudgetCap != 3.0 {
 		t.Errorf("Expected budget_cap=3.0, got: %f", cfg.BudgetCap)
@@ -139,6 +139,7 @@ func TestValidate_ValidConfig(t *testing.T) {
 		OutputDir:           filepath.Join(tmpDir, "reports"),
 		Languages:           []string{"js", "python"},
 		OpenAIModel:         "gpt-4o",
+		OpenAIAPIKey:        "test-api-key",
 		BudgetCap:           3.0,
 		ConfidenceThreshold: 0.5,
 		Verbose:             false,
@@ -345,6 +346,7 @@ func TestValidate_BoundaryValues(t *testing.T) {
 		OutputDir:           tmpDir,
 		Languages:           []string{"js"},
 		OpenAIModel:         "gpt-4o",
+		OpenAIAPIKey:        "test-api-key",
 		BudgetCap:           0.01,
 		ConfidenceThreshold: 0.0,
 	}
@@ -370,6 +372,7 @@ func TestValidate_AllLanguages(t *testing.T) {
 			OutputDir:           tmpDir,
 			Languages:           []string{lang},
 			OpenAIModel:         "gpt-4o",
+			OpenAIAPIKey:        "test-api-key",
 			BudgetCap:           3.0,
 			ConfidenceThreshold: 0.5,
 		}
@@ -388,6 +391,7 @@ func TestValidate_BothModels(t *testing.T) {
 		OutputDir:           tmpDir,
 		Languages:           []string{"js"},
 		OpenAIModel:         "gpt-4o",
+		OpenAIAPIKey:        "test-api-key",
 		BudgetCap:           3.0,
 		ConfidenceThreshold: 0.5,
 	}

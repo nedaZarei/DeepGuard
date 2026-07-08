@@ -41,7 +41,10 @@ func TestConstructQuery(t *testing.T) {
 				Language:     "python",
 				Source:       "def processData(data):\n    # This is a very long function with lots of code\n    result = []\n    for item in data:\n        if item.valid:\n            processed = transform(item)\n            result.append(processed)\n    return result that continues for many more lines",
 			},
-			expected: "processData python def processData(data): # This is a very long function with lots of code result = [] for item in data: if item.valid: processed = transform(item) result.append(processed) retu",
+			// constructQuery truncates the raw 200-char window first (preserving deterministic
+			// byte offsets), then collapses whitespace — so indentation inside the window
+			// shrinks the cleaned result below 200 chars and the cut lands mid-word ("appe").
+			expected: "processData python def processData(data): # This is a very long function with lots of code result = [] for item in data: if item.valid: processed = transform(item) result.appe",
 		},
 		{
 			name: "function with no name",

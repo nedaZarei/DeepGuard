@@ -63,11 +63,23 @@ func (r *Redactor) Redact(source string, language string, filePath string) Redac
 				continue
 			}
 
-			startIdx := match[0]
-			endIdx := match[1]
+			// By default redact the whole match. If the pattern names a specific
+			// value group, redact only that span so surrounding syntax like
+			// `password = "...";` survives — this keeps the code readable for the
+			// LLM while still removing the secret.
+			redactStartIdx := match[0]
+			redactEndIdx := match[1]
+			if pattern.ValueGroup > 0 {
+				groupStartPos := 2 * pattern.ValueGroup
+				groupEndPos := groupStartPos + 1
+				if groupEndPos < len(match) && match[groupStartPos] >= 0 && match[groupEndPos] >= 0 {
+					redactStartIdx = match[groupStartPos]
+					redactEndIdx = match[groupEndPos]
+				}
+			}
 
-			// Extract matched text
-			matchedText := sourceWithoutComments[startIdx:endIdx]
+			// Extract matched text (the span that will actually be redacted)
+			matchedText := sourceWithoutComments[redactStartIdx:redactEndIdx]
 
 			// Skip if likely a false positive
 			if IsLikelyFalsePositive(matchedText) {
@@ -79,11 +91,7 @@ func (r *Redactor) Redact(source string, language string, filePath string) Redac
 				continue
 			}
 
-			// Redact the entire matched text
-			// This is simpler and more robust than trying to parse capture groups
 			originalValue := matchedText
-			redactStartIdx := startIdx
-			redactEndIdx := endIdx
 
 			// Skip very short matches (likely false positives)
 			if len(originalValue) < 8 {
@@ -145,8 +153,11 @@ func (r *Redactor) removeComments(source string, language string) string {
 // removeJSStyleComments removes // and /* */ comments
 func (r *Redactor) removeJSStyleComments(source string) string {
 	// Remove single-line comments: // comment
-	singleLinePattern := regexp.MustCompile(`//[^\n]*`)
-	source = singleLinePattern.ReplaceAllString(source, "")
+	// Require the `//` not be preceded by `:` so URL schemes like `https://` or
+	// `mysql://` (exactly where leaked credentials live) aren't mistaken for
+	// comments and truncated — that would hide connection strings from redaction.
+	singleLinePattern := regexp.MustCompile(`(^|[^:])//[^\n]*`)
+	source = singleLinePattern.ReplaceAllString(source, "$1")
 
 	// Remove multi-line comments: /* comment */
 	multiLinePattern := regexp.MustCompile(`/\*[\s\S]*?\*/`)
