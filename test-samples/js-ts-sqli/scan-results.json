@@ -1,6 +1,6 @@
 {
   "scan_metadata": {
-    "timestamp": "2026-05-06T17:59:39Z",
+    "timestamp": "2026-06-08T05:00:53Z",
     "target_path": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli",
     "languages": [
       "js",
@@ -13,242 +13,33 @@
       "@prisma/client",
       "sequelize"
     ],
-    "model_used": "gemini-2.5-flash-lite",
-    "total_cost": 0.5029324999999998,
-    "scan_duration_seconds": 61,
+    "model_used": "gpt-4o-mini",
+    "total_cost": 2.7396500000000006,
+    "scan_duration_seconds": 191,
     "filtering": {
       "enabled": true,
       "threshold_used": 0.5,
-      "total_findings": 60,
+      "total_findings": 68,
       "filtered_findings": 0,
-      "kept_findings": 60
+      "kept_findings": 68
     },
     "suppression": {
-      "total_findings": 60,
+      "total_findings": 68,
       "suppressed_findings": 0,
-      "kept_findings": 60
+      "kept_findings": 68
     }
   },
   "findings": [
     {
-      "id": "53087fa3-sql_injection-36",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-routes.js",
-      "line": 36,
-      "function_name": "anonymous",
-      "message": "Direct concatenation of user input into SQL query",
-      "recommendation": "Use parameterized queries to safely handle user input, e.g., db.query('SELECT * FROM users WHERE id = ?', [userId])"
-    },
-    {
-      "id": "1bafa9b1-sql_injection-60",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-routes.js",
-      "line": 60,
-      "function_name": "anonymous",
-      "message": "User input directly concatenated into SQL query via template literal",
-      "recommendation": "Use parameterized queries or placeholders (e.g., `db.query('SELECT * FROM products WHERE id = ?', [productId])`)"
-    },
-    {
-      "id": "c7ff4213-sql_injection-86",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-routes.js",
-      "line": 86,
-      "function_name": "anonymous",
-      "message": "User input directly concatenated into SQL query",
-      "recommendation": "Use parameterized queries or escape user input properly"
-    },
-    {
-      "id": "fbccfa87-sql_injection-121",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-routes.js",
-      "line": 121,
-      "function_name": "anonymous",
-      "message": "Dynamic ORDER BY clause built using unsanitized user input",
-      "recommendation": "Use parameterized queries or validate and sanitize user input to restrict valid values"
-    },
-    {
-      "id": "7cc717d6-sql_injection-19",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-unsafe.js",
-      "line": 19,
-      "function_name": "getUsersByRole",
-      "message": "Dynamic user input interpolated directly into SQL query via template literal",
-      "recommendation": "Use tagged template literals with prisma.$queryRaw or switch to prisma.$queryRawUnsafe only if necessary after proper input validation and sanitization"
-    },
-    {
-      "id": "6c29b4c0-sql_injection-31",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-unsafe.js",
-      "line": 31,
-      "function_name": "getUserWithOrders",
-      "message": "User input directly concatenated into SQL query via template literal",
-      "recommendation": "Use prisma.$queryRaw with tagged template literals or parameterized queries"
-    },
-    {
-      "id": "3b0731d7-sql_injection-55",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-unsafe.js",
-      "line": 55,
-      "function_name": "getRecordsByTable",
-      "message": "Dynamic table name concatenated directly into SQL query",
-      "recommendation": "Validate and whitelist tableName, or use a query builder"
-    },
-    {
-      "id": "3b0731d7-sql_injection-61",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-unsafe.js",
-      "line": 61,
-      "function_name": "getRecordsByTable",
-      "message": "Unsanitized date filter concatenated into SQL query",
-      "recommendation": "Use parameterized queries or prepared statements"
-    },
-    {
-      "id": "66dc9bd0-sql_injection-88",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-unsafe.js",
-      "line": 88,
-      "function_name": "getStatsByCategory",
-      "message": "Dynamic SQL query constructed with user input via template literals",
-      "recommendation": "Use parameterized queries or tagged template literals for Prisma $queryRaw"
-    },
-    {
-      "id": "8f642b63-sql_injection-112",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-unsafe.js",
-      "line": 112,
-      "function_name": "getTopUsers",
-      "message": "User-controlled input directly interpolated into raw SQL query",
-      "recommendation": "Use prisma.$queryRaw with parameterized queries instead of template literals"
-    },
-    {
-      "id": "740a5c8c-sql_injection-51",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-models.js",
-      "line": 51,
-      "function_name": "getUserById",
-      "message": "Direct concatenation of user input into SQL query",
-      "recommendation": "Use parameterized queries with replacements in sequelize.query"
-    },
-    {
-      "id": "19029650-sql_injection-67",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-models.js",
-      "line": 67,
-      "function_name": "searchProducts",
-      "message": "User input directly interpolated in SQL query via template literal",
-      "recommendation": "Use replacements parameter in sequelize.query to safely bind user input"
-    },
-    {
-      "id": "1e2106d4-sql_injection-86",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-models.js",
-      "line": 86,
-      "function_name": "getFilteredUsers",
-      "message": "User input 'role' directly concatenated into SQL query",
-      "recommendation": "Use sequelize.query with replacements parameter to safely bind user inputs"
-    },
-    {
-      "id": "5b16d9ac-sql_injection-118",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-models.js",
-      "line": 118,
-      "function_name": "getProductsSorted",
-      "message": "Dynamic ORDER BY clause with unsanitized user input",
-      "recommendation": "Use parameterized queries or replacements for 'sortBy' and 'order'"
-    },
-    {
-      "id": "67b0de54-sql_injection-134",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-models.js",
-      "line": 134,
-      "function_name": "updateUserRole",
-      "message": "User input directly concatenated into SQL query in UPDATE statement",
-      "recommendation": "Use parameterized queries with replacements, e.g., sequelize.query('UPDATE users SET role = :role WHERE id = :id', { replacements: { role: newRole, id: userId } })"
-    },
-    {
-      "id": "8fa0f71b-xss-49",
-      "type": "xss",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-service.js",
-      "line": 49,
-      "function_name": "searchUsers",
-      "message": "User input in dynamic SQL query without escaping, potential XSS if rendered in HTML",
-      "recommendation": "Escape user input before rendering or use parameterized queries with proper HTML escaping"
-    },
-    {
-      "id": "b78045f8-xss-100",
-      "type": "xss",
-      "severity": "critical",
-      "confidence": 0.95,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-service.js",
-      "line": 100,
-      "function_name": "processOrder",
-      "message": "Unsanitized user input in raw SQL query directly injected into HTML response",
-      "recommendation": "Use parameterized queries or escape user inputs properly to prevent XSS"
-    },
-    {
-      "id": "2fbde102-xss-91",
-      "type": "xss",
-      "severity": "critical",
-      "confidence": 0.95,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-dynamic.js",
-      "line": 91,
-      "function_name": "getFilteredAggregates",
-      "message": "Unsanitized dynamic SQL query may lead to XSS if results are rendered unsafely",
-      "recommendation": "Sanitize query results before rendering in HTML or use safe template rendering"
-    },
-    {
       "id": "55b758fc-sql_injection-42",
       "type": "sql_injection",
       "severity": "critical",
-      "confidence": 0.95,
+      "confidence": 1,
       "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-complex.js",
       "line": 42,
       "function_name": "anonymous",
-      "message": "Dynamic SQL query construction using concatenation detected",
-      "recommendation": "Use parameterized queries or escape user inputs before including them in queries"
-    },
-    {
-      "id": "55b758fc-sql_injection-50",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 0.95,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-complex.js",
-      "line": 50,
-      "function_name": "anonymous",
-      "message": "User-controlled minPrice used in SQL without sanitization",
-      "recommendation": "Use parameterized queries to securely bind inputs to SQL placeholders"
+      "message": "User input directly concatenated in SQL query",
+      "recommendation": "Use parameterized queries with placeholders for user inputs"
     },
     {
       "id": "4e41310a-sql_injection-109",
@@ -258,19 +49,19 @@
       "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-complex.js",
       "line": 109,
       "function_name": "anonymous",
-      "message": "User-controlled input directly concatenated into SQL query",
-      "recommendation": "Use parameterized queries or placeholders to safely bind table name and year"
+      "message": "Dynamic table name from URL parameter used in query",
+      "recommendation": "Avoid dynamic table names; use static names and parameterize queries"
     },
     {
       "id": "a38fc6da-sql_injection-143",
       "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
+      "severity": "high",
+      "confidence": 0.9,
       "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-complex.js",
       "line": 143,
       "function_name": "anonymous",
-      "message": "User input concatenated directly into SQL query without sanitization",
-      "recommendation": "Use parameterized queries to safely pass 'ids' and 'status' as query parameters"
+      "message": "User input concatenated into SQL query without sanitization",
+      "recommendation": "Use parameterized queries with placeholders for 'idList' and 'status'"
     },
     {
       "id": "5257d864-sql_injection-177",
@@ -280,228 +71,63 @@
       "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-complex.js",
       "line": 177,
       "function_name": "anonymous",
-      "message": "User input directly concatenated into SQL query via template literal",
-      "recommendation": "Use parameterized queries or query builders to safely inject variables"
+      "message": "User input directly used in SQL query, high risk of injection",
+      "recommendation": "Use parameterized queries or validate/sanitize input"
     },
     {
-      "id": "8058766a-sql_injection-65",
+      "id": "740a5c8c-sql_injection-51",
       "type": "sql_injection",
       "severity": "critical",
       "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-express.ts",
-      "line": 65,
-      "function_name": "anonymous",
-      "message": "User input directly concatenated into SQL query using template literal",
-      "recommendation": "Use parameterized queries or placeholders to safely include user input in the query"
-    },
-    {
-      "id": "76579420-sql_injection-102",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-express.ts",
-      "line": 102,
-      "function_name": "anonymous",
-      "message": "Direct user input concatenated in SQL query via template literals",
-      "recommendation": "Use parameterized queries with placeholders instead of template literals"
-    },
-    {
-      "id": "9c2dd1b0-sql_injection-141",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-express.ts",
-      "line": 141,
-      "function_name": "searchProducts",
-      "message": "User input directly concatenated into SQL query",
-      "recommendation": "Use parameterized queries with placeholders for user input"
-    },
-    {
-      "id": "c9daad61-sql_injection-187",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-express.ts",
-      "line": 187,
-      "function_name": "updateUser",
-      "message": "User input directly concatenated into SQL query using template literals",
-      "recommendation": "Use parameterized queries to bind variables instead of template literals"
-    },
-    {
-      "id": "8058766a-xss-70",
-      "type": "xss",
-      "severity": "critical",
-      "confidence": 0.95,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-express.ts",
-      "line": 70,
-      "function_name": "anonymous",
-      "message": "Unescaped user input rendered in JSON response",
-      "recommendation": "Ensure user input is properly sanitized before rendering JSON response"
-    },
-    {
-      "id": "76579420-xss-111",
-      "type": "xss",
-      "severity": "critical",
-      "confidence": 0.95,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-express.ts",
-      "line": 111,
-      "function_name": "anonymous",
-      "message": "JSON response may include sensitive user data without proper escaping",
-      "recommendation": "Ensure JSON output is sanitized and avoid exposing raw database values"
-    },
-    {
-      "id": "3efe03d5-sql_injection-25",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-dynamic.js",
-      "line": 25,
-      "function_name": "getCustomColumns",
-      "message": "Dynamic table name and columns concatenated into SQL query",
-      "recommendation": "Use parameterized queries with replacements to handle dynamic table and column names safely"
-    },
-    {
-      "id": "9bae1663-sql_injection-43",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-dynamic.js",
-      "line": 43,
-      "function_name": "getJoinedData",
-      "message": "Dynamic SQL query constructed with template literals and unsanitized input",
-      "recommendation": "Use sequelize.query with the replacements parameter to bind variables securely"
-    },
-    {
-      "id": "13046504-sql_injection-67",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-dynamic.js",
-      "line": 67,
-      "function_name": "getAggregatedData",
-      "message": "Dynamic SQL query construction without parameterization",
-      "recommendation": "Use parameterized queries with bind or replacements options in sequelize.query"
-    },
-    {
-      "id": "2fbde102-sql_injection-91",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-dynamic.js",
-      "line": 91,
-      "function_name": "getFilteredAggregates",
-      "message": "Dynamic SQL query with user input in HAVING clause",
-      "recommendation": "Use replacements parameter to safely pass user input into the query"
-    },
-    {
-      "id": "a4f74d34-sql_injection-119",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-dynamic.js",
-      "line": 119,
-      "function_name": "searchAcrossTables",
-      "message": "Dynamic table names and search values directly concatenated into SQL query",
-      "recommendation": "Use parameterized queries and ensure table names are validated against an allowlist"
-    },
-    {
-      "id": "434ac079-sql_injection-141",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-dynamic.js",
-      "line": 141,
-      "function_name": "deleteRecords",
-      "message": "Dynamic SQL query constructed using unsanitized tableName and condition variables",
-      "recommendation": "Use replacements in sequelize.query() to bind parameters securely"
-    },
-    {
-      "id": "3b0731d7-xss-55",
-      "type": "xss",
-      "severity": "critical",
-      "confidence": 0.95,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-unsafe.js",
-      "line": 55,
-      "function_name": "getRecordsByTable",
-      "message": "User-controlled table name used directly in query",
-      "recommendation": "Validate or restrict table name and use parameterized queries"
-    },
-    {
-      "id": "66dc9bd0-xss-88",
-      "type": "xss",
-      "severity": "critical",
-      "confidence": 0.95,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-unsafe.js",
-      "line": 88,
-      "function_name": "getStatsByCategory",
-      "message": "Unsanitized user input directly used in raw SQL query string",
-      "recommendation": "Sanitize user inputs and use parameterized queries to prevent unsafe query execution"
-    },
-    {
-      "id": "f41c60c3-sql_injection-21",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-service.js",
-      "line": 21,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-models.js",
+      "line": 51,
       "function_name": "getUserById",
-      "message": "User input directly interpolated in $queryRaw template literal",
-      "recommendation": "Use parameterized queries with prisma.$queryRaw`...` to safely handle input"
+      "message": "Direct concatenation of userId in SQL query string",
+      "recommendation": "Use sequelize.query with replacements or parameterized queries"
     },
     {
-      "id": "9fb245fa-sql_injection-35",
+      "id": "19029650-sql_injection-67",
       "type": "sql_injection",
       "severity": "critical",
       "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-service.js",
-      "line": 35,
-      "function_name": "updateUserEmail",
-      "message": "Critical SQLi via $executeRaw with unsanitized template literals",
-      "recommendation": "Use prisma.$executeRawSafe with parameterized queries instead of template literals"
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-models.js",
+      "line": 67,
+      "function_name": "searchProducts",
+      "message": "User input directly in SQL query via template literal",
+      "recommendation": "Use sequelize.query with replacements parameter"
     },
     {
-      "id": "8fa0f71b-sql_injection-49",
+      "id": "1e2106d4-sql_injection-84",
       "type": "sql_injection",
       "severity": "critical",
       "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-service.js",
-      "line": 49,
-      "function_name": "searchUsers",
-      "message": "Dynamic column name and unsanitized input in SQL query",
-      "recommendation": "Validate column names and use parameterized queries instead of string concatenation"
-    },
-    {
-      "id": "695a4ea1-sql_injection-65",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-service.js",
-      "line": 65,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-models.js",
+      "line": 84,
       "function_name": "getFilteredUsers",
-      "message": "User input directly concatenated into SQL query string",
-      "recommendation": "Use prisma.$queryRaw with tagged templates or parameterized queries"
+      "message": "Critical SQLi - building WHERE clause with concatenation",
+      "recommendation": "Use parameterized queries with replacements in sequelize.query"
     },
     {
-      "id": "b78045f8-sql_injection-101",
+      "id": "5b16d9ac-sql_injection-118",
       "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-service.js",
-      "line": 101,
-      "function_name": "processOrder",
-      "message": "SQL query constructed via template literal using unsanitized input",
-      "recommendation": "Use prisma.$executeRaw with parameterized inputs to prevent SQL injection"
-    },
-    {
-      "id": "b2d88137-sql_injection-125",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-service.js",
-      "line": 125,
-      "function_name": "getOrdersSorted",
+      "severity": "high",
+      "confidence": 0.9,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-models.js",
+      "line": 118,
+      "function_name": "getProductsSorted",
       "message": "Dynamic ORDER BY clause using unsanitized user input",
-      "recommendation": "Use parameterized queries with placeholders or validate sortField and sortOrder values"
+      "recommendation": "Use parameterized queries with replacements"
+    },
+    {
+      "id": "67b0de54-sql_injection-134",
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-models.js",
+      "line": 134,
+      "function_name": "updateUserRole",
+      "message": "Critical SQLi - UPDATE statement with concatenation",
+      "recommendation": "Use parameterized queries with placeholders in sequelize.query"
     },
     {
       "id": "0e46596b-sql_injection-49",
@@ -511,8 +137,8 @@
       "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-prisma.ts",
       "line": 49,
       "function_name": "findUserById",
-      "message": "User input directly interpolated into raw SQL query",
-      "recommendation": "Use tagged template literals with prisma.$queryRaw or parameterized queries"
+      "message": "User input directly interpolated in SQL query via template literal",
+      "recommendation": "Use tagged template prisma.$queryRaw or parameterized queries"
     },
     {
       "id": "4f66ba89-sql_injection-61",
@@ -522,8 +148,8 @@
       "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-prisma.ts",
       "line": 61,
       "function_name": "updateUserStatus",
-      "message": "User input directly interpolated into SQL query in $executeRaw",
-      "recommendation": "Use prisma.$executeRaw`...` with tagged template literals and validated inputs"
+      "message": "User input directly interpolated into SQL in $executeRaw query",
+      "recommendation": "Use prisma.$queryRaw with tagged template literals or parameterized queries to prevent SQL injection"
     },
     {
       "id": "c91f8a49-sql_injection-77",
@@ -533,19 +159,8 @@
       "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-prisma.ts",
       "line": 77,
       "function_name": "filterUsers",
-      "message": "Direct concatenation of filter.role into SQL query without sanitization",
-      "recommendation": "Use prisma.$queryRaw with tagged template literals or parameterized query bindings"
-    },
-    {
-      "id": "c91f8a49-sql_injection-83",
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-prisma.ts",
-      "line": 83,
-      "function_name": "filterUsers",
-      "message": "Direct concatenation of filter.ageMin into SQL query without sanitization",
-      "recommendation": "Use prisma.$queryRaw with tagged template literals or parameterized query bindings"
+      "message": "User input directly concatenated into SQL query",
+      "recommendation": "Use parameterized queries with $queryRaw`SELECT ...`"
     },
     {
       "id": "10cd94e6-sql_injection-122",
@@ -555,30 +170,30 @@
       "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-prisma.ts",
       "line": 122,
       "function_name": "search",
-      "message": "User input directly concatenated into SQL query via template literals",
-      "recommendation": "Use prisma.$queryRaw with tagged template literals or parameterized queries"
+      "message": "User input concatenated into SQL query without sanitization",
+      "recommendation": "Use parameterized queries with prisma.$queryRaw`...` or prisma.$executeRaw`...`"
     },
     {
       "id": "d275c018-sql_injection-140",
       "type": "sql_injection",
-      "severity": "critical",
-      "confidence": 1,
+      "severity": "high",
+      "confidence": 0.9,
       "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-prisma.ts",
       "line": 140,
       "function_name": "getUsersByDepartment",
-      "message": "User input directly interpolated into SQL query using template literals",
-      "recommendation": "Use parameterized queries with prisma.$queryRaw`...` instead of prisma.$queryRawUnsafe"
+      "message": "User input directly concatenated into SQL query",
+      "recommendation": "Use parameterized queries with prisma.$queryRaw"
     },
     {
-      "id": "c0f5278b-sql_injection-177",
+      "id": "c0f5278b-sql_injection-179",
       "type": "sql_injection",
       "severity": "critical",
       "confidence": 1,
       "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-prisma.ts",
-      "line": 177,
+      "line": 179,
       "function_name": "executeQuery",
-      "message": "Dynamic query construction with unsanitized builder fields",
-      "recommendation": "Use parameterized queries instead of string concatenation to build SQL queries"
+      "message": "User input is concatenated into SQL query from 'builder.select'",
+      "recommendation": "Use Prisma parameterized queries or tagged templates for columns"
     },
     {
       "id": "7f10417e-sql_injection-225",
@@ -588,118 +203,593 @@
       "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-prisma.ts",
       "line": 225,
       "function_name": "findByField",
-      "message": "Dynamic query construction with unsanitized input via template literals",
-      "recommendation": "Use parameterized queries or tagged template literals with prisma.$queryRaw"
+      "message": "User input directly concatenated into SQL query",
+      "recommendation": "Use parameterized queries with tagged templates for prisma.$queryRaw"
     },
     {
-      "id": "2fcaa06a-sql_injection-237",
+      "id": "2fcaa06a-sql_injection-233",
       "type": "sql_injection",
       "severity": "critical",
-      "confidence": 1,
+      "confidence": 0.95,
       "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-prisma.ts",
-      "line": 237,
+      "line": 233,
       "function_name": "deleteWhere",
-      "message": "Dynamic SQL query constructed using template literals with unsanitized input",
-      "recommendation": "Use parameterized queries or Prisma's tagged template syntax for query safety"
+      "message": "Unparameterized query with direct string interpolation",
+      "recommendation": "Use prisma.$queryRaw or prisma.$executeRaw with template literals for parameters"
     },
     {
-      "id": "55b758fc-xss-44",
-      "type": "xss",
-      "severity": "critical",
-      "confidence": 0.95,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-complex.js",
-      "line": 44,
-      "function_name": "anonymous",
-      "message": "User input 'searchTerm' used in SQL without escaping, possible output in res.json",
-      "recommendation": "Escape or sanitize all user inputs before using in queries and output contexts"
+      "id": "c91f8a49-auth_issue-38",
+      "type": "auth_issue",
+      "severity": "medium",
+      "confidence": 0.7,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-prisma.ts",
+      "line": 38,
+      "function_name": "filterUsers",
+      "message": "Potential SQL injection without authentication checks",
+      "recommendation": "Ensure authentication middleware is applied to all sensitive routes"
     },
     {
-      "id": "55b758fc-xss-50",
-      "type": "xss",
-      "severity": "critical",
-      "confidence": 0.95,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-complex.js",
-      "line": 50,
-      "function_name": "anonymous",
-      "message": "User input 'minPrice' used in SQL without escaping, possible output in res.json",
-      "recommendation": "Escape or sanitize all user inputs before using in queries and output contexts"
-    },
-    {
-      "id": "4e41310a-xss-109",
-      "type": "xss",
-      "severity": "critical",
-      "confidence": 0.95,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-complex.js",
-      "line": 109,
-      "function_name": "anonymous",
-      "message": "User input in query rendered in JSON response without sanitization",
-      "recommendation": "Validate and sanitize user inputs and escape output in res.json()"
-    },
-    {
-      "id": "a38fc6da-xss-144",
-      "type": "xss",
-      "severity": "high",
-      "confidence": 0.9,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-complex.js",
-      "line": 144,
-      "function_name": "anonymous",
-      "message": "User input in 'status' included in query without escaping",
-      "recommendation": "Escape user input or use parameterized queries to prevent injection"
-    },
-    {
-      "id": "53087fa3-xss-36",
-      "type": "xss",
-      "severity": "critical",
-      "confidence": 0.95,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-routes.js",
-      "line": 36,
-      "function_name": "anonymous",
-      "message": "User input directly concatenated into SQL query (potential HTML rendering risk)",
-      "recommendation": "Sanitize user input before concatenation; use parameterized queries"
-    },
-    {
-      "id": "c7ff4213-xss-86",
-      "type": "xss",
-      "severity": "critical",
-      "confidence": 0.95,
-      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-routes.js",
-      "line": 86,
-      "function_name": "anonymous",
-      "message": "User-controlled SQL query result directly returned in JSON response",
-      "recommendation": "Escape all outputs or sanitize data before sending to client"
-    },
-    {
-      "id": "10cd94e6-xss-122",
-      "type": "xss",
+      "id": "0e46596b-auth_issue-49",
+      "type": "auth_issue",
       "severity": "high",
       "confidence": 0.85,
       "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-prisma.ts",
-      "line": 122,
-      "function_name": "search",
-      "message": "Potentially vulnerable SQL query output may be used in unescaped HTML templates",
-      "recommendation": "Ensure the output of this query is properly escaped before rendering in HTML."
+      "line": 49,
+      "function_name": "findUserById",
+      "message": "Critical SQLi via raw query with user input",
+      "recommendation": "Use Prisma's parameterized queries instead of queryRaw"
     },
     {
-      "id": "d275c018-xss-140",
-      "type": "xss",
+      "id": "10cd94e6-auth_issue-122",
+      "type": "auth_issue",
       "severity": "critical",
       "confidence": 0.95,
       "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-prisma.ts",
-      "line": 140,
-      "function_name": "getUsersByDepartment",
-      "message": "User-controlled query used in template without sanitization",
-      "recommendation": "Escape output or use safe template-rendering methods"
+      "line": 122,
+      "function_name": "search",
+      "message": "SQL Injection via string concatenation in query",
+      "recommendation": "Use parameterized queries with Prisma to prevent SQL injection"
+    },
+    {
+      "id": "a38fc6da-crypto_issue-143",
+      "type": "crypto_issue",
+      "severity": "high",
+      "confidence": 0.8,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-complex.js",
+      "line": 143,
+      "function_name": "anonymous",
+      "message": "Insecure use of ids.join() for query building without proper sanitization",
+      "recommendation": "Use parameterized queries or ORM methods to prevent SQL injection"
+    },
+    {
+      "id": "f41c60c3-sql_injection-21",
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 0.95,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-service.js",
+      "line": 21,
+      "function_name": "getUserById",
+      "message": "User input in $queryRaw template literal in SQL query",
+      "recommendation": "Use parameterized queries with tagged template to prevent injection"
+    },
+    {
+      "id": "9fb245fa-sql_injection-35",
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-service.js",
+      "line": 35,
+      "function_name": "updateUserEmail",
+      "message": "Critical SQLi - $executeRaw with unsanitized input",
+      "recommendation": "Use parameterized queries with prisma.$executeRaw tagged template"
+    },
+    {
+      "id": "8fa0f71b-sql_injection-49",
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-service.js",
+      "line": 49,
+      "function_name": "searchUsers",
+      "message": "User input directly concatenated in SQL query without validation",
+      "recommendation": "Use query parameterization or Prisma's tagged template literals"
+    },
+    {
+      "id": "695a4ea1-sql_injection-65",
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-service.js",
+      "line": 65,
+      "function_name": "getFilteredUsers",
+      "message": "Critical SQLi - building query string with concatenation",
+      "recommendation": "Use prisma.$queryRaw`SELECT * FROM users WHERE age \u003e= ${ageMin}`"
+    },
+    {
+      "id": "b78045f8-sql_injection-101",
+      "type": "sql_injection",
+      "severity": "high",
+      "confidence": 0.9,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-service.js",
+      "line": 101,
+      "function_name": "processOrder",
+      "message": "User-controlled input in raw SQL query via template literals",
+      "recommendation": "Use prisma.$executeRaw with parameterized queries instead of string interpolation"
+    },
+    {
+      "id": "b2d88137-sql_injection-125",
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-service.js",
+      "line": 125,
+      "function_name": "getOrdersSorted",
+      "message": "Dynamic ORDER BY clause using unsanitized input",
+      "recommendation": "Use parameter binding and whitelist valid sort fields/orders"
+    },
+    {
+      "id": "7cc717d6-auth_issue-19",
+      "type": "auth_issue",
+      "severity": "critical",
+      "confidence": 0.95,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-unsafe.js",
+      "line": 19,
+      "function_name": "getUsersByRole",
+      "message": "SQL injection risk due to direct interpolation in query",
+      "recommendation": "Use parameterized queries or Prisma's queryRaw with parameters"
+    },
+    {
+      "id": "3b0731d7-auth_issue-55",
+      "type": "auth_issue",
+      "severity": "critical",
+      "confidence": 0.95,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-unsafe.js",
+      "line": 55,
+      "function_name": "getRecordsByTable",
+      "message": "SQL injection vulnerability due to dynamic table name",
+      "recommendation": "Validate 'tableName' and use parameterized queries"
+    },
+    {
+      "id": "3b0731d7-auth_issue-61",
+      "type": "auth_issue",
+      "severity": "high",
+      "confidence": 0.85,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-unsafe.js",
+      "line": 61,
+      "function_name": "getRecordsByTable",
+      "message": "SQL injection via user input in 'date'",
+      "recommendation": "Use parameterized queries for 'date'"
+    },
+    {
+      "id": "f41c60c3-crypto_issue-11",
+      "type": "crypto_issue",
+      "severity": "critical",
+      "confidence": 0.9,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-service.js",
+      "line": 11,
+      "function_name": "getUserById",
+      "message": "Potential for SQL Injection via user-input in $queryRaw",
+      "recommendation": "Use parameterized queries or context verified inputs"
+    },
+    {
+      "id": "3efe03d5-crypto_issue-25",
+      "type": "crypto_issue",
+      "severity": "high",
+      "confidence": 0.9,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-dynamic.js",
+      "line": 25,
+      "function_name": "getCustomColumns",
+      "message": "Dynamic SQL query construction vulnerable to injection",
+      "recommendation": "Use parameterized queries or ORM query builders to prevent SQL injection"
+    },
+    {
+      "id": "5b16d9ac-crypto_issue-60",
+      "type": "crypto_issue",
+      "severity": "high",
+      "confidence": 0.9,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-models.js",
+      "line": 60,
+      "function_name": "getProductsSorted",
+      "message": "Dynamic ORDER BY clause in SQL query may lead to SQL injection",
+      "recommendation": "Use parameterized queries or ORM methods to handle sorting"
+    },
+    {
+      "id": "1e2106d4-crypto_issue-84",
+      "type": "crypto_issue",
+      "severity": "critical",
+      "confidence": 0.9,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-models.js",
+      "line": 84,
+      "function_name": "getFilteredUsers",
+      "message": "SQL Injection vulnerability due to query string concatenation",
+      "recommendation": "Use parameterized queries or prepared statements to prevent SQL injection."
+    },
+    {
+      "id": "0e46596b-crypto_issue-26",
+      "type": "crypto_issue",
+      "severity": "critical",
+      "confidence": 0.95,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-prisma.ts",
+      "line": 26,
+      "function_name": "findUserById",
+      "message": "Potential SQL Injection via $queryRaw with user input",
+      "recommendation": "Use parameterized queries with prisma.$queryRawUnsafe() to prevent injections"
+    },
+    {
+      "id": "7f10417e-crypto_issue-225",
+      "type": "crypto_issue",
+      "severity": "critical",
+      "confidence": 0.95,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-prisma.ts",
+      "line": 225,
+      "function_name": "findByField",
+      "message": "Hardcoded SQL queries with dynamic user input",
+      "recommendation": "Use parameterized queries to prevent SQL injection"
+    },
+    {
+      "id": "53087fa3-sql_injection-36",
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-routes.js",
+      "line": 36,
+      "function_name": "anonymous",
+      "message": "Critical SQLi - direct concatenation of user input into SQL query",
+      "recommendation": "Use parameterized queries with placeholders, e.g., db.query('SELECT * FROM users WHERE id = ?', [userId])"
+    },
+    {
+      "id": "1bafa9b1-sql_injection-60",
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-routes.js",
+      "line": 60,
+      "function_name": "anonymous",
+      "message": "URL parameter directly concatenated into SQL query",
+      "recommendation": "Use parameterized queries with placeholders instead of template literals"
+    },
+    {
+      "id": "c7ff4213-sql_injection-86",
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-routes.js",
+      "line": 86,
+      "function_name": "anonymous",
+      "message": "Critical SQLi - POST body parameters in SQL string",
+      "recommendation": "Use parameterized queries or prepared statements to avoid SQL injection."
+    },
+    {
+      "id": "fbccfa87-sql_injection-121",
+      "type": "sql_injection",
+      "severity": "high",
+      "confidence": 0.9,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-routes.js",
+      "line": 121,
+      "function_name": "anonymous",
+      "message": "Dynamic ORDER BY clause with user input",
+      "recommendation": "Use parameterized queries or validate 'sort' and 'order' values"
+    },
+    {
+      "id": "3efe03d5-sql_injection-27",
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 0.95,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-dynamic.js",
+      "line": 27,
+      "function_name": "getCustomColumns",
+      "message": "Dynamic query constructed using template literals without parameterization",
+      "recommendation": "Use parameterized queries with replacements parameter in sequelize.query()"
+    },
+    {
+      "id": "9bae1663-sql_injection-43",
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-dynamic.js",
+      "line": 43,
+      "function_name": "getJoinedData",
+      "message": "Dynamic JOIN condition uses unsanitized user input",
+      "recommendation": "Use sequelize.query with parameterized replacements instead of string interpolation"
+    },
+    {
+      "id": "13046504-sql_injection-67",
+      "type": "sql_injection",
+      "severity": "high",
+      "confidence": 0.9,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-dynamic.js",
+      "line": 67,
+      "function_name": "getAggregatedData",
+      "message": "Dynamic SQL query with unsanitized input for GROUP BY and aggregate function",
+      "recommendation": "Use replacements parameter in sequelize.query for all dynamic segments"
+    },
+    {
+      "id": "2fbde102-sql_injection-91",
+      "type": "sql_injection",
+      "severity": "high",
+      "confidence": 0.9,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-dynamic.js",
+      "line": 91,
+      "function_name": "getFilteredAggregates",
+      "message": "Unsanitized user input in SQL query via template literals",
+      "recommendation": "Use parameterized queries with replacements in sequelize.query"
+    },
+    {
+      "id": "a4f74d34-sql_injection-119",
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-dynamic.js",
+      "line": 119,
+      "function_name": "searchAcrossTables",
+      "message": "User input directly concatenated into SQL query without validation",
+      "recommendation": "Use parameterized queries with replacements in sequelize.query"
+    },
+    {
+      "id": "434ac079-sql_injection-141",
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 0.95,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-dynamic.js",
+      "line": 141,
+      "function_name": "deleteRecords",
+      "message": "User input directly concatenated into DELETE SQL query",
+      "recommendation": "Use parameterized queries with replacements to avoid SQL injection"
+    },
+    {
+      "id": "a38fc6da-auth_issue-135",
+      "type": "auth_issue",
+      "severity": "high",
+      "confidence": 0.9,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-complex.js",
+      "line": 135,
+      "function_name": "anonymous",
+      "message": "Missing authentication middleware on route",
+      "recommendation": "Ensure authentication middleware is applied to protect this route"
+    },
+    {
+      "id": "a38fc6da-auth_issue-143",
+      "type": "auth_issue",
+      "severity": "high",
+      "confidence": 0.85,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-complex.js",
+      "line": 143,
+      "function_name": "anonymous",
+      "message": "Susceptible to SQLi due to unsanitized input",
+      "recommendation": "Use parameterized queries to prevent SQL injection"
+    },
+    {
+      "id": "2fbde102-auth_issue-91",
+      "type": "auth_issue",
+      "severity": "high",
+      "confidence": 0.9,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/sequelize-dynamic.js",
+      "line": 91,
+      "function_name": "getFilteredAggregates",
+      "message": "Dynamic SQL query uses user input directly",
+      "recommendation": "Use parameterized queries or ORM methods to prevent SQLi"
+    },
+    {
+      "id": "76579420-crypto_issue-102",
+      "type": "crypto_issue",
+      "severity": "critical",
+      "confidence": 0.95,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-express.ts",
+      "line": 102,
+      "function_name": "anonymous",
+      "message": "Plaintext password usage in SQL query",
+      "recommendation": "Use bcrypt for hashing passwords and parameterized queries"
+    },
+    {
+      "id": "7cc717d6-sql_injection-19",
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-unsafe.js",
+      "line": 19,
+      "function_name": "getUsersByRole",
+      "message": "User input directly in SQL query",
+      "recommendation": "Use prisma.sql tagged template for parameter binding"
+    },
+    {
+      "id": "6c29b4c0-sql_injection-31",
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-unsafe.js",
+      "line": 31,
+      "function_name": "getUserWithOrders",
+      "message": "userId directly concatenated into SQL query",
+      "recommendation": "Use parameterized queries with prisma.$queryRaw"
+    },
+    {
+      "id": "3b0731d7-sql_injection-55",
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-unsafe.js",
+      "line": 55,
+      "function_name": "getRecordsByTable",
+      "message": "User input directly concatenated into SQL query",
+      "recommendation": "Use parameterized queries or template tags with Prisma"
+    },
+    {
+      "id": "66dc9bd0-sql_injection-88",
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 0.95,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-unsafe.js",
+      "line": 88,
+      "function_name": "getStatsByCategory",
+      "message": "Dynamic SQL using template literals with unsanitized user inputs",
+      "recommendation": "Use prisma.$queryRaw tagged templates for parameterized queries"
+    },
+    {
+      "id": "8f642b63-sql_injection-112",
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-unsafe.js",
+      "line": 112,
+      "function_name": "getTopUsers",
+      "message": "User-controlled limit and condition directly in SQL string",
+      "recommendation": "Use parameterized queries or validate inputs for 'limit' and 'condition'"
+    },
+    {
+      "id": "8058766a-sql_injection-65",
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-express.ts",
+      "line": 65,
+      "function_name": "anonymous",
+      "message": "User input directly concatenated into SQL query",
+      "recommendation": "Use parameterized queries or bind variables instead of template literals"
+    },
+    {
+      "id": "76579420-sql_injection-102",
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 0.95,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-express.ts",
+      "line": 102,
+      "function_name": "anonymous",
+      "message": "User input directly concatenated in SQL query",
+      "recommendation": "Use parameterized queries with placeholders instead of string concatenation"
+    },
+    {
+      "id": "9c2dd1b0-sql_injection-141",
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-express.ts",
+      "line": 141,
+      "function_name": "searchProducts",
+      "message": "User input concatenated into SQL query without validation",
+      "recommendation": "Use parameterized queries to bind 'searchTerm' securely"
+    },
+    {
+      "id": "c9daad61-sql_injection-187",
+      "type": "sql_injection",
+      "severity": "high",
+      "confidence": 0.9,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-express.ts",
+      "line": 187,
+      "function_name": "updateUser",
+      "message": "User input directly concatenated in SQL query",
+      "recommendation": "Use parameterized queries or prepared statements to handle inputs securely"
+    },
+    {
+      "id": "53087fa3-auth_issue-22",
+      "type": "auth_issue",
+      "severity": "medium",
+      "confidence": 0.8,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-routes.js",
+      "line": 22,
+      "function_name": "anonymous",
+      "message": "Possible missing authentication middleware on sensitive endpoint",
+      "recommendation": "Ensure authentication middleware is applied to sensitive routes to prevent unauthorized access"
+    },
+    {
+      "id": "c7ff4213-auth_issue-44",
+      "type": "auth_issue",
+      "severity": "high",
+      "confidence": 0.8,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/express-routes.js",
+      "line": 44,
+      "function_name": "anonymous",
+      "message": "Missing authentication middleware on protected route",
+      "recommendation": "Add authentication middleware to protect the endpoint"
+    },
+    {
+      "id": "8fa0f71b-auth_issue-26",
+      "type": "auth_issue",
+      "severity": "critical",
+      "confidence": 0.95,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-service.js",
+      "line": 26,
+      "function_name": "searchUsers",
+      "message": "Dynamic column name in SQL query leading to SQL Injection",
+      "recommendation": "Use parameterized queries to prevent SQL injection"
+    },
+    {
+      "id": "9fb245fa-auth_issue-35",
+      "type": "auth_issue",
+      "severity": "high",
+      "confidence": 0.8,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-service.js",
+      "line": 35,
+      "function_name": "updateUserEmail",
+      "message": "Potential IDOR due to unchecked userId",
+      "recommendation": "Validate access rights for userId before executing query"
+    },
+    {
+      "id": "b2d88137-auth_issue-125",
+      "type": "auth_issue",
+      "severity": "high",
+      "confidence": 0.95,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/prisma-service.js",
+      "line": 125,
+      "function_name": "getOrdersSorted",
+      "message": "SQL injection risk in dynamic ORDER BY clause",
+      "recommendation": "Use parameterized queries to safely handle sort fields and order"
+    },
+    {
+      "id": "8058766a-auth_issue-33",
+      "type": "auth_issue",
+      "severity": "critical",
+      "confidence": 1,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-express.ts",
+      "line": 33,
+      "function_name": "anonymous",
+      "message": "SQL query uses user input directly; potential IDOR",
+      "recommendation": "Use parameterized queries to prevent IDOR and SQLi vulnerabilities"
+    },
+    {
+      "id": "76579420-auth_issue-102",
+      "type": "auth_issue",
+      "severity": "high",
+      "confidence": 0.9,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-express.ts",
+      "line": 102,
+      "function_name": "anonymous",
+      "message": "Hardcoded credentials in SQL query",
+      "recommendation": "Use parameterized queries and hash passwords"
+    },
+    {
+      "id": "c9daad61-auth_issue-187",
+      "type": "auth_issue",
+      "severity": "high",
+      "confidence": 0.9,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-express.ts",
+      "line": 187,
+      "function_name": "updateUser",
+      "message": "Possible SQL Injection with user-supplied data",
+      "recommendation": "Use parameterized queries or prepared statements"
+    },
+    {
+      "id": "c06b2f9f-auth_issue-217",
+      "type": "auth_issue",
+      "severity": "high",
+      "confidence": 0.8,
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli/typescript-express.ts",
+      "line": 217,
+      "function_name": "anonymous",
+      "message": "Missing authentication middleware on route handler",
+      "recommendation": "Add authentication middleware to ensure endpoint is protected"
     }
   ],
   "summary": {
-    "total_findings": 60,
+    "total_findings": 68,
     "by_severity": {
-      "critical": 58,
-      "high": 2
+      "critical": 44,
+      "high": 22,
+      "medium": 2
     },
     "by_type": {
-      "sql_injection": 45,
-      "xss": 15
+      "auth_issue": 18,
+      "crypto_issue": 8,
+      "sql_injection": 42
     }
   }
 }

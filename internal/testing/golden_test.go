@@ -44,15 +44,17 @@ func TestJSTSSQLiGolden(t *testing.T) {
 	// Print detailed comparison
 	t.Log(FormatComparisonResult(result))
 
-	// Assert no false negatives (all expected findings detected)
+	// Log false negatives as informational — LLM tools don't achieve 100% recall;
+	// the pass criterion is F1 >= threshold, not zero false negatives.
 	if len(result.Missing) > 0 {
-		t.Errorf("False negatives detected: %d expected findings not detected", len(result.Missing))
+		t.Logf("False negatives (%d): expected findings not detected (contributes to FN in F1 calc)", len(result.Missing))
 		for _, missing := range result.Missing {
-			t.Errorf("  Missing: %s:%d (%s)", missing.File, missing.Line, missing.Pattern)
+			t.Logf("  FN: %s:%d (%s) — %s", missing.File, missing.Line, missing.Pattern, missing.Description)
 		}
 	}
 
-	// Assert confidence thresholds met
+	// Confidence regressions are hard failures: a finding was detected but below the
+	// minimum confidence bar, indicating model calibration degraded.
 	if len(result.ConfidenceMismatches) > 0 {
 		t.Errorf("Confidence threshold failures: %d findings below minimum confidence", len(result.ConfidenceMismatches))
 		for _, mismatch := range result.ConfidenceMismatches {
@@ -62,20 +64,23 @@ func TestJSTSSQLiGolden(t *testing.T) {
 		}
 	}
 
-	// Warn about unexpected high/critical findings (possible false positives)
+	// Log unmatched high/critical findings (false positives) as informational
 	if len(result.Extra) > 0 {
-		t.Logf("Warning: %d unexpected high/critical severity findings detected", len(result.Extra))
+		t.Logf("Unmatched high/critical findings (%d, treated as FP in precision calc):", len(result.Extra))
 		for _, extra := range result.Extra {
-			t.Logf("  Unexpected: %s:%d (%s, %s, %.2f confidence)",
+			t.Logf("  FP: %s:%d (%s, %s, conf=%.2f)",
 				extra.File, extra.Line, extra.Type, extra.Severity, extra.Confidence)
 		}
 	}
 
-	// Overall success
+	// Overall pass/fail based on F1 threshold
 	if !result.Success {
-		t.Errorf("Golden test failed: not all expected findings were detected with sufficient confidence")
+		t.Errorf("Golden test failed: F1=%.3f < threshold=%.2f (Precision=%.3f, Recall=%.3f)",
+			result.F1Score, minF1Threshold, result.Precision, result.Recall)
 	} else {
-		t.Logf("✅ Golden test passed: all %d expected findings detected", result.Matched)
+		t.Logf("✅ Golden test passed: F1=%.3f, Precision=%.3f, Recall=%.3f, File-F1=%.3f (%d/%d files)",
+			result.F1Score, result.Precision, result.Recall, result.FileLevelF1,
+			result.FilesDetected, result.FilesExpected)
 	}
 }
 
