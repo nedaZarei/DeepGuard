@@ -1,0 +1,224 @@
+{
+  "description": "Multi-type, multi-file Python benchmark. 29 labeled findings across 4 files and 9 vulnerability types. Designed to expose the limits of pattern-matching tools (Bandit) vs LLM semantic analysis (Deep-Guard).",
+  "scan_metadata": {
+    "target_path": "test-samples/python-multi-vuln/",
+    "vulnerability_types": ["sql_injection", "ssrf", "xss", "command_injection", "insecure_secret", "crypto_issue", "jwt_issue", "insecure_deserialization", "path_traversal", "xxe_injection"],
+    "confidence_threshold": 0.5,
+    "total_expected_findings": 29
+  },
+  "expected_findings": [
+    {
+      "file": "web_api.py", "line": 21, "type": "sql_injection", "severity": "critical",
+      "confidence_min": 0.7, "pattern": "f-string in SQL LIKE",
+      "description": "User name parameter interpolated into SQL LIKE query via f-string",
+      "bandit_detected": true, "bandit_rule": "B608 MEDIUM/LOW"
+    },
+    {
+      "file": "web_api.py", "line": 34, "type": "sql_injection", "severity": "critical",
+      "confidence_min": 0.7, "pattern": "dynamic ORDER BY concatenation",
+      "description": "User-controlled sort column and direction concatenated into ORDER BY clause",
+      "bandit_detected": true, "bandit_rule": "B608 MEDIUM/LOW"
+    },
+    {
+      "file": "web_api.py", "line": 47, "type": "ssrf", "severity": "critical",
+      "confidence_min": 0.7, "pattern": "requests.get(user-supplied URL)",
+      "description": "Unrestricted SSRF — attacker supplies any URL; server fetches it including internal services and AWS metadata",
+      "bandit_detected": false, "bandit_rule": "— (Bandit has no SSRF detection rules)"
+    },
+    {
+      "file": "web_api.py", "line": 57, "type": "ssrf", "severity": "critical",
+      "confidence_min": 0.7, "pattern": "requests.post(user-controlled webhook)",
+      "description": "SSRF via webhook endpoint — server POSTs to attacker-controlled URL",
+      "bandit_detected": false, "bandit_rule": "— (Bandit has no SSRF detection rules)"
+    },
+    {
+      "file": "web_api.py", "line": 68, "type": "xss", "severity": "high",
+      "confidence_min": 0.6, "pattern": "render_template_string with concatenated user input",
+      "description": "Username concatenated into HTML string before render_template_string — Jinja autoescape has no effect on pre-interpolated strings",
+      "bandit_detected": false, "bandit_rule": "— (B702 does not trace concatenation into render_template_string)"
+    },
+    {
+      "file": "web_api.py", "line": 75, "type": "xss", "severity": "high",
+      "confidence_min": 0.6, "pattern": "render_template_string with f-string user input",
+      "description": "Reflected XSS — msg from query string embedded unescaped into error page via f-string",
+      "bandit_detected": false, "bandit_rule": "— (Bandit does not analyse f-string context inside render_template_string)"
+    },
+    {
+      "file": "web_api.py", "line": 84, "type": "command_injection", "severity": "critical",
+      "confidence_min": 0.8, "pattern": "os.popen with user-controlled f-string",
+      "description": "Host parameter from query string injected into ping command via os.popen",
+      "bandit_detected": true, "bandit_rule": "B605 HIGH/HIGH"
+    },
+    {
+      "file": "auth_module.py", "line": 11, "type": "insecure_secret", "severity": "high",
+      "confidence_min": 0.7, "pattern": "hardcoded DB password",
+      "description": "Database password hardcoded in source — exposed in version control",
+      "bandit_detected": true, "bandit_rule": "B105 LOW/MEDIUM"
+    },
+    {
+      "file": "auth_module.py", "line": 12, "type": "insecure_secret", "severity": "critical",
+      "confidence_min": 0.7, "pattern": "hardcoded JWT signing secret",
+      "description": "JWT signing secret hardcoded — attacker can forge any token",
+      "bandit_detected": true, "bandit_rule": "B105 LOW/MEDIUM"
+    },
+    {
+      "file": "auth_module.py", "line": 13, "type": "insecure_secret", "severity": "high",
+      "confidence_min": 0.7, "pattern": "hardcoded admin bearer token",
+      "description": "Admin API bearer token hardcoded in source",
+      "bandit_detected": true, "bandit_rule": "B105 LOW/MEDIUM"
+    },
+    {
+      "file": "auth_module.py", "line": 18, "type": "crypto_issue", "severity": "high",
+      "confidence_min": 0.7, "pattern": "MD5 for password hashing",
+      "description": "hashlib.md5 used for password hashing — MD5 is broken for security use; use bcrypt/argon2",
+      "bandit_detected": true, "bandit_rule": "B324 HIGH/HIGH"
+    },
+    {
+      "file": "auth_module.py", "line": 23, "type": "crypto_issue", "severity": "high",
+      "confidence_min": 0.7, "pattern": "SHA1 for security tokens",
+      "description": "hashlib.sha1 used for password reset tokens — SHA1 is cryptographically weak",
+      "bandit_detected": true, "bandit_rule": "B324 HIGH/HIGH"
+    },
+    {
+      "file": "auth_module.py", "line": 32, "type": "sql_injection", "severity": "critical",
+      "confidence_min": 0.8, "pattern": "string concatenation in authentication query",
+      "description": "Username and password hash concatenated into login SQL — textbook authentication bypass",
+      "bandit_detected": true, "bandit_rule": "B608 MEDIUM/LOW"
+    },
+    {
+      "file": "auth_module.py", "line": 45, "type": "sql_injection", "severity": "critical",
+      "confidence_min": 0.7, "pattern": "f-string with user_id in profile query",
+      "description": "user_id from caller (externally controlled) injected via f-string into profile SELECT",
+      "bandit_detected": true, "bandit_rule": "B608 MEDIUM/LOW"
+    },
+    {
+      "file": "auth_module.py", "line": 56, "type": "jwt_issue", "severity": "critical",
+      "confidence_min": 0.7, "pattern": "jwt.decode with algorithms=None",
+      "description": "No algorithm enforcement — algorithms=None allows none/HS256/RS256 confusion attack; attacker can craft unsigned tokens",
+      "bandit_detected": false, "bandit_rule": "— (Bandit has no JWT-specific rules)"
+    },
+    {
+      "file": "auth_module.py", "line": 67, "type": "insecure_deserialization", "severity": "critical",
+      "confidence_min": 0.8, "pattern": "pickle.loads on base64-decoded session cookie",
+      "description": "Arbitrary code execution via pickle.loads on user-controlled session data",
+      "bandit_detected": true, "bandit_rule": "B301 MEDIUM/HIGH"
+    },
+    {
+      "file": "file_handler.py", "line": 21, "type": "path_traversal", "severity": "high",
+      "confidence_min": 0.7, "pattern": "base_dir + '/' + user_input",
+      "description": "report_name from request.args concatenated onto base path — ../../etc/passwd escapes REPORTS_DIR",
+      "bandit_detected": false, "bandit_rule": "— (Bandit cannot trace request.args → string concatenation → send_file)"
+    },
+    {
+      "file": "file_handler.py", "line": 32, "type": "path_traversal", "severity": "high",
+      "confidence_min": 0.7, "pattern": "os.path.join with unsanitized filename",
+      "description": "filename from request.args passed to os.path.join — an absolute filename overrides the base directory",
+      "bandit_detected": false, "bandit_rule": "— (Bandit has no taint analysis for os.path.join arguments)"
+    },
+    {
+      "file": "file_handler.py", "line": 40, "type": "path_traversal", "severity": "high",
+      "confidence_min": 0.6, "pattern": "os.path.join with user-controlled template name",
+      "description": "template_name from request.args appended in os.path.join — template injection or path escape",
+      "bandit_detected": false, "bandit_rule": "— (Bandit has no taint analysis for os.path.join arguments)"
+    },
+    {
+      "file": "file_handler.py", "line": 54, "type": "path_traversal", "severity": "critical",
+      "confidence_min": 0.7, "pattern": "zip slip via zf.extract without path validation",
+      "description": "ZipFile.extract() called for every member without checking the resolved path stays inside dest_dir — zip slip allows writing anywhere on the filesystem",
+      "bandit_detected": false, "bandit_rule": "— (Bandit has no zip-slip detection rule)"
+    },
+    {
+      "file": "file_handler.py", "line": 66, "type": "path_traversal", "severity": "critical",
+      "confidence_min": 0.7, "pattern": "arbitrary file write via open(user_path, 'w')",
+      "description": "config_path from request JSON written to directly — arbitrary file overwrite including system files",
+      "bandit_detected": false, "bandit_rule": "— (Bandit has no arbitrary-file-write rule for open())"
+    },
+    {
+      "file": "data_processor.py", "line": 19, "type": "insecure_deserialization", "severity": "critical",
+      "confidence_min": 0.8, "pattern": "pickle.loads on base64-decoded external data",
+      "description": "restore_object() calls pickle.loads on base64-decoded caller-supplied data — RCE",
+      "bandit_detected": true, "bandit_rule": "B301 MEDIUM/HIGH"
+    },
+    {
+      "file": "data_processor.py", "line": 25, "type": "insecure_deserialization", "severity": "critical",
+      "confidence_min": 0.8, "pattern": "pickle.loads on state bytes",
+      "description": "load_job_state() calls pickle.loads directly on bytes from the caller — no validation",
+      "bandit_detected": true, "bandit_rule": "B301 MEDIUM/HIGH"
+    },
+    {
+      "file": "data_processor.py", "line": 35, "type": "command_injection", "severity": "critical",
+      "confidence_min": 0.8, "pattern": "subprocess.run with shell=True and user output_format",
+      "description": "output_format parameter injected into pandoc shell command — semicolons or pipes execute arbitrary commands",
+      "bandit_detected": true, "bandit_rule": "B602 HIGH/HIGH"
+    },
+    {
+      "file": "data_processor.py", "line": 45, "type": "command_injection", "severity": "critical",
+      "confidence_min": 0.8, "pattern": "subprocess.check_output shell=True with user dataset_name",
+      "description": "dataset_name concatenated into shell command string — command injection via shell metacharacters",
+      "bandit_detected": true, "bandit_rule": "B602 HIGH/HIGH"
+    },
+    {
+      "file": "data_processor.py", "line": 61, "type": "xxe_injection", "severity": "high",
+      "confidence_min": 0.6, "pattern": "lxml XMLParser without resolve_entities=False",
+      "description": "lxml.etree parses external entities by default — XXE allows reading local files or SSRF via HTTP entities",
+      "bandit_detected": false, "bandit_rule": "— (Bandit B313-B320 cover stdlib XML but not lxml)"
+    },
+    {
+      "file": "data_processor.py", "line": 69, "type": "xxe_injection", "severity": "high",
+      "confidence_min": 0.6, "pattern": "ET.fromstring on untrusted XML",
+      "description": "xml.etree.ElementTree.fromstring parses user-supplied XML — vulnerable to entity expansion attacks on older Python or with malicious input",
+      "bandit_detected": true, "bandit_rule": "B314 MEDIUM/HIGH"
+    },
+    {
+      "file": "data_processor.py", "line": 78, "type": "crypto_issue", "severity": "high",
+      "confidence_min": 0.6, "pattern": "random.choice for session token",
+      "description": "random module (not cryptographically secure) used to generate session tokens — predictable with knowledge of seed",
+      "bandit_detected": true, "bandit_rule": "B311 LOW/HIGH"
+    },
+    {
+      "file": "data_processor.py", "line": 84, "type": "crypto_issue", "severity": "high",
+      "confidence_min": 0.6, "pattern": "random.randint for password reset token",
+      "description": "6-digit random.randint token for password reset — only 900,000 possible values, brute-forceable in seconds",
+      "bandit_detected": true, "bandit_rule": "B311 LOW/HIGH"
+    }
+  ],
+  "bandit_summary": {
+    "tool": "Bandit 1.8.6",
+    "confirmed_total_findings": 23,
+    "tp_matching_ground_truth": 18,
+    "fp_not_in_ground_truth": 5,
+    "fp_details": [
+      "auth_module.py:67 B301 (GT:67 was consumed by B403 import warning at :64)",
+      "data_processor.py:5 B403 pickle import (informational)",
+      "data_processor.py:7 B404 subprocess import (informational)",
+      "data_processor.py:10 B405 xml.etree import (informational)",
+      "web_api.py:89 B201 Flask debug=True (real issue, outside scope)"
+    ],
+    "fn_missed_by_bandit": 11,
+    "bandit_blind_spots": {
+      "ssrf": "0/2 — Bandit has zero SSRF detection rules",
+      "xss": "0/2 — Bandit B702 does not trace data flow into render_template_string",
+      "jwt_issue": "0/1 — Bandit has no JWT-specific rules",
+      "path_traversal": "0/5 — Bandit cannot trace request.args through os.path.join/concatenation to file ops",
+      "lxml_xxe": "0/1 — B314 covers stdlib ET, not lxml.etree"
+    }
+  },
+  "severity_breakdown": {
+    "critical": 16,
+    "high": 13,
+    "medium": 0,
+    "low": 0
+  },
+  "vulnerability_type_breakdown": {
+    "sql_injection": 4,
+    "ssrf": 2,
+    "xss": 2,
+    "command_injection": 3,
+    "insecure_secret": 3,
+    "crypto_issue": 4,
+    "jwt_issue": 1,
+    "insecure_deserialization": 3,
+    "path_traversal": 5,
+    "xxe_injection": 2
+  }
+}
