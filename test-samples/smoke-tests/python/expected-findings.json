@@ -1,0 +1,113 @@
+{
+  "description": "Ground truth for Python smoke-test samples. Covers 8 vulnerability instances across 2 files.",
+  "scan_metadata": {
+    "target_path": "test-samples/smoke-tests/python/",
+    "vulnerability_types": ["sql_injection", "command_injection", "path_traversal", "crypto_issue", "insecure_deserialization", "insecure_secret"],
+    "confidence_threshold": 0.5,
+    "total_expected_findings": 8
+  },
+  "expected_findings": [
+    {
+      "file": "api.py",
+      "line": 21,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.7,
+      "pattern": "%-format in SQL",
+      "description": "User-controlled URL parameter injected into SQL via % string format",
+      "bandit_detected": true,
+      "bandit_rule": "B608 MEDIUM/LOW"
+    },
+    {
+      "file": "api.py",
+      "line": 39,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.7,
+      "pattern": "f-string in SQL",
+      "description": "User-controlled query param injected via f-string in LIKE query",
+      "bandit_detected": true,
+      "bandit_rule": "B608 MEDIUM/LOW"
+    },
+    {
+      "file": "api.py",
+      "line": 53,
+      "type": "path_traversal",
+      "severity": "high",
+      "confidence_min": 0.6,
+      "pattern": "unsanitized os.path.join with user input",
+      "description": "filename from request.args flows unsanitized into os.path.join and send_file — path traversal allows access outside /var/www/uploads",
+      "bandit_detected": false,
+      "bandit_rule": "— (Bandit cannot trace request.args to os.path.join)"
+    },
+    {
+      "file": "api.py",
+      "line": 65,
+      "type": "command_injection",
+      "severity": "critical",
+      "confidence_min": 0.8,
+      "pattern": "os.popen with user-controlled f-string",
+      "description": "host parameter from request.args injected directly into os.popen ping command",
+      "bandit_detected": true,
+      "bandit_rule": "B605 HIGH/HIGH"
+    },
+    {
+      "file": "auth.py",
+      "line": 9,
+      "type": "insecure_secret",
+      "severity": "high",
+      "confidence_min": 0.7,
+      "pattern": "hardcoded credentials",
+      "description": "Hardcoded DB_PASSWORD and API_KEY in source code",
+      "bandit_detected": true,
+      "bandit_rule": "B105 LOW/MEDIUM (DB_PASSWORD only; API_KEY missed)"
+    },
+    {
+      "file": "auth.py",
+      "line": 15,
+      "type": "crypto_issue",
+      "severity": "high",
+      "confidence_min": 0.7,
+      "pattern": "MD5 for password hashing",
+      "description": "hashlib.md5 used for password hashing — MD5 is broken for security use",
+      "bandit_detected": true,
+      "bandit_rule": "B324 HIGH/HIGH"
+    },
+    {
+      "file": "auth.py",
+      "line": 24,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.7,
+      "pattern": "string concatenation in authentication SQL",
+      "description": "username and password concatenated into authentication query — classic SQLi in login",
+      "bandit_detected": true,
+      "bandit_rule": "B608 MEDIUM/LOW"
+    },
+    {
+      "file": "auth.py",
+      "line": 36,
+      "type": "insecure_deserialization",
+      "severity": "critical",
+      "confidence_min": 0.8,
+      "pattern": "pickle.loads on external data",
+      "description": "pickle.loads called on base64-decoded external session data — arbitrary code execution",
+      "bandit_detected": true,
+      "bandit_rule": "B301 MEDIUM/HIGH"
+    }
+  ],
+  "bandit_summary": {
+    "tool": "Bandit 1.8.6",
+    "total_findings": 9,
+    "findings_matching_ground_truth": 7,
+    "extra_findings": 2,
+    "extra_finding_notes": [
+      "api.py:70 Flask debug=True (real issue, outside our ground-truth scope)",
+      "auth.py:5 B403 pickle module import warning (informational, not a direct vulnerability)"
+    ],
+    "missed_findings": 1,
+    "missed_finding_notes": [
+      "api.py:53 path_traversal — Bandit has no inter-procedural data flow; cannot trace request.args → os.path.join → send_file"
+    ]
+  }
+}
