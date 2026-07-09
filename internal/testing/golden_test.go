@@ -75,12 +75,12 @@ func TestJSTSSQLiGolden(t *testing.T) {
 
 	// Overall pass/fail based on F1 threshold
 	if !result.Success {
-		t.Errorf("Golden test failed: F1=%.3f < threshold=%.2f (Precision=%.3f, Recall=%.3f)",
-			result.F1Score, minF1Threshold, result.Precision, result.Recall)
+		t.Errorf("Golden test failed: type-constrained F1=%.3f < threshold=%.2f (Prec=%.3f, Rec=%.3f)",
+			result.F1ScoreTyped, minF1Threshold, result.PrecisionTyped, result.RecallTyped)
 	} else {
-		t.Logf("✅ Golden test passed: F1=%.3f, Precision=%.3f, Recall=%.3f, File-F1=%.3f (%d/%d files)",
-			result.F1Score, result.Precision, result.Recall, result.FileLevelF1,
-			result.FilesDetected, result.FilesExpected)
+		t.Logf("✅ Golden test passed: type-constrained F1=%.3f (Prec=%.3f, Rec=%.3f) | unconstrained F1=%.3f | File-F1=%.3f (%d/%d files)",
+			result.F1ScoreTyped, result.PrecisionTyped, result.RecallTyped,
+			result.F1Score, result.FileLevelF1, result.FilesDetected, result.FilesExpected)
 	}
 }
 

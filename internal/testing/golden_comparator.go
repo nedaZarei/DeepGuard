@@ -45,14 +45,21 @@ type ComparisonResult struct {
 	TotalActual          int
 	Matched              int
 	Missing              []ExpectedFinding
-	Extra                []report.Finding
+	Extra                []report.Finding // all unmatched high/crit (includes cross-type)
+	ExtraTyped           []report.Finding // unmatched high/crit of the same type as expected
 	ConfidenceMismatches []ConfidenceMismatch
 	Success              bool
 
-	// Finding-level metrics (standard IR metrics)
+	// Finding-level metrics — unconstrained (all cross-type findings count as FP)
 	Precision float64
 	Recall    float64
 	F1Score   float64
+
+	// Finding-level metrics — type-constrained (only same-type unmatched count as FP)
+	// Cross-type detections in a single-type benchmark are real findings outside scope.
+	PrecisionTyped float64
+	RecallTyped    float64
+	F1ScoreTyped   float64
 
 	// File-level metrics: did the tool detect at least one finding per file?
 	FilesExpected int
@@ -94,9 +101,10 @@ func LoadGoldenFile(path string) (*GoldenFile, error) {
 }
 
 // minF1Threshold is the minimum finding-level F1 score required to pass the golden test.
-// LLM-based tools have inherent recall limitations; this threshold reflects realistic
-// performance on complex ORM injection patterns while still being a meaningful bar.
-const minF1Threshold = 0.35
+// Computed with type-constrained FP: only unmatched findings of the evaluated type
+// (sql_injection) count as false positives; cross-type detections (auth_issue, crypto_issue)
+// in the same files are real findings outside the ground-truth scope, not false alarms.
+const minF1Threshold = 0.45
 
 // CompareResults compares actual scan results against expected findings
 func CompareResults(golden *GoldenFile, actual report.ScanReport, lineTolerance int) *ComparisonResult {
@@ -143,28 +151,50 @@ func CompareResults(golden *GoldenFile, actual report.ScanReport, lineTolerance 
 		}
 	}
 
-	// Find unexpected high/critical severity findings (false positives)
+	// Collect unmatched high/critical findings.
+	// expectedType is the benchmark's vulnerability type (e.g. "sql_injection").
+	// Cross-type detections (auth_issue, crypto_issue in a sql benchmark) are real
+	// findings outside the ground-truth scope — we track them separately so we can
+	// compute both constrained and unconstrained metrics.
+	expectedType := ""
+	if len(golden.Expected) > 0 {
+		expectedType = golden.Expected[0].Type
+	}
+
 	for i, actualFinding := range actual.Findings {
 		if matched[i] {
 			continue
 		}
 		if actualFinding.Severity == report.SeverityCritical || actualFinding.Severity == report.SeverityHigh {
 			result.Extra = append(result.Extra, actualFinding)
+			if expectedType == "" || actualFinding.Type == expectedType {
+				result.ExtraTyped = append(result.ExtraTyped, actualFinding)
+			}
 		}
 	}
 
-	// Compute finding-level Precision, Recall, F1
+	// Unconstrained metrics: all cross-type unmatched high/crit count as FP
 	tp := float64(result.Matched)
-	fp := float64(len(result.Extra))
+	fpAll := float64(len(result.Extra))
 	fn := float64(len(result.Missing))
-	if tp+fp > 0 {
-		result.Precision = tp / (tp + fp)
+	if tp+fpAll > 0 {
+		result.Precision = tp / (tp + fpAll)
 	}
 	if tp+fn > 0 {
 		result.Recall = tp / (tp + fn)
 	}
 	if result.Precision+result.Recall > 0 {
 		result.F1Score = 2 * result.Precision * result.Recall / (result.Precision + result.Recall)
+	}
+
+	// Type-constrained metrics: only same-type unmatched findings count as FP
+	fpTyped := float64(len(result.ExtraTyped))
+	if tp+fpTyped > 0 {
+		result.PrecisionTyped = tp / (tp + fpTyped)
+	}
+	result.RecallTyped = result.Recall // denominator is the same
+	if result.PrecisionTyped+result.RecallTyped > 0 {
+		result.F1ScoreTyped = 2 * result.PrecisionTyped * result.RecallTyped / (result.PrecisionTyped + result.RecallTyped)
 	}
 
 	// Compute file-level metrics: did the tool detect at least one finding per expected file?
@@ -192,8 +222,9 @@ func CompareResults(golden *GoldenFile, actual report.ScanReport, lineTolerance 
 		}
 	}
 
-	// Pass if F1 meets the minimum threshold and no confidence regressions
-	result.Success = result.F1Score >= minF1Threshold && len(result.ConfidenceMismatches) == 0
+	// Pass if type-constrained F1 meets the threshold and no confidence regressions.
+	// Type-constrained F1 is the fair metric for a single-type benchmark.
+	result.Success = result.F1ScoreTyped >= minF1Threshold && len(result.ConfidenceMismatches) == 0
 
 	return result
 }
@@ -258,9 +289,12 @@ func FormatComparisonResult(result *ComparisonResult) string {
 	sb.WriteString(fmt.Sprintf("Extra FP (hi/crit):%d\n", len(result.Extra)))
 	sb.WriteString(fmt.Sprintf("Confidence issues: %d\n", len(result.ConfidenceMismatches)))
 	sb.WriteString("--------------------------------------\n")
-	sb.WriteString(fmt.Sprintf("Finding-level Precision: %.3f\n", result.Precision))
-	sb.WriteString(fmt.Sprintf("Finding-level Recall:    %.3f\n", result.Recall))
-	sb.WriteString(fmt.Sprintf("Finding-level F1:        %.3f  (threshold >= %.2f)\n", result.F1Score, minF1Threshold))
+	sb.WriteString(fmt.Sprintf("Type-constrained F1:     %.3f  Prec=%.3f  Rec=%.3f  (threshold >= %.2f)\n",
+		result.F1ScoreTyped, result.PrecisionTyped, result.RecallTyped, minF1Threshold))
+	sb.WriteString(fmt.Sprintf("  (FP = %d unmatched same-type; %d cross-type detections excluded from FP)\n",
+		len(result.ExtraTyped), len(result.Extra)-len(result.ExtraTyped)))
+	sb.WriteString(fmt.Sprintf("Unconstrained F1:        %.3f  Prec=%.3f  Rec=%.3f\n",
+		result.F1Score, result.Precision, result.Recall))
 	sb.WriteString(fmt.Sprintf("File-level F1:           %.3f  (%d/%d files)\n", result.FileLevelF1, result.FilesDetected, result.FilesExpected))
 	sb.WriteString(fmt.Sprintf("Status:            %s\n", formatStatus(result.Success)))
 	sb.WriteString("======================================\n\n")

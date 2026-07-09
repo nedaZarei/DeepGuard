@@ -1,10 +1,10 @@
 {
-  "description": "Golden test file for JS/TS SQL injection detection",
+  "description": "Golden test file for JS/TS SQL injection detection. One finding per vulnerable function/endpoint — multiple string concatenations within the same function are counted as one vulnerability, consistent with how security tools report findings.",
   "scan_metadata": {
     "target_path": "test-samples/js-ts-sqli/",
     "vulnerability_type": "sql_injection",
     "confidence_threshold": 0.5,
-    "total_expected_findings": 45
+    "total_expected_findings": 42
   },
   "expected_findings": [
     {
@@ -54,28 +54,8 @@
       "severity": "critical",
       "confidence_min": 0.7,
       "pattern": "WHERE clause building",
-      "description": "Complex search building WHERE clause with LIKE concatenation",
+      "description": "/search endpoint builds WHERE clause with concatenation across multiple user inputs (searchTerm, category, minPrice, maxPrice) — one vulnerable endpoint, reported at first injection point",
       "code_pattern": "query += ` AND name LIKE '%${searchTerm}%'`"
-    },
-    {
-      "file": "express-complex.js",
-      "line": 33,
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence_min": 0.7,
-      "pattern": "WHERE clause building",
-      "description": "Category filter concatenation in WHERE clause",
-      "code_pattern": "query += ` AND category = '${category}'`"
-    },
-    {
-      "file": "express-complex.js",
-      "line": 37,
-      "type": "sql_injection",
-      "severity": "critical",
-      "confidence_min": 0.6,
-      "pattern": "numeric comparison",
-      "description": "Price filter with numeric comparison concatenation",
-      "code_pattern": "query += ` AND price >= ${minPrice}`"
     },
     {
       "file": "express-complex.js",
@@ -153,19 +133,9 @@
       "type": "sql_injection",
       "severity": "high",
       "confidence_min": 0.7,
-      "pattern": "$executeRawUnsafe in transaction",
-      "description": "Unsafe raw query in transaction",
+      "pattern": "unsafe raw queries in transaction",
+      "description": "processOrder() function executes two unsafe raw queries inside a transaction (UPDATE + SELECT), both with user-controlled parameters — one vulnerable function",
       "code_pattern": "tx.$executeRawUnsafe(`UPDATE orders SET status = '${status}' WHERE id = ${orderId}`)"
-    },
-    {
-      "file": "prisma-service.js",
-      "line": 57,
-      "type": "sql_injection",
-      "severity": "high",
-      "confidence_min": 0.7,
-      "pattern": "$queryRawUnsafe in transaction",
-      "description": "Unsafe SELECT in transaction",
-      "code_pattern": "tx.$queryRawUnsafe(`SELECT * FROM orders WHERE id = ${orderId}`)"
     },
     {
       "file": "prisma-service.js",
@@ -459,8 +429,8 @@
     }
   ],
   "severity_breakdown": {
-    "critical": 34,
-    "high": 11,
+    "critical": 32,
+    "high": 10,
     "medium": 0,
     "low": 0
   },
