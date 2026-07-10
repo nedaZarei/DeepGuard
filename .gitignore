@@ -21,7 +21,8 @@ vendor/
 .deepguard.yaml
 
 # Scan output directory
-reports/
+reports/*
+!reports/evaluation-metrics/
 
 # Go workspace file
 go.work

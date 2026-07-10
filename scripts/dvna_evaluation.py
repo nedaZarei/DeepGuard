@@ -13,6 +13,8 @@ Usage:
     python3 scripts/dvna_evaluation.py
 """
 
+import argparse
+import datetime
 import json
 import os
 from pathlib import Path
@@ -22,6 +24,10 @@ REPO_ROOT   = Path(__file__).parent.parent
 BENCH_DIR   = REPO_ROOT / "test-samples/dvna"
 GOLDEN_PATH = BENCH_DIR / "expected-findings.json"
 DG_PATH     = BENCH_DIR / "deep-guard-results.json"
+
+_parser = argparse.ArgumentParser(description="DVNA evaluation")
+_parser.add_argument("--output", default=None, help="Save metric results as JSON")
+_args, _ = _parser.parse_known_args()
 
 LINE_TOL        = 20   # ±20 lines for type-constrained matching
 LINE_TOL_WIDE   = 60   # ±60 lines for type-agnostic detection check
@@ -166,6 +172,36 @@ def main():
   5. No SonarQube Community rules cover node-serialize or libxmljs —
      the deserialization and XXE findings would not appear in SonarQube.
 """)
+
+    if _args.output:
+        out_data = {
+            "generated_at": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "dataset": "DVNA (Damn Vulnerable NodeJS Application)",
+            "scan_report": str(DG_PATH),
+            "golden": str(GOLDEN_PATH),
+            "model": meta["model_used"],
+            "scan_cost_usd": meta["total_cost"],
+            "scan_duration_seconds": meta["scan_duration_seconds"],
+            "total_findings": len(findings),
+            "high_critical_findings": len(dg_hc),
+            "type_constrained": {
+                "line_tolerance": LINE_TOL,
+                "TP": tp, "FP_typed": len(fp_typed), "FN": fn,
+                "precision": round(p, 4),
+                "recall": round(r, 4),
+                "f1": round(f1, 4),
+            },
+            "type_agnostic": {
+                "line_tolerance": LINE_TOL_WIDE,
+                "TP": tp2, "FN": len(missing2),
+                "recall": round(r2, 4),
+            },
+            "findings_by_type": {t: len(fs) for t, fs in sorted(by_type.items(), key=lambda x: -len(x[1]))},
+        }
+        out = Path(_args.output)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(out_data, indent=2))
+        print(f"\nMetrics saved to {out}")
 
 
 if __name__ == "__main__":

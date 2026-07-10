@@ -1,0 +1,36 @@
+{
+  "generated_at": "2026-07-10T16:05:25Z",
+  "dataset": "DVNA (Damn Vulnerable NodeJS Application)",
+  "scan_report": "/Users/nedazarei/Documents/university/deep-guard/test-samples/dvna/deep-guard-results.json",
+  "golden": "/Users/nedazarei/Documents/university/deep-guard/test-samples/dvna/expected-findings.json",
+  "model": "gpt-4o-mini",
+  "scan_cost_usd": 0.7196800000000003,
+  "scan_duration_seconds": 189,
+  "total_findings": 60,
+  "high_critical_findings": 55,
+  "type_constrained": {
+    "line_tolerance": 20,
+    "TP": 4,
+    "FP_typed": 19,
+    "FN": 1,
+    "precision": 0.1739,
+    "recall": 0.8,
+    "f1": 0.2857
+  },
+  "type_agnostic": {
+    "line_tolerance": 60,
+    "TP": 5,
+    "FN": 0,
+    "recall": 1.0
+  },
+  "findings_by_type": {
+    "auth_issue": 14,
+    "xss": 11,
+    "crypto_issue": 10,
+    "sql_injection": 6,
+    "path_traversal": 4,
+    "insecure_deserialization": 4,
+    "command_injection": 3,
+    "ssrf": 3
+  }
+}

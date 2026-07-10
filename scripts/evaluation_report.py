@@ -24,6 +24,8 @@ parser.add_argument("--results", default=None,
                     help="Path to scan results JSON (default: scan-results.json)")
 parser.add_argument("--golden", default=None,
                     help="Path to expected-findings JSON (default: js-ts-sqli/expected-findings.json)")
+parser.add_argument("--output", default=None,
+                    help="Optional path to save metric results as JSON")
 _args, _ = parser.parse_known_args()
 
 if _args.results:
@@ -222,6 +224,51 @@ Key thesis claims supported by these results:
   5. Additional cross-type findings ({} detections across {} other vuln types)
      were produced at no extra cost — same scan covers 8 OWASP categories.
 """.format(f1_t, len(cross_type), len(cross_type_by_type)))
+
+    if _args.output:
+        save_metrics({
+            "dataset": "JS/TS SQL Injection benchmark",
+            "scan_report": str(RESULTS_PATH),
+            "golden": str(GOLDEN_PATH),
+            "expected_findings": len(expected),
+            "actual_findings_total": len(actual),
+            "line_tolerance": LINE_TOLERANCE,
+            "type_constrained": {
+                "TP": tp, "FP": fp_typed, "FN": fn,
+                "precision": round(prec_t, 4),
+                "recall": round(rec_t, 4),
+                "f1": round(f1_t, 4),
+            },
+            "unconstrained": {
+                "TP": tp, "FP": fp_all, "FN": fn,
+                "precision": round(prec_u, 4),
+                "recall": round(rec_u, 4),
+                "f1": round(f1_u, 4),
+            },
+            "file_level": {
+                "files_expected": n_files_exp,
+                "files_detected": n_files_det,
+                "f1": round(file_f1, 4),
+                "missed_files": missed_files,
+            },
+            "cross_type_detections": cross_type_by_type,
+            "scan_cost_usd": total_cost,
+            "comparison": {
+                "SonarQube Community": {"TP": 0, "FP": 0, "FN": len(expected), "F1": 0.0},
+                "Semgrep p/sql-injection": {"TP": 0, "FP": 0, "FN": len(expected), "F1": 0.0},
+                "Deep-Guard (type-constrained)": {"TP": tp, "FP": fp_typed, "FN": fn, "F1": round(f1_t, 4)},
+                "Deep-Guard (unconstrained)": {"TP": tp, "FP": fp_all, "FN": fn, "F1": round(f1_u, 4)},
+            },
+        }, _args.output)
+
+
+def save_metrics(metrics_dict, output_path):
+    import datetime
+    metrics_dict["generated_at"] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    out = Path(output_path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(metrics_dict, indent=2))
+    print(f"\nMetrics saved to {out}")
 
 
 if __name__ == "__main__":

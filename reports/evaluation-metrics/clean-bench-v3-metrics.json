@@ -1,0 +1,64 @@
+{
+  "dataset": "JS/TS SQL Injection benchmark",
+  "scan_report": "/Users/nedazarei/Documents/university/deep-guard/reports/clean-bench-v3/scan-20260710-175702.json",
+  "golden": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/expected-findings.json",
+  "expected_findings": 42,
+  "actual_findings_total": 169,
+  "line_tolerance": 20,
+  "type_constrained": {
+    "TP": 42,
+    "FP": 13,
+    "FN": 0,
+    "precision": 0.7636,
+    "recall": 1.0,
+    "f1": 0.866
+  },
+  "unconstrained": {
+    "TP": 42,
+    "FP": 127,
+    "FN": 0,
+    "precision": 0.2485,
+    "recall": 1.0,
+    "f1": 0.3981
+  },
+  "file_level": {
+    "files_expected": 8,
+    "files_detected": 8,
+    "f1": 1.0,
+    "missed_files": []
+  },
+  "cross_type_detections": {
+    "auth_issue": 50,
+    "crypto_issue": 40,
+    "command_injection": 21,
+    "xss": 3
+  },
+  "scan_cost_usd": 1.6687974999999995,
+  "comparison": {
+    "SonarQube Community": {
+      "TP": 0,
+      "FP": 0,
+      "FN": 42,
+      "F1": 0.0
+    },
+    "Semgrep p/sql-injection": {
+      "TP": 0,
+      "FP": 0,
+      "FN": 42,
+      "F1": 0.0
+    },
+    "Deep-Guard (type-constrained)": {
+      "TP": 42,
+      "FP": 13,
+      "FN": 0,
+      "F1": 0.866
+    },
+    "Deep-Guard (unconstrained)": {
+      "TP": 42,
+      "FP": 127,
+      "FN": 0,
+      "F1": 0.3981
+    }
+  },
+  "generated_at": "2026-07-10T16:05:19Z"
+}
