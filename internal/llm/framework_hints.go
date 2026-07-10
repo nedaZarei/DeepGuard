@@ -21,6 +21,10 @@ const (
 	VulnTypeCommandInjection        VulnerabilityType = "command_injection"
 	VulnTypeSSRF                    VulnerabilityType = "ssrf"
 	VulnTypeXXEInjection            VulnerabilityType = "xxe_injection"
+	VulnTypeBufferOverflow          VulnerabilityType = "buffer_overflow"
+	VulnTypeFormatString            VulnerabilityType = "format_string"
+	VulnTypeUseAfterFree            VulnerabilityType = "use_after_free"
+	VulnTypeIntegerOverflow         VulnerabilityType = "integer_overflow"
 )
 
 // frameworkHintsMap contains framework-specific guidance for each vulnerability type

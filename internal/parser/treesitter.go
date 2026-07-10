@@ -6,6 +6,8 @@ import (
 
 	"github.com/rs/zerolog/log"
 	sitter "github.com/smacker/go-tree-sitter"
+	"github.com/smacker/go-tree-sitter/c"
+	"github.com/smacker/go-tree-sitter/cpp"
 	"github.com/smacker/go-tree-sitter/java"
 	"github.com/smacker/go-tree-sitter/javascript"
 	"github.com/smacker/go-tree-sitter/python"
@@ -35,6 +37,8 @@ func NewTreeSitterParser() (*TreeSitterParser, error) {
 		"typescript": typescript.GetLanguage(),
 		"python":     python.GetLanguage(),
 		"java":       java.GetLanguage(),
+		"c":          c.GetLanguage(),
+		"cpp":        cpp.GetLanguage(),
 	}
 
 	for lang, grammar := range languages {

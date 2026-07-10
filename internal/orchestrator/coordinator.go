@@ -231,8 +231,9 @@ func (o *Orchestrator) AnalyzeRepositoryAllTypes(
 	ctx context.Context,
 	chunks []chunker.CodeChunk,
 ) ([]types.Finding, error) {
-	// Vulnerability types to scan for
-	vulnTypes := []string{
+	// Determine which vulnerability types to scan based on languages present.
+	// Web/app types apply to JS/TS/Python/Java; C/C++ memory types apply to C/C++ only.
+	webTypes := []string{
 		string(llm.VulnTypeSQLInjection),
 		string(llm.VulnTypeXSS),
 		string(llm.VulnTypePathTraversal),
@@ -242,6 +243,31 @@ func (o *Orchestrator) AnalyzeRepositoryAllTypes(
 		string(llm.VulnTypeCommandInjection),
 		string(llm.VulnTypeSSRF),
 		string(llm.VulnTypeXXEInjection),
+	}
+	cTypes := []string{
+		string(llm.VulnTypeBufferOverflow),
+		string(llm.VulnTypeFormatString),
+		string(llm.VulnTypeUseAfterFree),
+		string(llm.VulnTypeIntegerOverflow),
+	}
+
+	hasC := false
+	hasWeb := false
+	for _, chunk := range chunks {
+		switch chunk.Language {
+		case "c", "cpp":
+			hasC = true
+		default:
+			hasWeb = true
+		}
+	}
+
+	var vulnTypes []string
+	if hasWeb {
+		vulnTypes = append(vulnTypes, webTypes...)
+	}
+	if hasC {
+		vulnTypes = append(vulnTypes, cTypes...)
 	}
 
 	allFindings := make([]types.Finding, 0)

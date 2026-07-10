@@ -75,6 +75,10 @@ func NewPromptRenderer() (*PromptRenderer, error) {
 		VulnTypeCommandInjection,
 		VulnTypeSSRF,
 		VulnTypeXXEInjection,
+		VulnTypeBufferOverflow,
+		VulnTypeFormatString,
+		VulnTypeUseAfterFree,
+		VulnTypeIntegerOverflow,
 	}
 
 	for _, vulnType := range vulnTypes {
@@ -161,6 +165,14 @@ func getTemplateName(vulnType VulnerabilityType) string {
 		return "ssrf"
 	case VulnTypeXXEInjection:
 		return "xxe"
+	case VulnTypeBufferOverflow:
+		return "buffer_overflow"
+	case VulnTypeFormatString:
+		return "format_string"
+	case VulnTypeUseAfterFree:
+		return "use_after_free"
+	case VulnTypeIntegerOverflow:
+		return "integer_overflow"
 	default:
 		return "unknown"
 	}

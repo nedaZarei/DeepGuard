@@ -144,6 +144,10 @@ func (c *ASTChunker) extractFunctionNodes(rootNode *sitter.Node, language string
 			"method_declaration",
 			"constructor_declaration",
 		}
+	case "c", "cpp":
+		functionTypes = []string{
+			"function_definition",
+		}
 	default:
 		return nodes
 	}
@@ -183,9 +187,26 @@ func (c *ASTChunker) extractFunctionName(node *sitter.Node, language string, con
 		return c.extractPythonFunctionName(node, content)
 	case "java":
 		return c.extractJavaFunctionName(node, content)
+	case "c", "cpp":
+		return c.extractCFunctionName(node, content)
 	default:
 		return "unknown"
 	}
+}
+
+// extractCFunctionName extracts function name from C/C++ function_definition node.
+// Tree-sitter C/C++ AST: function_definition → declarator → function_declarator → declarator (identifier)
+func (c *ASTChunker) extractCFunctionName(node *sitter.Node, content []byte) string {
+	for i := 0; i < int(node.ChildCount()); i++ {
+		child := node.Child(i)
+		if child.Type() == "function_declarator" || child.Type() == "pointer_declarator" {
+			return c.extractCFunctionName(child, content)
+		}
+		if child.Type() == "identifier" {
+			return child.Content(content)
+		}
+	}
+	return "anonymous"
 }
 
 // extractJSFunctionName extracts function name from JavaScript/TypeScript node

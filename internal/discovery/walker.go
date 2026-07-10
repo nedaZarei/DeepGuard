@@ -230,6 +230,10 @@ func getLanguageFromPath(path string) string {
 		return "python"
 	case ".java":
 		return "java"
+	case ".c", ".h":
+		return "c"
+	case ".cpp", ".cc", ".cxx", ".hpp", ".hxx":
+		return "cpp"
 	default:
 		return ""
 	}
