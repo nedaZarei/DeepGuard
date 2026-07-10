@@ -58,7 +58,8 @@ def scan_c_function(func_code: str, func_name: str) -> Optional[bool]:
                "DEEPGUARD_OPENAI_API_KEY": API_KEY,
                "DEEPGUARD_OPENAI_BASE_URL": BASE_URL}
 
-        cmd = [str(BINARY), "scan", "--path", str(tmpdir), "--output", str(out_dir)]
+        cmd = [str(BINARY), "scan", "--path", str(tmpdir), "--output", str(out_dir),
+               "--languages", "c,cpp"]
         result = subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=120)
 
         if result.returncode != 0:

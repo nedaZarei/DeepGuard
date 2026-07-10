@@ -121,6 +121,8 @@ func validateScanFlags(cmd *cobra.Command, args []string) error {
 		"ts":     true,
 		"python": true,
 		"java":   true,
+		"c":      true,
+		"cpp":    true,
 	}
 
 	filteredLanguages := []string{}
@@ -137,7 +139,7 @@ func validateScanFlags(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(filteredLanguages) == 0 {
-		return fmt.Errorf("no valid languages specified (must be one of: js, ts, python, java)")
+		return fmt.Errorf("no valid languages specified (must be one of: js, ts, python, java, c, cpp)")
 	}
 
 	log.Debug().

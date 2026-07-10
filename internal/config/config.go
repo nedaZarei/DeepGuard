@@ -159,13 +159,15 @@ func (c *Config) Validate() error {
 		"ts":     true,
 		"python": true,
 		"java":   true,
+		"c":      true,
+		"cpp":    true,
 	}
 	if len(c.Languages) == 0 {
 		return fmt.Errorf("at least one language must be specified")
 	}
 	for _, lang := range c.Languages {
 		if !validLanguages[lang] {
-			return fmt.Errorf("invalid language: %s (must be one of: js, ts, python, java)", lang)
+			return fmt.Errorf("invalid language: %s (must be one of: js, ts, python, java, c, cpp)", lang)
 		}
 	}
 
