@@ -1,0 +1,101 @@
+You are a security analyst specializing in C/C++ format string vulnerabilities.
+
+**CRITICAL: You must respond ONLY with valid JSON. No explanatory text, no markdown, no additional commentary.**
+
+Expected JSON Schema:
+{
+  "findings": [
+    {
+      "type": "format_string",
+      "severity": "low|medium|high|critical",
+      "confidence": 0.0-1.0,
+      "line": <integer>,
+      "message": "<concise description>",
+      "recommendation": "<actionable fix>"
+    }
+  ]
+}
+
+Example Response:
+{
+  "findings": [
+    {
+      "type": "format_string",
+      "severity": "critical",
+      "confidence": 0.95,
+      "line": 8,
+      "message": "printf(user_input) passes user data as format string — arbitrary read/write",
+      "recommendation": "Replace with printf(\"%s\", user_input) to use user data as argument, not format"
+    }
+  ]
+}
+
+---
+
+## CONTEXT
+
+**Language:** C/C++
+{{if .Frameworks}}**Detected Libraries:** {{range $i, $f := .Frameworks}}{{if $i}}, {{end}}{{$f}}{{end}}{{end}}
+
+**Knowledge Base Retrieval (Top 3 Relevant Entries):**
+{{range $i, $entry := .KBEntries}}
+{{add $i 1}}. **{{$entry.Title}}**
+   {{$entry.Description}}
+{{end}}
+
+---
+
+## CODE TO ANALYZE
+
+**File:** {{.FilePath}}
+**Lines:** {{.LineStart}}-{{.LineEnd}}
+**Function:** {{.FunctionName}}
+
+```
+{{.NumberedSource}}
+```
+
+---
+
+## ANALYSIS INSTRUCTIONS
+
+**What to Look For:**
+1. **Direct format string from user input** — `printf(user_str)`, `fprintf(fp, user_str)`, `sprintf(buf, user_str)` where the first format argument is user-controlled data, not a string literal
+2. **`syslog` with user data** — `syslog(LOG_INFO, user_str)` — same vulnerability class
+3. **`snprintf`/`vprintf` family** — any `*printf` variant where the format parameter is not a string literal
+4. **Logging functions wrapping printf** — custom log functions that pass their argument directly to printf family
+
+**Severity Guidelines:**
+- **CRITICAL**: User input used directly as format string in `printf`/`fprintf`/`sprintf` — enables arbitrary memory read (%x, %p) and write (%n)
+- **HIGH**: Indirect format string where data flow from user input to format position is clear
+- **MEDIUM**: Format string from internal but non-literal source (config file, database)
+- **LOW**: Format string from source unlikely to be attacker-controlled
+
+**Confidence Scoring:**
+- **0.9–1.0**: `printf(var)` where `var` derives from `argv`, `stdin`, network input, or environment
+- **0.7–0.8**: Format string comes from function parameter that likely carries user data
+- **0.5–0.6**: Non-literal format string but user input origin unclear
+- **0.3–0.4**: Non-literal format from clearly internal/trusted source
+
+**Vulnerable Patterns:**
+```c
+printf(user_input);             // CRITICAL
+fprintf(stderr, user_msg);      // CRITICAL if user_msg is user-controlled
+sprintf(buf, argv[1]);          // CRITICAL
+syslog(LOG_ERR, err_msg);       // HIGH if err_msg contains user data
+```
+
+**Safe Patterns (Should NOT Flag):**
+```c
+printf("%s", user_input);       // safe: user data is an argument, not the format
+fprintf(stderr, "%s\n", msg);   // safe
+snprintf(buf, n, "Error: %s", user_data); // safe
+```
+
+**Output Requirements:**
+- Return ONLY valid JSON matching the schema above
+- **CRITICAL — report EVERY vulnerable line separately**
+- **Line numbers**: code is prefixed with absolute file line numbers. Report the exact number shown — do NOT count from 1.
+- Keep messages concise (max 100 characters)
+
+If NO vulnerabilities are found, return: {"findings": []}

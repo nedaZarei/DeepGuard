@@ -1,0 +1,16 @@
+id: fmt-001
+title: Format String Vulnerability
+description: |
+  A format string vulnerability arises when user-controlled data is passed as the
+  format argument to printf-family functions (printf, fprintf, sprintf, snprintf,
+  syslog). Attackers can use format specifiers like %x to read stack memory, %p for
+  pointer leaks, and %n to write arbitrary values to memory, enabling information
+  disclosure or remote code execution. Always use a string literal as the format
+  argument and pass user data as subsequent arguments.
+code_patterns:
+  - printf(user_string)
+  - fprintf(stderr, user_msg)
+  - sprintf(buf, argv[1])
+  - syslog(LOG_INFO, user_controlled)
+  - printf(getenv("HOME"))
+schema_version: 1

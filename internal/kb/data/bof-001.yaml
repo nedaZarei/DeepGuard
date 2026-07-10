@@ -1,0 +1,16 @@
+id: bof-001
+title: Buffer Overflow via Unbounded String Functions
+description: |
+  Buffer overflow occurs when data written to a fixed-size buffer exceeds its capacity,
+  overwriting adjacent memory. In C/C++, functions like strcpy, gets, sprintf, and
+  scanf("%s") do not check destination buffer size. An attacker can overwrite return
+  addresses (stack overflow) or heap metadata (heap overflow) to achieve arbitrary code
+  execution. Always use size-bounded alternatives and validate input length.
+code_patterns:
+  - strcpy(buf, argv[1])
+  - gets(input_buf)
+  - sprintf(dest, "%s", user_str)
+  - scanf("%s", buffer)
+  - memcpy(dst, src, user_len)
+  - strcat(buf, user_input)
+schema_version: 1

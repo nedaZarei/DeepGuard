@@ -1,0 +1,16 @@
+id: uaf-001
+title: Use-After-Free and Double-Free
+description: |
+  Use-after-free (UAF) occurs when a program continues to use a pointer after the
+  memory it references has been freed. The freed memory may be reallocated and
+  overwritten by another allocation, so the dangling pointer now points to attacker-
+  controlled data — enabling type confusion, heap corruption, or code execution.
+  Double-free (calling free() twice on the same pointer) corrupts heap metadata and
+  can lead to similar exploitation. Always set pointers to NULL immediately after
+  freeing and guard dereferences with NULL checks.
+code_patterns:
+  - free(ptr); use(ptr->field)
+  - free(buf); free(buf)
+  - delete obj; obj->method()
+  - return local_malloc_ptr after free
+schema_version: 1

@@ -1,0 +1,18 @@
+id: intof-001
+title: Integer Overflow in Size Calculation
+description: |
+  Integer overflow in security-critical size calculations (malloc, array indexing,
+  loop bounds) allows attackers to cause heap under-allocation or bypass bounds checks.
+  When a multiplication or addition of user-controlled values wraps around the maximum
+  integer value, the resulting small number is passed to malloc(), producing a buffer
+  much smaller than expected. Subsequent writes overflow into adjacent heap memory.
+  Signed/unsigned mismatch can allow negative user values to wrap to large positive
+  sizes, bypassing length checks. Always validate arithmetic before using results as
+  sizes or indices.
+code_patterns:
+  - malloc(count * size)
+  - malloc(a + b)
+  - realloc(ptr, old + user_increment)
+  - int len = (int)user_size_t; buf[len]
+  - if (len < MAX) memcpy(dst, src, len)
+schema_version: 1
