@@ -1,0 +1,59 @@
+{
+  "mode": "from_reports",
+  "results": [
+    {
+      "report": "reports/clean-bench-v2/scan-20260710-165939.json",
+      "target": "test-samples/js-ts-sqli-clean/",
+      "duration_s": 330,
+      "findings": 84,
+      "unique_files": 8,
+      "cost_usd": 1.6534899999999995,
+      "model": "gpt-4o-mini"
+    },
+    {
+      "report": "reports/clean-bench-v3/scan-20260710-175702.json",
+      "target": "test-samples/js-ts-sqli-clean/",
+      "duration_s": 305,
+      "findings": 169,
+      "unique_files": 8,
+      "cost_usd": 1.6687974999999995,
+      "model": "gpt-4o-mini"
+    },
+    {
+      "report": "reports/dvna-eval/scan-20260710-161458.json",
+      "target": "/tmp/dvna/core",
+      "duration_s": 134,
+      "findings": 73,
+      "unique_files": 3,
+      "cost_usd": 0.6668075000000001,
+      "model": "gpt-4o-mini"
+    },
+    {
+      "report": "reports/dvna-eval-v2/scan-20260710-161957.json",
+      "target": "/tmp/dvna/core",
+      "duration_s": 189,
+      "findings": 60,
+      "unique_files": 3,
+      "cost_usd": 0.7196800000000003,
+      "model": "gpt-4o-mini"
+    },
+    {
+      "report": "reports/eval/scan-20260504-142732.json",
+      "target": "./test-samples/js-ts-sqli",
+      "duration_s": 59,
+      "findings": 69,
+      "unique_files": 8,
+      "cost_usd": 0.4924224999999998,
+      "model": "gpt-4o-mini"
+    },
+    {
+      "report": "reports/scan-20260518-120000.json",
+      "target": "./test-samples",
+      "duration_s": 214,
+      "findings": 12,
+      "unique_files": 7,
+      "cost_usd": 1.847,
+      "model": "gpt-4o"
+    }
+  ]
+}
