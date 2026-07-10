@@ -16,11 +16,17 @@ func EnrichFinding(finding *types.Finding, chunk *chunker.CodeChunk) {
 	finding.LineRangeStart = chunk.StartLine
 	finding.LineRangeEnd = chunk.EndLine
 
-	// Calculate absolute line number
-	// Finding.Line is relative to the chunk (1-indexed within the chunk)
-	// chunk.StartLine is the absolute line number where the chunk starts (1-indexed)
-	// AbsoluteLine = StartLine + (Line - 1)
-	finding.AbsoluteLine = chunk.StartLine + (finding.Line - 1)
+	// Resolve absolute line number.
+	// Prompts now show line-numbered source (e.g. " 42: const q = ...") so the
+	// LLM should return the absolute file line directly.  Verify the reported
+	// number falls inside the chunk window; if so use it verbatim.  Otherwise
+	// fall back to the old offset formula in case the LLM returned a 1-based
+	// relative line (for robustness against non-compliant responses).
+	if finding.Line >= chunk.StartLine && finding.Line <= chunk.EndLine {
+		finding.AbsoluteLine = finding.Line
+	} else {
+		finding.AbsoluteLine = chunk.StartLine + (finding.Line - 1)
+	}
 }
 
 // EnrichFindings adds context information to all findings in a response

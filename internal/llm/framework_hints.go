@@ -20,6 +20,7 @@ const (
 	VulnTypeCryptoIssue             VulnerabilityType = "crypto_issue"
 	VulnTypeCommandInjection        VulnerabilityType = "command_injection"
 	VulnTypeSSRF                    VulnerabilityType = "ssrf"
+	VulnTypeXXEInjection            VulnerabilityType = "xxe_injection"
 )
 
 // frameworkHintsMap contains framework-specific guidance for each vulnerability type
@@ -35,6 +36,7 @@ var frameworkHintsMap = map[string]FrameworkHints{
 			VulnTypeCryptoIssue:             "Check crypto.createHash() for weak algorithms (MD5, SHA1), hardcoded secrets in crypto operations, insecure random number generation.",
 			VulnTypeCommandInjection:        "Check child_process.exec(), execSync(), spawn() with req.query/req.params/req.body. Unsafe: exec('ping ' + req.query.host). Safe: execFile('ping', ['-c','1', validatedHost]).",
 			VulnTypeSSRF:                    "Check fetch(), axios.get(), http.request(), got() called with URLs from req.query, req.params, or req.body. Validate URL host against an allowlist before making the request.",
+			VulnTypeXXEInjection:            "Check libxmljs.parseXmlString(), xml2js.parseString(), DOMParser with {noent:true} or equivalent. User-supplied XML with external entity resolution enabled allows reading /etc/passwd or SSRF. Safe: parse with {noent:false, nonet:true}.",
 		},
 	},
 	"prisma": {
@@ -107,6 +109,7 @@ var frameworkHintsMap = map[string]FrameworkHints{
 			VulnTypeCryptoIssue:             "Check PasswordEncoder configuration (ensure BCryptPasswordEncoder), MessageDigest for weak algorithms, hardcoded keys.",
 			VulnTypeCommandInjection:        "Check Runtime.getRuntime().exec() and ProcessBuilder with @RequestParam or @PathVariable values. Safe: new ProcessBuilder('ping', '-c', '1', validatedHost).start(). Unsafe: Runtime.getRuntime().exec('ping ' + host).",
 			VulnTypeSSRF:                    "Check RestTemplate.getForObject/postForObject(), WebClient.get().uri(), HttpClient with URLs derived from @RequestParam or @RequestBody. Validate URL against allowlist before fetching.",
+			VulnTypeXXEInjection:            "Check DocumentBuilderFactory.newInstance() — must call setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true). Check SAXParserFactory, XMLInputFactory with setProperty(XMLInputFactory.SUPPORT_DTD, false). Unsafe: DocumentBuilderFactory without disabling external entities.",
 		},
 	},
 	"jpa": {

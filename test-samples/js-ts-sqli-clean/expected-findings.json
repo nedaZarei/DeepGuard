@@ -1,0 +1,443 @@
+{
+  "description": "Golden test file for JS/TS SQL injection detection. One finding per vulnerable function/endpoint \u2014 multiple string concatenations within the same function are counted as one vulnerability, consistent with how security tools report findings. (annotation-stripped clean version)",
+  "scan_metadata": {
+    "target_path": "test-samples/js-ts-sqli/",
+    "vulnerability_type": "sql_injection",
+    "confidence_threshold": 0.5,
+    "total_expected_findings": 42
+  },
+  "expected_findings": [
+    {
+      "file": "test-samples/js-ts-sqli-clean/express-routes.js",
+      "line": 16,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.7,
+      "pattern": "req.query concatenation",
+      "description": "Direct concatenation of req.query.id into SELECT query",
+      "code_pattern": "query = 'SELECT * FROM users WHERE id = ' + userId"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/express-routes.js",
+      "line": 26,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.7,
+      "pattern": "req.params template literal",
+      "description": "URL parameter req.params.id concatenated in template literal",
+      "code_pattern": "sql = `SELECT * FROM products WHERE id = ${productId}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/express-routes.js",
+      "line": 38,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.8,
+      "pattern": "req.body in authentication",
+      "description": "POST body parameters (username, password) in authentication query",
+      "code_pattern": "`SELECT * FROM users WHERE username = '${username}' AND password = '${password}'`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/express-routes.js",
+      "line": 53,
+      "type": "sql_injection",
+      "severity": "high",
+      "confidence_min": 0.6,
+      "pattern": "dynamic ORDER BY",
+      "description": "Dynamic ORDER BY clause with user-controlled sort and order",
+      "code_pattern": "`SELECT * FROM users ORDER BY ${sortBy} ${order}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/express-complex.js",
+      "line": 26,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.7,
+      "pattern": "WHERE clause building",
+      "description": "/search endpoint builds WHERE clause with concatenation across multiple user inputs (searchTerm, category, minPrice, maxPrice) \u2014 one vulnerable endpoint, reported at first injection point",
+      "code_pattern": "query += ` AND name LIKE '%${searchTerm}%'`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/express-complex.js",
+      "line": 53,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.8,
+      "pattern": "dynamic table name",
+      "description": "Dynamic table name from URL parameter",
+      "code_pattern": "`SELECT * FROM ${tableName} WHERE year = ${year}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/express-complex.js",
+      "line": 70,
+      "type": "sql_injection",
+      "severity": "high",
+      "confidence_min": 0.6,
+      "pattern": "IN clause with array",
+      "description": "Bulk update with array join without sanitization",
+      "code_pattern": "`UPDATE orders SET status = '${status}' WHERE id IN (${idList})`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/express-complex.js",
+      "line": 84,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.9,
+      "pattern": "user-controlled WHERE",
+      "description": "Direct use of user filter expression in WHERE clause",
+      "code_pattern": "`SELECT * FROM products WHERE ${filterExpr}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/prisma-service.js",
+      "line": 10,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.8,
+      "pattern": "$queryRaw template literal",
+      "description": "User input in $queryRaw template literal",
+      "code_pattern": "prisma.$queryRaw`SELECT * FROM users WHERE id = ${userId}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/prisma-service.js",
+      "line": 15,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.8,
+      "pattern": "$executeRaw unsanitized",
+      "description": "Unsanitized input in $executeRaw",
+      "code_pattern": "prisma.$executeRaw`UPDATE users SET email = ${newEmail} WHERE id = ${userId}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/prisma-service.js",
+      "line": 20,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.8,
+      "pattern": "$queryRawUnsafe dynamic column",
+      "description": "Dynamic column name in $queryRawUnsafe",
+      "code_pattern": "`SELECT * FROM users WHERE ${fieldName} = '${searchValue}'`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/prisma-service.js",
+      "line": 27,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.7,
+      "pattern": "$queryRawUnsafe concatenation",
+      "description": "String concatenation in $queryRawUnsafe query builder",
+      "code_pattern": "sql = 'SELECT * FROM users WHERE age >= ' + ageMin"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/prisma-service.js",
+      "line": 44,
+      "type": "sql_injection",
+      "severity": "high",
+      "confidence_min": 0.7,
+      "pattern": "unsafe raw queries in transaction",
+      "description": "processOrder() function executes two unsafe raw queries inside a transaction (UPDATE + SELECT), both with user-controlled parameters \u2014 one vulnerable function",
+      "code_pattern": "tx.$executeRawUnsafe(`UPDATE orders SET status = '${status}' WHERE id = ${orderId}`)"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/prisma-service.js",
+      "line": 54,
+      "type": "sql_injection",
+      "severity": "high",
+      "confidence_min": 0.6,
+      "pattern": "dynamic ORDER BY",
+      "description": "Dynamic ORDER BY in raw query",
+      "code_pattern": "`SELECT * FROM orders ORDER BY ${sortField} ${sortOrder}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/prisma-unsafe.js",
+      "line": 9,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.8,
+      "pattern": "$queryRaw role parameter",
+      "description": "Role parameter in $queryRaw",
+      "code_pattern": "prisma.$queryRaw`SELECT * FROM users WHERE role = ${role}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/prisma-unsafe.js",
+      "line": 13,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.7,
+      "pattern": "$queryRawUnsafe JOIN",
+      "description": "UserId in complex JOIN query",
+      "code_pattern": "`SELECT u.*, o.* FROM users u LEFT JOIN orders o ON u.id = o.user_id WHERE u.id = ${userId}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/prisma-unsafe.js",
+      "line": 23,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.8,
+      "pattern": "dynamic table name",
+      "description": "Dynamic table name with filter concatenation",
+      "code_pattern": "`SELECT * FROM ${tableName} WHERE 1=1`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/prisma-unsafe.js",
+      "line": 39,
+      "type": "sql_injection",
+      "severity": "high",
+      "confidence_min": 0.6,
+      "pattern": "dynamic aggregation",
+      "description": "Dynamic aggregation with user-controlled metric and category",
+      "code_pattern": "`SELECT ${metric}, COUNT(*) as count FROM products WHERE category = '${category}' GROUP BY ${metric}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/prisma-unsafe.js",
+      "line": 49,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.7,
+      "pattern": "subquery with condition",
+      "description": "Subquery with user-controlled condition and limit",
+      "code_pattern": "`SELECT * FROM users WHERE id IN (SELECT user_id FROM orders WHERE ${condition}) LIMIT ${limit}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/sequelize-models.js",
+      "line": 25,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.8,
+      "pattern": "sequelize.query concatenation",
+      "description": "Direct concatenation in sequelize.query",
+      "code_pattern": "query = 'SELECT * FROM users WHERE id = ' + userId"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/sequelize-models.js",
+      "line": 31,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.7,
+      "pattern": "LIKE template literal",
+      "description": "Template literal with LIKE pattern",
+      "code_pattern": "`SELECT * FROM products WHERE name LIKE '%${searchTerm}%'`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/sequelize-models.js",
+      "line": 42,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.7,
+      "pattern": "WHERE clause building",
+      "description": "WHERE clause builder with concatenation",
+      "code_pattern": "query += ` AND role = '${role}'`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/sequelize-models.js",
+      "line": 53,
+      "type": "sql_injection",
+      "severity": "high",
+      "confidence_min": 0.6,
+      "pattern": "dynamic ORDER BY",
+      "description": "Dynamic ORDER BY clause",
+      "code_pattern": "`SELECT * FROM products ORDER BY ${sortBy} ${order}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/sequelize-models.js",
+      "line": 59,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.8,
+      "pattern": "UPDATE concatenation",
+      "description": "UPDATE statement with concatenation",
+      "code_pattern": "`UPDATE users SET role = '${newRole}' WHERE id = ${userId}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/sequelize-dynamic.js",
+      "line": 12,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.8,
+      "pattern": "dynamic columns and table",
+      "description": "Dynamic column list and table name",
+      "code_pattern": "`SELECT ${columnList} FROM ${tableName}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/sequelize-dynamic.js",
+      "line": 19,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.8,
+      "pattern": "dynamic JOIN",
+      "description": "Dynamic JOIN condition",
+      "code_pattern": "`SELECT * FROM ${table1} t1 INNER JOIN ${table2} t2 ON ${joinCondition}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/sequelize-dynamic.js",
+      "line": 30,
+      "type": "sql_injection",
+      "severity": "high",
+      "confidence_min": 0.6,
+      "pattern": "dynamic GROUP BY",
+      "description": "Dynamic GROUP BY and aggregate function",
+      "code_pattern": "`SELECT ${groupByField}, ${aggregateFunc}(value) as result FROM ${tableName} GROUP BY ${groupByField}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/sequelize-dynamic.js",
+      "line": 42,
+      "type": "sql_injection",
+      "severity": "high",
+      "confidence_min": 0.6,
+      "pattern": "dynamic HAVING",
+      "description": "Dynamic HAVING clause",
+      "code_pattern": "`SELECT category, COUNT(*) as count FROM products WHERE category = '${category}' GROUP BY category HAVING ${havingCondition}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/sequelize-dynamic.js",
+      "line": 53,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.7,
+      "pattern": "UNION injection",
+      "description": "UNION injection with dynamic table names",
+      "code_pattern": "`SELECT * FROM ${table} WHERE name LIKE '%${searchValue}%'`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/sequelize-dynamic.js",
+      "line": 60,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.8,
+      "pattern": "DELETE with condition",
+      "description": "DELETE with dynamic condition",
+      "code_pattern": "`DELETE FROM ${tableName} WHERE ${condition}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/typescript-express.ts",
+      "line": 33,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.7,
+      "pattern": "typed parameter concatenation",
+      "description": "Typed parameter still vulnerable to SQLi",
+      "code_pattern": "`SELECT * FROM users WHERE id = ${userId}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/typescript-express.ts",
+      "line": 49,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.8,
+      "pattern": "typed interface auth",
+      "description": "Typed interface doesn't prevent SQLi in authentication",
+      "code_pattern": "`SELECT * FROM users WHERE username = '${username}' AND password = '${password}'`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/typescript-express.ts",
+      "line": 68,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.7,
+      "pattern": "arrow function LIKE",
+      "description": "Arrow function with types, LIKE injection",
+      "code_pattern": "`SELECT * FROM products WHERE name LIKE '%${searchTerm}%'`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/typescript-express.ts",
+      "line": 89,
+      "type": "sql_injection",
+      "severity": "high",
+      "confidence_min": 0.7,
+      "pattern": "class method UPDATE",
+      "description": "Class method with typed parameters, UPDATE injection",
+      "code_pattern": "`UPDATE users SET email = '${email}' WHERE id = ${userId}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/typescript-prisma.ts",
+      "line": 23,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.8,
+      "pattern": "typed $queryRaw",
+      "description": "Typed parameter in $queryRaw",
+      "code_pattern": "prisma.$queryRaw`SELECT * FROM users WHERE id = ${userId}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/typescript-prisma.ts",
+      "line": 27,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.8,
+      "pattern": "typed $executeRaw",
+      "description": "Typed parameters in $executeRaw",
+      "code_pattern": "prisma.$executeRaw`UPDATE users SET status = ${status} WHERE id = ${userId}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/typescript-prisma.ts",
+      "line": 36,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.7,
+      "pattern": "typed interface filter",
+      "description": "Building query from typed interface",
+      "code_pattern": "query += ` AND role = '${filter.role}'`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/typescript-prisma.ts",
+      "line": 54,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.8,
+      "pattern": "typed search params",
+      "description": "Typed search parameters in dynamic query",
+      "code_pattern": "`SELECT * FROM users WHERE ${params.field} ${operator} '${params.value}'`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/typescript-prisma.ts",
+      "line": 62,
+      "type": "sql_injection",
+      "severity": "high",
+      "confidence_min": 0.7,
+      "pattern": "typed function LIMIT",
+      "description": "Typed function parameters with LIMIT injection",
+      "code_pattern": "`SELECT * FROM users WHERE department = '${department}' LIMIT ${limit}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/typescript-prisma.ts",
+      "line": 79,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.7,
+      "pattern": "query builder interface",
+      "description": "Type-safe query builder interface with dynamic columns",
+      "code_pattern": "`SELECT ${columns} FROM ${builder.from}`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/typescript-prisma.ts",
+      "line": 101,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.8,
+      "pattern": "generic repository field",
+      "description": "Generic repository with dynamic field",
+      "code_pattern": "`SELECT * FROM ${this.tableName} WHERE ${fieldName} = '${value}'`"
+    },
+    {
+      "file": "test-samples/js-ts-sqli-clean/typescript-prisma.ts",
+      "line": 106,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.8,
+      "pattern": "generic repository delete",
+      "description": "Generic delete with condition string",
+      "code_pattern": "`DELETE FROM ${this.tableName} WHERE ${condition}`"
+    }
+  ],
+  "severity_breakdown": {
+    "critical": 32,
+    "high": 10,
+    "medium": 0,
+    "low": 0
+  },
+  "framework_breakdown": {
+    "express": 10,
+    "prisma": 14,
+    "sequelize": 12,
+    "typescript": 6
+  }
+}

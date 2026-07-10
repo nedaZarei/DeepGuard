@@ -1,0 +1,526 @@
+{
+  "scan_metadata": {
+    "target_path": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean",
+    "model": "gpt-4o",
+    "mode": "zero_shot_no_kb_no_rag",
+    "total_cost": 0.08857,
+    "files_scanned": 8
+  },
+  "findings": [
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/express-complex.js",
+      "line": 25,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User input 'searchTerm' is directly concatenated into the SQL query without sanitization.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/express-complex.js",
+      "line": 29,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User input 'category' is directly concatenated into the SQL query without sanitization.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/express-complex.js",
+      "line": 33,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User input 'minPrice' is directly concatenated into the SQL query without sanitization.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/express-complex.js",
+      "line": 37,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User input 'maxPrice' is directly concatenated into the SQL query without sanitization.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/express-complex.js",
+      "line": 52,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User input 'tableName' and 'year' are directly concatenated into the SQL query without sanitization.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/express-complex.js",
+      "line": 67,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User inputs 'status' and 'ids' are directly concatenated into the SQL query without sanitization.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/express-complex.js",
+      "line": 80,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User input 'filterExpr' is directly concatenated into the SQL query without sanitization.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/express-routes.js",
+      "line": 17,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 0.9,
+      "message": "User input 'id' is directly concatenated into the SQL query without sanitization, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/express-routes.js",
+      "line": 27,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 0.9,
+      "message": "User input 'id' is directly concatenated into the SQL query without sanitization, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/express-routes.js",
+      "line": 38,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 0.9,
+      "message": "User inputs 'username' and 'password' are directly concatenated into the SQL query without sanitization, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/express-routes.js",
+      "line": 53,
+      "type": "sql_injection",
+      "severity": "high",
+      "confidence": 0.8,
+      "message": "User inputs 'sort' and 'order' are directly concatenated into the SQL query without sanitization, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/express-routes.js",
+      "line": 9,
+      "type": "insecure_secret",
+      "severity": "high",
+      "confidence": 0.9,
+      "message": "Database password is hardcoded in the source code, which is insecure and may lead to credential exposure.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/prisma-service.js",
+      "line": 10,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User input 'userId' is directly interpolated into a raw SQL query, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/prisma-service.js",
+      "line": 15,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User inputs 'userId' and 'newEmail' are directly interpolated into a raw SQL query, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/prisma-service.js",
+      "line": 21,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User inputs 'fieldName' and 'searchValue' are used in a raw SQL query without sanitization, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/prisma-service.js",
+      "line": 34,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User inputs 'ageMin', 'ageMax', and 'country' are concatenated into a raw SQL query, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/prisma-service.js",
+      "line": 43,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User inputs 'orderId' and 'status' are directly interpolated into a raw SQL query, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/prisma-service.js",
+      "line": 45,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User input 'orderId' is directly interpolated into a raw SQL query, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/prisma-service.js",
+      "line": 52,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User inputs 'sortField' and 'sortOrder' are directly interpolated into a raw SQL query, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/prisma-unsafe.js",
+      "line": 9,
+      "type": "sql_injection",
+      "severity": "high",
+      "confidence": 0.9,
+      "message": "Dynamic interpolation of 'role' in raw SQL query may lead to SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/prisma-unsafe.js",
+      "line": 19,
+      "type": "sql_injection",
+      "severity": "high",
+      "confidence": 0.9,
+      "message": "Usage of '$queryRawUnsafe' with dynamic 'userId' may lead to SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/prisma-unsafe.js",
+      "line": 33,
+      "type": "sql_injection",
+      "severity": "high",
+      "confidence": 0.9,
+      "message": "Usage of '$queryRawUnsafe' with dynamic 'tableName' and 'filters' may lead to SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/prisma-unsafe.js",
+      "line": 43,
+      "type": "sql_injection",
+      "severity": "high",
+      "confidence": 0.9,
+      "message": "Usage of '$queryRawUnsafe' with dynamic 'category' and 'metric' may lead to SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/prisma-unsafe.js",
+      "line": 55,
+      "type": "sql_injection",
+      "severity": "high",
+      "confidence": 0.9,
+      "message": "Usage of '$queryRawUnsafe' with dynamic 'limit' and 'condition' may lead to SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/sequelize-dynamic.js",
+      "line": 13,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 0.9,
+      "message": "Dynamic table and column names in the query are not sanitized, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/sequelize-dynamic.js",
+      "line": 22,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 0.9,
+      "message": "Dynamic table names and join conditions are not sanitized, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/sequelize-dynamic.js",
+      "line": 30,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 0.9,
+      "message": "Dynamic groupByField and aggregateFunc are not sanitized, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/sequelize-dynamic.js",
+      "line": 42,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 0.9,
+      "message": "Dynamic category value is directly interpolated into the query, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/sequelize-dynamic.js",
+      "line": 44,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 0.9,
+      "message": "Dynamic havingCondition is directly interpolated into the query, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/sequelize-dynamic.js",
+      "line": 52,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 0.9,
+      "message": "Dynamic table names and searchValue are not sanitized, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/sequelize-dynamic.js",
+      "line": 60,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 0.9,
+      "message": "Dynamic table name and condition are not sanitized, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/sequelize-models.js",
+      "line": 25,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "Concatenating user-controlled input (userId) directly into the SQL query allows SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/sequelize-models.js",
+      "line": 31,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "Concatenating user-controlled input (searchTerm) directly into the SQL query allows SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/sequelize-models.js",
+      "line": 40,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "Concatenating user-controlled input (role) directly into the SQL query allows SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/sequelize-models.js",
+      "line": 44,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "Concatenating user-controlled input (status) directly into the SQL query allows SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/sequelize-models.js",
+      "line": 52,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "Concatenating user-controlled input (sortBy and order) directly into the SQL query allows SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/sequelize-models.js",
+      "line": 58,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "Concatenating user-controlled input (newRole and userId) directly into the SQL query allows SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/typescript-express.ts",
+      "line": 33,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User input 'id' is directly interpolated into the SQL query without sanitization or parameterization.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/typescript-express.ts",
+      "line": 50,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User inputs 'username' and 'password' are directly interpolated into the SQL query without sanitization or parameterization.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/typescript-express.ts",
+      "line": 68,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User input 'q' is directly interpolated into the SQL query without sanitization or parameterization.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/typescript-express.ts",
+      "line": 71,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User input 'category' is directly interpolated into the SQL query without sanitization or parameterization.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/typescript-express.ts",
+      "line": 89,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User input 'email' is directly interpolated into the SQL query without sanitization or parameterization.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/typescript-prisma.ts",
+      "line": 23,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User input 'userId' is directly interpolated into a raw SQL query, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/typescript-prisma.ts",
+      "line": 27,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User inputs 'userId' and 'status' are directly interpolated into a raw SQL query, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/typescript-prisma.ts",
+      "line": 34,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User input 'filter.role' is concatenated into a SQL query string, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/typescript-prisma.ts",
+      "line": 38,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User input 'filter.status' is concatenated into a SQL query string, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/typescript-prisma.ts",
+      "line": 42,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User input 'filter.ageMin' is concatenated into a SQL query string, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/typescript-prisma.ts",
+      "line": 46,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User input 'filter.ageMax' is concatenated into a SQL query string, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/typescript-prisma.ts",
+      "line": 49,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "Raw SQL query built using user-controlled inputs in 'filterUsers' method, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/typescript-prisma.ts",
+      "line": 54,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User inputs 'params.field', 'params.operator', and 'params.value' are concatenated into a SQL query string, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/typescript-prisma.ts",
+      "line": 65,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User inputs 'department' and 'limit' are concatenated into a SQL query string, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/typescript-prisma.ts",
+      "line": 81,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User-controlled 'builder.where' values are concatenated into a SQL query string, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/typescript-prisma.ts",
+      "line": 87,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User-controlled 'builder.orderBy.field' and 'builder.orderBy.direction' are concatenated into a SQL query string, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/typescript-prisma.ts",
+      "line": 90,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "Raw SQL query built using user-controlled inputs in 'executeQuery' method, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/typescript-prisma.ts",
+      "line": 97,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User inputs 'fieldName' and 'value' are concatenated into a SQL query string, allowing SQL injection.",
+      "recommendation": ""
+    },
+    {
+      "file": "/Users/nedazarei/Documents/university/deep-guard/test-samples/js-ts-sqli-clean/typescript-prisma.ts",
+      "line": 102,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence": 1.0,
+      "message": "User input 'condition' is concatenated into a SQL query string, allowing SQL injection.",
+      "recommendation": ""
+    }
+  ],
+  "summary": {
+    "total_findings": 56,
+    "by_severity": {
+      "critical": 49,
+      "high": 7
+    },
+    "by_type": {
+      "sql_injection": 55,
+      "insecure_secret": 1
+    }
+  }
+}

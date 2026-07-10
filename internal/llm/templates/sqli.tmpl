@@ -57,7 +57,7 @@ Example Response:
 **Function:** {{.FunctionName}}
 
 ```
-{{.Source}}
+{{.NumberedSource}}
 ```
 
 ---
@@ -98,9 +98,10 @@ Example Response:
 
 **Output Requirements:**
 - Return ONLY valid JSON matching the schema above
-- Include a finding for each distinct vulnerability instance
-- **Line number rule**: report the line where user-controlled input is first concatenated or interpolated into the SQL string (the *construction* line), NOT the line where the query is executed (e.g. `db.query(...)`, `cursor.execute(...)`, `prisma.$queryRaw(...)`). For example, if `const q = "SELECT * FROM t WHERE id=" + userId` is on line 3 and `db.query(q)` is on line 7, report line 3. If a template literal spans multiple lines, report the opening backtick line.
-- If a function contains multiple distinct vulnerable assignments or concatenations, report each one as a separate finding with its own line number.
+- **CRITICAL — report EVERY vulnerable line separately.** If a file or function has 5 distinct vulnerable SQL constructions, return 5 separate findings — one per vulnerable line. Do NOT summarise or merge them. Each finding must carry its own exact line number.
+- **Line numbers**: the code listing above is prefixed with absolute file line numbers (e.g. " 42: code..."). Report the exact number shown on the left — do NOT count from 1, do NOT add any offset. Report the *construction* line (where input is concatenated/interpolated into the SQL string), not the execution line (`db.query(...)`, `cursor.execute(...)`, etc.). For template literals spanning multiple lines, report the opening backtick line.
+- Example of correct multi-finding output for a file with vulnerabilities at lines 10, 27, 53:
+  {"findings": [{"type":"sql_injection","line":10,...},{"type":"sql_injection","line":27,...},{"type":"sql_injection","line":53,...}]}
 - Keep messages concise (max 100 characters)
 - Provide actionable recommendations specific to the detected framework
 

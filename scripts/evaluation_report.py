@@ -14,11 +14,31 @@ Reads Deep-Guard scan results and expected findings to produce:
 import json
 import sys
 import os
+import argparse
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).parent.parent
-GOLDEN_PATH = REPO_ROOT / "test-samples/js-ts-sqli/expected-findings.json"
-RESULTS_PATH = REPO_ROOT / "test-samples/js-ts-sqli/scan-results.json"
+REPO_ROOT   = Path(__file__).parent.parent
+
+parser = argparse.ArgumentParser(description="Deep-Guard evaluation report")
+parser.add_argument("--results", default=None,
+                    help="Path to scan results JSON (default: scan-results.json)")
+parser.add_argument("--golden", default=None,
+                    help="Path to expected-findings JSON (default: js-ts-sqli/expected-findings.json)")
+_args, _ = parser.parse_known_args()
+
+if _args.results:
+    RESULTS_PATH = Path(_args.results)
+    if not RESULTS_PATH.is_absolute():
+        RESULTS_PATH = REPO_ROOT / RESULTS_PATH
+else:
+    RESULTS_PATH = REPO_ROOT / "test-samples/js-ts-sqli/scan-results.json"
+
+if _args.golden:
+    GOLDEN_PATH = Path(_args.golden)
+    if not GOLDEN_PATH.is_absolute():
+        GOLDEN_PATH = REPO_ROOT / GOLDEN_PATH
+else:
+    GOLDEN_PATH = REPO_ROOT / "test-samples/js-ts-sqli/expected-findings.json"
 
 LINE_TOLERANCE = 20   # ±N lines for a finding to count as a match
 SEVERITY_FP_BAR = {"critical", "high"}  # only these count as FP

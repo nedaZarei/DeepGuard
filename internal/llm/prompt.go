@@ -28,8 +28,12 @@ type TemplateParams struct {
 	LineEnd int
 	// FunctionName of the code chunk
 	FunctionName string
-	// Source code of the chunk
+	// Source code of the chunk (unnumbered, kept for backwards compat)
 	Source string
+	// NumberedSource is the source code with each line prefixed by its
+	// absolute file line number, e.g. " 42: const q = ...".
+	// The LLM must report this number verbatim — no offset arithmetic needed.
+	NumberedSource string
 	// VulnType is the vulnerability type for this template
 	VulnType string
 	// FrameworkHints are framework-specific hints for this vulnerability type
@@ -70,6 +74,7 @@ func NewPromptRenderer() (*PromptRenderer, error) {
 		VulnTypeCryptoIssue,
 		VulnTypeCommandInjection,
 		VulnTypeSSRF,
+		VulnTypeXXEInjection,
 	}
 
 	for _, vulnType := range vulnTypes {
@@ -121,6 +126,7 @@ func (r *PromptRenderer) RenderPrompt(
 		LineEnd:        chunk.EndLine,
 		FunctionName:   chunk.FunctionName,
 		Source:         chunk.Source,
+		NumberedSource: buildNumberedSource(chunk.Source, chunk.StartLine),
 		VulnType:       string(vulnType),
 		FrameworkHints: frameworkHints,
 	}
@@ -153,9 +159,29 @@ func getTemplateName(vulnType VulnerabilityType) string {
 		return "cmdi"
 	case VulnTypeSSRF:
 		return "ssrf"
+	case VulnTypeXXEInjection:
+		return "xxe"
 	default:
 		return "unknown"
 	}
+}
+
+// buildNumberedSource prefixes each source line with its absolute file line
+// number so the LLM can report exact line numbers without guessing offsets.
+// Example output:
+//
+//	 50: app.get('/user', (req, res) => {
+//	 51:   const id = req.query.id;
+//	 52:   db.query("SELECT * FROM t WHERE id=" + id);
+func buildNumberedSource(source string, startLine int) string {
+	lines := strings.Split(source, "\n")
+	endLine := startLine + len(lines) - 1
+	width := len(fmt.Sprintf("%d", endLine))
+	out := make([]string, len(lines))
+	for i, line := range lines {
+		out[i] = fmt.Sprintf("%*d: %s", width, startLine+i, line)
+	}
+	return strings.Join(out, "\n")
 }
 
 // truncateString truncates a string to maxLen characters

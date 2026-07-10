@@ -241,6 +241,7 @@ func (o *Orchestrator) AnalyzeRepositoryAllTypes(
 		string(llm.VulnTypeCryptoIssue),
 		string(llm.VulnTypeCommandInjection),
 		string(llm.VulnTypeSSRF),
+		string(llm.VulnTypeXXEInjection),
 	}
 
 	allFindings := make([]types.Finding, 0)
@@ -286,8 +287,10 @@ func (o *Orchestrator) AnalyzeRepositoryAllTypes(
 
 // deduplicateFindings removes duplicate findings of the same vulnerability type in the same
 // file at nearly the same line. Within each (file, type) group, findings whose absolute line
-// numbers are within 5 lines of the previous kept finding are merged — keeping the one with
-// the highest confidence score.
+// numbers are within 3 lines of the previous kept finding are merged — keeping the one with
+// the highest confidence score. The window is 3 to only collapse findings on the same
+// statement (e.g. a multi-line expression). Line attribution is now exact (numbered source),
+// so a wide window is no longer needed and would collapse distinct nearby vulnerabilities.
 func deduplicateFindings(findings []types.Finding) []types.Finding {
 	if len(findings) == 0 {
 		return findings
@@ -313,7 +316,7 @@ func deduplicateFindings(findings []types.Finding) []types.Finding {
 		merged := group[:1]
 		for _, f := range group[1:] {
 			last := &merged[len(merged)-1]
-			if f.AbsoluteLine-last.AbsoluteLine <= 5 {
+			if f.AbsoluteLine-last.AbsoluteLine <= 3 {
 				if f.Confidence > last.Confidence {
 					*last = f
 				}

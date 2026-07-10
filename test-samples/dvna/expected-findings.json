@@ -1,0 +1,77 @@
+{
+  "description": "Ground truth for DVNA (Damn Vulnerable NodeJS Application) — a realistic Express/Sequelize application. Vulnerabilities are documented in the DVNA wiki and confirmed by manual code review. No VULN annotations exist in the source code — this is a clean real-world evaluation target.",
+  "source": "https://github.com/appsecco/dvna",
+  "scan_metadata": {
+    "target_path": "/tmp/dvna/core",
+    "languages": ["javascript"],
+    "frameworks": ["express", "sequelize"],
+    "note": "DVNA is a realistic Node.js application demonstrating all OWASP Top 10 categories. It uses the same Express + Sequelize stack as the synthetic js-ts-sqli benchmark but is not synthetic — it is a working web application."
+  },
+  "expected_findings": [
+    {
+      "file": "appHandler.js",
+      "line": 10,
+      "type": "sql_injection",
+      "severity": "critical",
+      "confidence_min": 0.8,
+      "owasp": "A1:2017 Injection",
+      "description": "req.body.login concatenated directly into raw Sequelize query string — classic authentication SQLi allowing login bypass via ' OR '1'='1",
+      "code_pattern": "\"SELECT name,id FROM Users WHERE login='\" + req.body.login + \"'\""
+    },
+    {
+      "file": "appHandler.js",
+      "line": 39,
+      "type": "command_injection",
+      "severity": "critical",
+      "confidence_min": 0.8,
+      "owasp": "A1:2017 Injection",
+      "description": "req.body.address concatenated into exec() shell command — attacker can append ; rm -rf / or pipe to arbitrary commands",
+      "code_pattern": "exec('ping -c 2 ' + req.body.address, ...)"
+    },
+    {
+      "file": "appHandler.js",
+      "line": 218,
+      "type": "insecure_deserialization",
+      "severity": "critical",
+      "confidence_min": 0.8,
+      "owasp": "A8:2017 Insecure Deserialization",
+      "description": "node-serialize.unserialize() on user-supplied file contents — CVE-class RCE via IIFE payload in serialized object",
+      "code_pattern": "serialize.unserialize(req.files.products.data.toString('utf8'))"
+    },
+    {
+      "file": "appHandler.js",
+      "line": 235,
+      "type": "xxe_injection",
+      "severity": "high",
+      "confidence_min": 0.7,
+      "owasp": "A4:2017 XML External Entities",
+      "description": "libxmljs.parseXmlString called with noent:true — allows XXE attacks reading local files (/etc/passwd) or SSRF via HTTP entities",
+      "code_pattern": "libxmljs.parseXmlString(data, {noent:true, noblanks:true})"
+    },
+    {
+      "file": "authHandler.js",
+      "line": 49,
+      "type": "crypto_issue",
+      "severity": "high",
+      "confidence_min": 0.7,
+      "owasp": "A2:2017 Broken Authentication",
+      "description": "Password reset token is MD5(username) — MD5 is cryptographically broken and the token is trivially predictable given any username",
+      "code_pattern": "req.query.token == md5(req.query.login)"
+    }
+  ],
+  "known_issues_outside_deepguard_scope": [
+    {
+      "file": "appHandler.js",
+      "line": 188,
+      "type": "open_redirect",
+      "note": "res.redirect(req.query.url) — unvalidated redirect. Deep-Guard has no open_redirect type; may appear as ssrf or auth_issue"
+    },
+    {
+      "file": "appHandler.js",
+      "line": 197,
+      "type": "code_injection",
+      "note": "mathjs.eval(req.body.eqn) — expression injection via math library. Deep-Guard may flag as command_injection"
+    }
+  ],
+  "why_better_than_synthetic": "DVNA source files contain zero VULN annotations — no comments labelling vulnerability locations or types. Any finding Deep-Guard produces must come from code analysis, not comment-reading. The code structure (real middleware stack, ORM callbacks, class-based services) mirrors production Node.js applications."
+}
