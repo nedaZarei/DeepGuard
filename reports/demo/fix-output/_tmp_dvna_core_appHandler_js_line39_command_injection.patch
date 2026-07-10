@@ -1,0 +1,22 @@
+# Deep-Guard Fix — 2026-07-10T20:06:58+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 39  Severity: critical
+# Type: command_injection
+
+## Root Cause
+The use of string concatenation in the exec function allows for command injection vulnerabilities.
+
+## Explanation
+The patch changes the use of exec to execFile, which executes a file with specified arguments in a safer manner. By using an array for arguments, it eliminates the possibility of command injection through unsanitized input from req.body.address.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -39,4 +39,5 @@
+  
+  module.exports.ping = function (req, res) {
+-  exec('ping -c 2 ' + req.body.address, function (err, stdout, stderr) {
++  const { execFile } = require('child_process');
++  execFile('ping', ['-c', '2', req.body.address], function (err, stdout, stderr) {
+     output = stdout + stderr
+     res.render('app/ping', {
+

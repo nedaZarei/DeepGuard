@@ -1,0 +1,22 @@
+# Deep-Guard Fix — 2026-07-10T20:07:24+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 62  Severity: high
+# Type: auth_issue
+
+## Root Cause
+The code concatenates user input directly into an SQL query, which can lead to SQL injection attacks.
+
+## Explanation
+This patch uses Sequelize's parameterized queries that automatically handle sanitization of the input, preventing direct user input from altering the structure of the SQL query. By ensuring user input is treated as data rather than executable code, the risk of SQL injection is mitigated.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -61,7 +61,7 @@
+ 			where: {
+ 				name: {
+-        				[Op.like]: '%' + req.body.name + '%'
++        				[Op.like]: { [Op.concat]: ['%', req.body.name, '%'] }
+ 				}
+ 			}
+ 		}).then(products => {
+

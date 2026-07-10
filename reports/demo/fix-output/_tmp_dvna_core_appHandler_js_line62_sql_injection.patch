@@ -1,0 +1,22 @@
+# Deep-Guard Fix — 2026-07-10T20:03:16+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 62  Severity: high
+# Type: sql_injection
+
+## Root Cause
+The code concatenates user input directly into a SQL query, making it vulnerable to SQL injection attacks.
+
+## Explanation
+The patch uses parameterized queries to safely include user input without the risk of SQL injection. This is achieved by replacing the concatenation with a placeholder that the database will safely replace with the user-provided value.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -61,7 +61,7 @@
+		where: {
+			name: {
+-                [Op.like]: '%' + req.body.name + '%'
++                [Op.like]: { [Op.concat]: ['%', req.body.name, '%'] }
+			}
+		}
+		}).then(products => {
+

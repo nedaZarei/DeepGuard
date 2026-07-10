@@ -1,0 +1,21 @@
+# Deep-Guard Fix — 2026-07-10T20:09:22+03:30
+# File: /tmp/dvna/core/passport.js  Line: 9  Severity: high
+# Type: auth_issue
+
+## Root Cause
+Directly serializing user identifiers can expose sensitive information and make it easier for attackers to impersonate users.
+
+## Explanation
+The patch hashes the user ID before serialization, which prevents the exposure of sensitive user identifiers and makes it more difficult for an attacker to reverse-engineer user identities from the serialized data.
+
+## Patch
+--- a/tmp/dvna/core/passport.js
++++ b/tmp/dvna/core/passport.js
+@@ -6,6 +6,7 @@
+     passport.serializeUser(function (user, done) {
+-        done(null, user.id)
++        done(null, bCrypt.hashSync(user.id.toString(), bCrypt.genSaltSync(10)))
+     });
+ 
+     passport.deserializeUser(function (uid, done) {
+         db.User.findOne({

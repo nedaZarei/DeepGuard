@@ -1,0 +1,23 @@
+# Deep-Guard Fix — 2026-07-10T20:07:51+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 215  Severity: high
+# Type: auth_issue
+
+## Root Cause
+The function 'bulkProductsLegacy' does not require authentication, allowing unauthenticated users to access it.
+
+## Explanation
+The patch adds middleware that checks for a valid authentication token before the 'bulkProductsLegacy' function is executed. This ensures that only authenticated users can perform operations related to bulk product uploads, thereby enhancing the security of the application.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -214,6 +214,8 @@
+ module.exports.bulkProductsLegacy = function (req,res){
+ +    authenticate(req, res, () => {
+         // TODO: Deprecate this soon
+         if(req.files.products){
+             var products = serialize.unserialize(req.files.products.data.toString('utf8'))
+@@ -227,5 +229,6 @@
+         }
+ +    })
+ }

@@ -1,0 +1,29 @@
+# Deep-Guard Fix — 2026-07-10T20:07:40+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 188  Severity: high
+# Type: auth_issue
+
+## Root Cause
+The application allows arbitrary URLs to be passed in the 'req.query.url', leading to open redirect vulnerabilities.
+
+## Explanation
+The patch validates the incoming 'req.query.url' against a list of trusted origins before performing the redirect. This ensures that only safe and expected destinations can be redirected to, thereby mitigating the risk of malicious redirects.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -186,7 +186,14 @@
+ 
+ module.exports.redirect = function (req, res) {
+     if (req.query.url) {
+-        res.redirect(req.query.url)
++        const trustedOrigins = ['https://example.com', 'https://anotherexample.com'];
++        const url = new URL(req.query.url, `http://${req.headers.host}`);
++        if (trustedOrigins.includes(url.origin)) {
++            res.redirect(req.query.url);
++        } else {
++            res.send('invalid redirect url');
++        }
+     } else {
+         res.send('invalid redirect url')
+     }
+ }

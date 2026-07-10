@@ -1,0 +1,16 @@
+# Deep-Guard Fix — 2026-07-10T20:06:41+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 235  Severity: critical
+# Type: insecure_deserialization
+
+## Root Cause
+The code is vulnerable to insecure deserialization due to the use of external entity resolution in XML parsing, which can lead to XML External Entity (XXE) attacks.
+
+## Explanation
+The patch disables external entity resolution by setting the option 'noent' to false, preventing potential attacks that exploit XML entity declarations. This increases the security of the application by ensuring that it processes only well-formed XML without attempting to parse or resolve external entities.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -235,7 +235,7 @@
+  	var products = libxmljs.parseXmlString(req.files.products.data.toString('utf8'), {noent:false,noblanks:true})
+

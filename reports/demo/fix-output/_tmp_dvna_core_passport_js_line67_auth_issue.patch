@@ -1,0 +1,50 @@
+# Deep-Guard Fix — 2026-07-10T20:09:40+03:30
+# File: /tmp/dvna/core/passport.js  Line: 67  Severity: critical
+# Type: auth_issue
+
+## Root Cause
+Passwords are being stored without hashing, making them vulnerable if the database is compromised.
+
+## Explanation
+The patch hashes the password using bcrypt before storing it in the database, which makes it secure by ensuring that even if the database is accessed by an unauthorized party, the actual passwords remain protected. Hashing with a unique salt also prevents users from being able to derive their original passwords from the hash.
+
+## Patch
+--- a/tmp/dvna/core/passport.js
++++ b/tmp/dvna/core/passport.js
+@@ -1,6 +1,7 @@
+ const bcrypt = require('bcrypt');
++const saltRounds = 10;
+ 
+     53:         function (req, username, password, done) {
+     54:             findOrCreateUser = function () {
+     55:                 db.User.findOne({
+     56:                     where: {
+     57:                         'email': username
+     58:                     }
+     59:                 }).then(function (user) {
+     60:                     if (user) {
+     61:                         return done(null, false, req.flash('danger', 'Account Already Exists'));
+     62:                     } else {
+     63:                         if (req.body.email && req.body.password && req.body.username && req.body.cpassword && req.body.name) {
+     64:                             if (req.body.cpassword == req.body.password) {
+     65:                                 bcrypt.hash(password, saltRounds, function(err, hash) {
+     66:                                     if (err) return done(err);
+     67:                                     db.User.create({
+-    67:                                     password: createHash(password),
++    68:                                     password: hash,
+     69:                                     name: req.body.name,
+     70:                                     login: username
+     71:                                 }).then(function (user) {
+     72:                                     return done(null, user)
+     73:                                 })
+     74:                             } else {
+     75:                                 return done(null, false, req.flash('danger', 'Passwords dont match'));
+     76:                             }
+     77:                         } else {
+     78:                             return done(null, false, req.flash('danger', 'Input field(s) missing'));
+     79:                         }
+     80:                     }
+     81:                 });
+     82:             };
+     83:             process.nextTick(findOrCreateUser)
+

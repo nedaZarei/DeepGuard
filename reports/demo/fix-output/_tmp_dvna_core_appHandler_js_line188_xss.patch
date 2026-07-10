@@ -1,0 +1,29 @@
+# Deep-Guard Fix — 2026-07-10T20:05:38+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 188  Severity: critical
+# Type: xss
+
+## Root Cause
+The application directly uses user-controlled input from 'req.query.url' in a redirect, which can lead to open redirect vulnerabilities.
+
+## Explanation
+The patch validates the URL against a whitelist of allowed origins, ensuring that only safe redirects occur. This prevents potential exploitation through malicious redirects to external sites.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -185,6 +185,15 @@
+  
+  module.exports.redirect = function (req, res) {
+      if (req.query.url) {
++        const allowedOrigins = ['https://example.com', 'http://localhost:3000'];
++        const url = new URL(req.query.url, 'http://localhost'); // Base URL to avoid issues with relative URLs
++        if (allowedOrigins.includes(url.origin)) {
++            return res.redirect(req.query.url);
++        }
++        return res.send('Invalid redirect url'); 
++      }
+          res.send('invalid redirect url');
+      } else {
+          res.send('invalid redirect url');
+      }
+  }

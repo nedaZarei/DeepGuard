@@ -1,0 +1,36 @@
+# Deep-Guard Fix — 2026-07-10T20:09:00+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 188  Severity: high
+# Type: ssrf
+
+## Root Cause
+The application directly redirects user input from the query parameter without validating the URL, allowing for potential Server-Side Request Forgery (SSRF) attacks.
+
+## Explanation
+The patch adds validation to ensure the provided URL matches a predefined allowlist of permitted hosts and schemes. This prevents unauthorized redirections to malicious servers and mitigates the risk of SSRF attacks.
+
+## Patch
++++ b/tmp/dvna/core/appHandler.js
+@@ -185,6 +185,16 @@
+     } else {
+         res.send('invalid redirect url')
+     }
+ }
+ +
+ +const allowedHosts = [
+ +    'https://example.com',
+ +    'http://example.com'
+ +];
+ +const allowedSchemes = ['http:', 'https:'];
+ +
+ +function isAllowedUrl(url) {
+ +    const parsedUrl = new URL(url);
+ +    return allowedHosts.includes(parsedUrl.origin) && allowedSchemes.includes(parsedUrl.protocol);
+ +}
+ +
+ module.exports.redirect = function (req, res) {
+     if (req.query.url && isAllowedUrl(req.query.url)) {
+         res.redirect(req.query.url)
+     } else {
+         res.send('invalid redirect url')
+     }
+ }

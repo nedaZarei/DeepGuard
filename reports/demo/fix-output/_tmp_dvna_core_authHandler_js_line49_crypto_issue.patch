@@ -1,0 +1,29 @@
+# Deep-Guard Fix — 2026-07-10T20:06:46+03:30
+# File: /tmp/dvna/core/authHandler.js  Line: 49  Severity: high
+# Type: crypto_issue
+
+## Root Cause
+Using MD5 for token generation is vulnerable to collision attacks and is not considered secure.
+
+## Explanation
+The patch replaces the use of MD5 with a more secure hashing algorithm, SHA-256, which is less susceptible to attacks. By employing a strong hashing method for token generation, the integrity and security of the token validation process is significantly improved.
+
+## Patch
+--- a/tmp/dvna/core/authHandler.js
++++ b/tmp/dvna/core/authHandler.js
+@@ -1,5 +1,6 @@
+ const crypto = require('crypto');
+ 
+ module.exports.resetPw = function (req, res) {
+  if (req.query.login) {
+      db.User.find({
+          where: {
+@@ -48,7 +49,7 @@
+              if (user) {
+                  if (req.query.token == md5(req.query.login)) {
+-                    if (req.query.token == md5(req.query.login)) {
++                    if (req.query.token == crypto.createHash('sha256').update(req.query.login).digest('hex')) {
+                      res.render('resetpw', {
+                          login: req.query.login,
+                          token: req.query.token
+

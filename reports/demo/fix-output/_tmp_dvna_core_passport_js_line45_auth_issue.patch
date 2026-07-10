@@ -1,0 +1,21 @@
+# Deep-Guard Fix — 2026-07-10T20:09:26+03:30
+# File: /tmp/dvna/core/passport.js  Line: 45  Severity: high
+# Type: auth_issue
+
+## Root Cause
+The use of synchronous password comparison with bcrypt may lead to performance issues and does not utilize recommended practices for handling asynchronous execution and avoiding potential denial of service scenarios.
+
+## Explanation
+The patch replaces the synchronous password comparison method with an asynchronous version, which is more secure against timing attacks and reduces the risk of blocking the event loop. Using asynchronous functions also allows better scalability for handling multiple requests concurrently in a production environment.
+
+## Patch
+--- a/tmp/dvna/core/passport.js
++++ b/tmp/dvna/core/passport.js
+@@ -47,7 +47,7 @@
+     }
+ 
+     var isValidPassword = function (user, password) {
+-        return bCrypt.compareSync(password, user.password);
++        return bCrypt.compare(password, user.password).then(result => result);
+     }
+

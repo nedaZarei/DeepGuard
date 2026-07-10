@@ -1,0 +1,24 @@
+# Deep-Guard Fix — 2026-07-10T20:07:10+03:30
+# File: /tmp/dvna/core/authHandler.js  Line: 95  Severity: high
+# Type: xss
+
+## Root Cause
+The `login` and `token` values from the query parameters are rendered directly in the response without proper escaping or sanitization, allowing for potential XSS attacks.
+
+## Explanation
+The patch applies escaping to the `login` and `token` values using a secure templating function. This ensures that any potentially harmful HTML or JavaScript code in those values is rendered as plain text, preventing execution in the browser.
+
+## Patch
+--- a/tmp/dvna/core/authHandler.js
++++ b/tmp/dvna/core/authHandler.js
+@@ -94,6 +94,7 @@
+  
+  
+              res.render('resetpw', {
+-                login: req.query.login,
+-                token: req.query.token
++                login: escapeHtml(req.query.login),
++                token: escapeHtml(req.query.token)
+              })
+          }
+

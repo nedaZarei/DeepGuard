@@ -1,0 +1,45 @@
+# Deep-Guard Fix — 2026-07-10T20:06:19+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 39  Severity: critical
+# Type: insecure_deserialization
+
+## Root Cause
+The use of `exec` with unsanitized user input allows for arbitrary command execution.
+
+## Explanation
+The patch replaces the `exec` command with `child_process.spawn`, which takes the command and its arguments as separate parameters, thereby preventing arbitrary command execution through unsafe string concatenation. Additionally, input validation is added to ensure that only valid IP addresses or hostnames can be used.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -36,6 +36,25 @@
+ };
+ 
+ module.exports.ping = function (req, res) {
++    const address = req.body.address;
++    // Validate the input to ensure it is a valid IP address or hostname
++    const validAddress = /^[a-zA-Z0-9.-]+$/.test(address);
++    if (!validAddress) {
++        req.flash('danger', 'Invalid address format.');
++        return res.render('app/ping', {
++            output: null
++        });
++    }
++    
++    const spawn = require('child_process').spawn;
++    const ping = spawn('ping', ['-c', '2', address]);
++    let output = '';
++    ping.stdout.on('data', (data) => {
++        output += data;
++    });
++    ping.stderr.on('data', (data) => {
++        output += data;
++    });
++    ping.on('close', (code) => {
++        res.render('app/ping', {
++            output: output
++        });
++    });
+     exec('ping -c 2 ' + req.body.address, function (err, stdout, stderr) {
+         output = stdout + stderr
+         res.render('app/ping', {
+

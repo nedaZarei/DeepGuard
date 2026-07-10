@@ -1,0 +1,26 @@
+# Deep-Guard Fix — 2026-07-10T20:05:19+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 71  Severity: critical
+# Type: xss
+
+## Root Cause
+The application directly renders user input (req.body.name) into the response without escaping, allowing potential XSS attacks.
+
+## Explanation
+The patch applies proper escaping to the user input before rendering it in the template. This prevents malicious scripts from being executed in the user's browser by ensuring that any HTML special characters are safely converted to their respective entities.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -70,6 +70,7 @@
+ 
+  
+  
+      output = {
+          products: products,
+          searchTerm: req.body.name
++         escapedSearchTerm: res.escape(req.body.name)
+      }
+      res.render('app/products', {
+          output: output
+      })
+

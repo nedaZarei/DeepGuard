@@ -1,0 +1,27 @@
+# Deep-Guard Fix — 2026-07-10T20:07:30+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 85  Severity: high
+# Type: auth_issue
+
+## Root Cause
+The endpoint lacks authentication checks before accessing sensitive product data.
+
+## Explanation
+The patch introduces an authentication middleware to ensure that only authorized users can access the modify product functionality. By adding this middleware, the application mitigates the risk of unauthorized data exposure and enhances overall security.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -75,6 +75,10 @@
+  }
+  
+  module.exports.modifyProduct = function (req, res) {
++    // Authentication middleware check
++    if (!req.isAuthenticated()) {
++        return res.status(401).send('Unauthorized');
++    }
+      if (!req.query.id || req.query.id == '') {
+          output = {
+              product: {}
+          }
+          res.render('app/modifyproduct', {
+

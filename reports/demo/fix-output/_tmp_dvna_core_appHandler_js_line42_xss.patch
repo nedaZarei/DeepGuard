@@ -1,0 +1,22 @@
+# Deep-Guard Fix — 2026-07-10T20:05:15+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 42  Severity: critical
+# Type: xss
+
+## Root Cause
+The output variable contains untrusted data that can be manipulated by an attacker, leading to XSS vulnerabilities when rendered in the response.
+
+## Explanation
+The patch ensures that the output is properly escaped to prevent the execution of any malicious scripts. By using a secure library or ensuring that the template engine autoescapes variables, we mitigate the risk of XSS attacks.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -41,7 +41,7 @@
+          output = stdout + stderr
+          res.render('app/ping', {
+-            output: output
++            output: escapeHtml(output)
+          })
+        })
+      }
+

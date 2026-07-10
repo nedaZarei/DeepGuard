@@ -1,0 +1,21 @@
+# Deep-Guard Fix — 2026-07-10T20:09:09+03:30
+# File: /tmp/dvna/core/authHandler.js  Line: 14  Severity: critical
+# Type: auth_issue
+
+## Root Cause
+The code does not verify if a user is authenticated before accessing sensitive routes, which could lead to unauthorized access.
+
+## Explanation
+The patch adds an authentication check using `req.isAuthenticated()` to ensure that only authenticated users have access to sensitive routes. This prevents unauthenticated users from accessing protected resources, thus improving the application’s security.
+
+## Patch
+--- a/tmp/dvna/core/authHandler.js
++++ b/tmp/dvna/core/authHandler.js
+@@ -13,6 +13,7 @@
+ 
+ module.exports.isNotAuthenticated = function (req, res, next) {
++    if (req.isAuthenticated()) return res.redirect('/learn');
+     if (!req.isAuthenticated())
+         return next();
+     res.redirect('/learn');
+

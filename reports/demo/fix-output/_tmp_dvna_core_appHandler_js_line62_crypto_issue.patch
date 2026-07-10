@@ -1,0 +1,24 @@
+# Deep-Guard Fix — 2026-07-10T20:08:12+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 62  Severity: high
+# Type: crypto_issue
+
+## Root Cause
+The vulnerability arises from directly concatenating user input into a query, which can lead to SQL injection attacks.
+
+## Explanation
+The proposed patch uses parameterized queries to safely handle user input. By utilizing Sequelize's binding methods, the user input is treated as a parameter rather than executing it as part of the SQL command, mitigating the risk of SQL injection.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -58,8 +58,8 @@
+     module.exports.productSearch = function (req, res) {
+         db.Product.findAll({
+             where: {
+                 name: {
+-                    [Op.like]: '%' + req.body.name + '%'
++                    [Op.like]: { [Op.concat]: ['%', req.body.name, '%'] } 
+                 }
+             }
+         }).then(products => {
+

@@ -1,0 +1,22 @@
+# Deep-Guard Fix — 2026-07-10T20:05:47+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 246  Severity: high
+# Type: xss
+
+## Root Cause
+The application renders user-controlled messages directly to the response without sanitization, allowing for potential XSS attacks.
+
+## Explanation
+The patch ensures that the message is properly escaped using a library function before rendering it in the response. This prevents any HTML or script tags in the user-controlled message from being executed in the browser, mitigating the XSS risk.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -245,6 +245,7 @@
+       res.redirect('/app/products')
+     }else{
+-      res.render('app/bulkproducts',{messages:{danger:'Invalid file'},legacy:false})
++      res.render('app/bulkproducts',{messages:{danger: escapeHtml('Invalid file')},legacy:false})
+     }
+   }
+ }
+

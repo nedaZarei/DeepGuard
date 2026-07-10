@@ -1,0 +1,27 @@
+# Deep-Guard Fix — 2026-07-10T20:09:47+03:30
+# File: /tmp/dvna/core/passport.js  Line: 67  Severity: high
+# Type: crypto_issue
+
+## Root Cause
+The use of a weak or insecure password hashing function in createHash does not provide sufficient protection against attacks such as brute force and rainbow tables.
+
+## Explanation
+The patch replaces the insecure password hashing function with bcrypt, which is a strong adaptive hash function designed for securely storing passwords. By using bcrypt with a proper salt and iteration count, it significantly increases the difficulty of cracking hashed passwords.
+
+## Patch
+--- a/tmp/dvna/core/passport.js
++++ b/tmp/dvna/core/passport.js
+@@ -1,5 +1,6 @@
+ const bcrypt = require('bcrypt');
+ 
+ function createHash(password) {
+-    return /* insecure hash */;
++    const saltRounds = 10;
++    return bcrypt.hash(password, saltRounds);
+ }
+
+             db.User.create({
+                 email: req.body.email,
+-                password: createHash(password),
++                password: await createHash(password),
+

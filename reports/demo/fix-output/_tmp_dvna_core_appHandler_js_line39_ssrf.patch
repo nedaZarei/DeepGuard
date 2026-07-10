@@ -1,0 +1,25 @@
+# Deep-Guard Fix — 2026-07-10T20:08:40+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 39  Severity: critical
+# Type: ssrf
+
+## Root Cause
+The application directly incorporates user input into a shell command, allowing for potential SSRF and command injection attacks.
+
+## Explanation
+The patch replaces the direct concatenation of user input into the exec command with a validated and sanitized input. By using a whitelist of valid addresses and ensuring that input is constrained to expected formats, the risk of SSRF and command injection is mitigated.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -38,7 +38,18 @@
+ module.exports.ping = function (req, res) {
+-       exec('ping -c 2 ' + req.body.address, function (err, stdout, stderr) {
++       const address = req.body.address;
++       const validIpRegex = /^(\d{1,3}\.){3}\d{1,3}$/; // Basic IPv4 validation
++
++       if (!validIpRegex.test(address)) {
++           req.flash('danger', 'Invalid IP address');
++           return res.render('app/ping', { output: null });
++       }
++       exec(`ping -c 2 ${address}`, function (err, stdout, stderr) {
+

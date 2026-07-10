@@ -1,0 +1,21 @@
+# Deep-Guard Fix — 2026-07-10T20:03:09+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 10  Severity: critical
+# Type: sql_injection
+
+## Root Cause
+The code concatenates user input directly into the SQL query, allowing for potential SQL injection attacks.
+
+## Explanation
+The patch replaces the string concatenation with a parameterized query, which securely binds user input and prevents malicious SQL injection attempts by separating the query structure from the data.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -10,7 +10,7 @@
+  var query = "SELECT name,id FROM Users WHERE login='" + req.body.login + "'";
+-  db.sequelize.query(query, {
++  db.sequelize.query("SELECT name, id FROM Users WHERE login = :login", {
+     model: db.User,
+     replacements: { login: req.body.login }
+   }).then(user => {
+

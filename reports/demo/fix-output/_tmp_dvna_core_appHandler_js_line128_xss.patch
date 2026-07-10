@@ -1,0 +1,26 @@
+# Deep-Guard Fix — 2026-07-10T20:05:28+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 128  Severity: high
+# Type: xss
+
+## Root Cause
+The error message `err` can contain untrusted user input, leading to potential XSS attacks when rendered in the response.
+
+## Explanation
+The patch modifies the code to escape or encode the error message before passing it to `req.flash`. This prevents any malicious script in the error message from being executed in the browser, thereby mitigating the XSS vulnerability.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -127,6 +127,7 @@
+             }
+         }).catch(err => {
+             output = {
+                 product: product
++                error: escapeHtml(err) // use an HTML escaping function
+             }
+             req.flash('danger', escapeHtml(err));
+             res.render('app/modifyproduct', {
+                 output: output
+             });
+         })
+

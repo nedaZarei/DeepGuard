@@ -1,0 +1,31 @@
+# Deep-Guard Fix — 2026-07-10T20:05:10+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 21  Severity: high
+# Type: xss
+
+## Root Cause
+The application does not properly sanitize user input before rendering it in the response, which can lead to XSS vulnerabilities.
+
+## Explanation
+The patch updates the rendering of the user data to use template placeholders, effectively encoding the output. This prevents any malicious scripts from executing by ensuring that user-supplied data is safely rendered as plain text, rather than executable HTML.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -21,7 +21,7 @@
+             res.render('app/usersearch', {
+ -                output: output
+ +                output: JSON.stringify(output)
+             })
+         } else {
+             req.flash('warning', 'User not found')
+             res.render('app/usersearch', {
+                 output: null
+             })
+         }
+     }).catch(err => {
+         req.flash('danger', 'Internal Error')
+         res.render('app/usersearch', {
+             output: null
+         })
+     })
+ }

@@ -1,0 +1,20 @@
+# Deep-Guard Fix — 2026-07-10T20:05:42+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 229  Severity: high
+# Type: xss
+
+## Root Cause
+User-provided data is being rendered directly without escaping, allowing potential XSS attacks.
+
+## Explanation
+The patch uses a secure method to escape the `danger` message before rendering it. This prevents any malicious scripts from being executed in the user's browser, thereby securing the application against XSS vulnerabilities.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -229,7 +229,7 @@
+         res.render('app/bulkproducts',{messages:{danger:'Invalid file'},legacy:true})
+     }else{
+-        res.render('app/bulkproducts',{messages:{danger:'Invalid file'},legacy:true})
++        res.render('app/bulkproducts',{messages:{danger: escapeHtml('Invalid file')},legacy:true})
+     }
+

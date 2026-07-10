@@ -1,0 +1,16 @@
+# Deep-Guard Fix — 2026-07-10T20:09:05+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 235  Severity: critical
+# Type: ssrf
+
+## Root Cause
+The SSRF vulnerability is due to the XML parser allowing external entities to be processed, which could be exploited to make unauthorized requests to internal services.
+
+## Explanation
+The patch modifies the parser options by setting 'noent' to false, which disables the processing of external entities. This change prevents potential attacks from malicious XML files that might otherwise try to access internal resources.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -235 +235 @@
+-        var products = libxmljs.parseXmlString(req.files.products.data.toString('utf8'), {noent:true,noblanks:true})
++        var products = libxmljs.parseXmlString(req.files.products.data.toString('utf8'), {noent:false,noblanks:true})

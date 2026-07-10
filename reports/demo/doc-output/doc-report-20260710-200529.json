@@ -1,0 +1,278 @@
+{
+  "files": [
+    {
+      "file": "express-complex.js",
+      "functions": [
+        {
+          "name": "anonymous",
+          "start_line": 16,
+          "docstring": "/**\n * Handles an asynchronous request to fetch products based on various filters.\n *\n * @param {Object} req - The request object containing query parameters.\n * @param {Object} req.query - The query parameters for the request.\n * @param {string} [req.query.q] - The search term to filter product names.\n * @param {string} [req.query.category] - The category to filter products.\n * @param {number} [req.query.min_price] - The minimum price to filter products.\n * @param {number} [req.query.max_price] - The maximum price to filter products.\n * @returns {Promise\u003cvoid\u003e} - Responds with the filtered products in JSON format.\n */"
+        },
+        {
+          "name": "anonymous",
+          "start_line": 48,
+          "docstring": "/**\n * Handles an HTTP request to retrieve data from a specified database table.\n *\n * @param {Object} req - The request object containing parameters and query.\n * @param {Object} res - The response object used to send the response back.\n * @returns {Promise\u003cvoid\u003e} A promise that resolves when the response is sent.\n * @throws {Error} If the database query fails, a 500 status code is returned with an error message.\n */"
+        },
+        {
+          "name": "anonymous",
+          "start_line": 62,
+          "docstring": "/**\n * Updates the status of multiple orders in the database.\n *\n * @param {Object} req - The request object containing the parameters.\n * @param {Array\u003cnumber\u003e} req.body.ids - An array of order IDs to be updated.\n * @param {string} req.body.status - The new status to set for the specified orders.\n * @returns {Promise\u003cvoid\u003e} - A promise that resolves to void when the update is complete.\n * @throws {Error} - If there is an issue with the database query.\n */"
+        },
+        {
+          "name": "anonymous",
+          "start_line": 90,
+          "docstring": "/**\n * Logs a message indicating that a complex example server is running.\n *\n * @function\n * @returns {void} This function does not return a value.\n */"
+        }
+      ]
+    },
+    {
+      "file": "express-routes.js",
+      "functions": [
+        {
+          "name": "anonymous",
+          "start_line": 15,
+          "docstring": "/**\n * Retrieves user information based on the provided user ID from the request query.\n *\n * @param {Object} req - The request object containing the query parameters.\n * @param {Object} res - The response object used to send the JSON response.\n *\n * @returns {void} - Sends a JSON response with user data or an error if the query fails.\n */"
+        },
+        {
+          "name": "anonymous",
+          "start_line": 25,
+          "docstring": "/**\n * Handles the request to retrieve a product by its ID from the database.\n *\n * @param {Object} req - The request object containing the parameters.\n * @param {Object} req.params - The parameters object of the request.\n * @param {string} req.params.id - The ID of the product to be retrieved.\n * @param {Object} res - The response object used to send back the desired output.\n * @returns {void} - Sends the retrieved product rows as a response.\n */"
+        },
+        {
+          "name": "anonymous",
+          "start_line": 35,
+          "docstring": "/**\n * Handles user authentication by querying the database.\n *\n * @param {Object} req - The request object containing user credentials.\n * @param {Object} req.body - The body of the request.\n * @param {string} req.body.username - The username provided by the user.\n * @param {string} req.body.password - The password provided by the user.\n * @param {Object} res - The response object used to send back the result.\n * @returns {void}\n * @throws {Error} Throws an error if the database query fails.\n */"
+        },
+        {
+          "name": "anonymous",
+          "start_line": 50,
+          "docstring": "/**\n * Retrieves users from the database, sorted by a specified column and order.\n *\n * @param {Object} req - The request object containing query parameters.\n * @param {Object} res - The response object used to send the results.\n * @param {string} [req.query.sort='id'] - The column to sort by (default is 'id').\n * @param {string} [req.query.order='ASC'] - The sorting order (default is 'ASC').\n * @returns {void} - Returns the results as a JSON response.\n */"
+        },
+        {
+          "name": "anonymous",
+          "start_line": 61,
+          "docstring": "/**\n * Starts the server and logs the status to the console.\n *\n * @function\n * @returns {void} This function does not return a value.\n */"
+        }
+      ]
+    },
+    {
+      "file": "prisma-service.js",
+      "functions": [
+        {
+          "name": "getUserById",
+          "start_line": 9,
+          "docstring": "/**\n * Retrieves a user from the database by their unique identifier.\n *\n * @param {number|string} userId - The unique identifier of the user to retrieve.\n * @returns {Promise\u003cObject\u003e} A promise that resolves to the user object if found, or null if not.\n */"
+        },
+        {
+          "name": "updateUserEmail",
+          "start_line": 14,
+          "docstring": "/**\n * Updates the email address of a user in the database.\n *\n * @param {string} userId - The ID of the user whose email is to be updated.\n * @param {string} newEmail - The new email address for the user.\n * @returns {Promise\u003cany\u003e} The result of the database update operation.\n */"
+        },
+        {
+          "name": "searchUsers",
+          "start_line": 19,
+          "docstring": "/**\n * Searches for users in the database based on a specific field and value.\n *\n * @param {string} fieldName - The name of the field to search in the users table.\n * @param {string} searchValue - The value to search for in the specified field.\n * @returns {Promise\u003cArray\u003e} A promise that resolves to an array of user objects matching the search criteria.\n */"
+        },
+        {
+          "name": "getFilteredUsers",
+          "start_line": 25,
+          "docstring": "/**\\n * Retrieves a list of users filtered by age and country.\\n *\\n * @param {number} ageMin - The minimum age to filter users.\\n * @param {number} [ageMax] - The maximum age to filter users.\\n * @param {string} [country] - The country to filter users by.\\n * @returns {Promise\u003cArray\u003e} A promise that resolves to an array of users.\\n */"
+        },
+        {
+          "name": "processOrder",
+          "start_line": 40,
+          "docstring": "/**\n * Processes an order by updating its status and retrieving the updated order.\n *\n * @param {number} orderId - The ID of the order to process.\n * @param {string} status - The new status to set for the order.\n * @returns {Promise\u003cArray\u003e} A promise that resolves to an array of the updated order details.\n */"
+        },
+        {
+          "name": "getOrdersSorted",
+          "start_line": 50,
+          "docstring": "/**\n * Retrieves a list of orders sorted by a specified field and order.\n *\n * @param {string} sortField - The field by which to sort the orders.\n * @param {string} sortOrder - The order direction ('ASC' or 'DESC').\n * @returns {Promise\u003cArray\u003e} A promise that resolves to an array of order objects.\n */"
+        }
+      ]
+    },
+    {
+      "file": "prisma-unsafe.js",
+      "functions": [
+        {
+          "name": "getUsersByRole",
+          "start_line": 8,
+          "docstring": "/**\n * Retrieves users from the database by their role.\n *\n * @param {string} role - The role of the users to retrieve.\n * @returns {Promise\u003cArray\u003e} A promise that resolves to an array of users with the specified role.\n */"
+        },
+        {
+          "name": "getUserWithOrders",
+          "start_line": 12,
+          "docstring": "/**\n * Fetches a user along with their associated orders from the database.\n *\n * @param {string|number} userId - The ID of the user to retrieve.\n * @returns {Promise\u003cObject\u003e} A promise that resolves to the user object with their orders.\n * @throws {Error} Throws an error if the query fails.\n */"
+        },
+        {
+          "name": "getRecordsByTable",
+          "start_line": 22,
+          "docstring": "/**\n * Retrieves records from a specified table based on the given filters.\n *\n * @param {string} tableName - The name of the table to query.\n * @param {Object} filters - The filters to apply to the query.\n * @param {string} [filters.status] - The status filter for the records.\n * @param {string} [filters.date] - The date filter for the records.\n * @returns {Promise\u003cObject[]\u003e} - A promise that resolves to the records retrieved from the database.\n */"
+        },
+        {
+          "name": "getStatsByCategory",
+          "start_line": 36,
+          "docstring": "/**\n * Retrieves statistics for a specific category based on the provided metric.\n *\n * @param {string} category - The category of products to query.\n * @param {string} metric - The metric to group the results by.\n * @returns {Promise\u003cobject[]\u003e} - A promise that resolves to an array of objects containing the metric and count.\n */"
+        },
+        {
+          "name": "getTopUsers",
+          "start_line": 46,
+          "docstring": "/**\n * Retrieves the top users based on the specified conditions and limit.\n *\n * @param {number} limit - The maximum number of users to retrieve.\n * @param {string} condition - The condition to filter users based on their orders.\n * @returns {Promise\u003cArray\u003e} A promise that resolves to an array of users.\n */"
+        }
+      ]
+    },
+    {
+      "file": "sequelize-dynamic.js",
+      "functions": [
+        {
+          "name": "getCustomColumns",
+          "start_line": 11,
+          "docstring": "/**\n * Retrieves specific columns from a specified table in the database.\n *\n * @param {string} tableName - The name of the table to query.\n * @param {Array\u003cstring\u003e} columns - An array of column names to select.\n * @returns {Promise\u003cArray\u003cobject\u003e\u003e} - A promise that resolves to an array of objects, each representing a row of the selected columns.\n */"
+        },
+        {
+          "name": "getJoinedData",
+          "start_line": 18,
+          "docstring": "/**\n * Retrieves joined data from two tables based on a specified join condition.\n *\n * @param {string} table1 - The first table to join.\n * @param {string} table2 - The second table to join.\n * @param {string} joinCondition - The condition to join the tables.\n * @returns {Promise\u003cArray\u003e} A promise that resolves to an array of joined results.\n */"
+        },
+        {
+          "name": "getAggregatedData",
+          "start_line": 28,
+          "docstring": "/**\n * Retrieves aggregated data from a specified database table.\n *\n * @param {string} groupByField - The field to group the results by.\n * @param {string} aggregateFunc - The aggregate function to apply (e.g., SUM, AVG).\n * @param {string} tableName - The name of the table to query.\n * @returns {Promise\u003cArray\u003e} A promise that resolves to an array of aggregated results.\n */"
+        },
+        {
+          "name": "getFilteredAggregates",
+          "start_line": 38,
+          "docstring": "/**\n * Retrieves filtered aggregate counts of products by category.\n *\n * @param {string} category - The category of products to filter.\n * @param {string} havingCondition - The HAVING clause to apply to the aggregates.\n * @returns {Promise\u003cArray\u003e} A promise that resolves to an array of aggregate results.\n */"
+        },
+        {
+          "name": "searchAcrossTables",
+          "start_line": 50,
+          "docstring": "/**\n * Searches across multiple tables for entries matching the given search value.\n *\n * @param {string} searchValue - The value to search for in the name column.\n * @param {string[]} tables - An array of table names to include in the search.\n * @returns {Promise\u003cObject[]\u003e} A promise that resolves to an array of results matching the search criteria.\n */"
+        },
+        {
+          "name": "deleteRecords",
+          "start_line": 59,
+          "docstring": "/**\n * Deletes records from a specified table in the database based on a condition.\n *\n * @param {string} tableName - The name of the table from which to delete records.\n * @param {string} condition - The condition to be met for records to be deleted.\n * @returns {Promise\u003cboolean\u003e} Returns a promise that resolves to true if deletion is successful.\n */"
+        }
+      ]
+    },
+    {
+      "file": "sequelize-models.js",
+      "functions": [
+        {
+          "name": "getUserById",
+          "start_line": 24,
+          "docstring": "/**\n * Retrieves a user from the database by their unique identifier.\n *\n * @param {number} userId - The ID of the user to retrieve.\n * @returns {Promise\u003cObject|null\u003e} A promise that resolves to the user object if found, or null if not found.\n */"
+        },
+        {
+          "name": "searchProducts",
+          "start_line": 30,
+          "docstring": "/**\n * Searches for products in the database that match the given search term.\n *\n * @param {string} searchTerm - The term to search for in product names.\n * @returns {Promise\u003cArray\u003e} A promise that resolves to an array of matching products.\n */"
+        },
+        {
+          "name": "getFilteredUsers",
+          "start_line": 36,
+          "docstring": "/**\n * Retrieves a filtered list of users based on role and status.\n *\n * @param {string} role - The role of the users to filter by.\n * @param {string} status - The status of the users to filter by.\n * @returns {Promise\u003cArray\u003e} A promise that resolves to an array of user objects.\n */"
+        },
+        {
+          "name": "getProductsSorted",
+          "start_line": 51,
+          "docstring": "/**\n * Retrieves products from the database sorted by a specified field and order.\n *\n * @param {string} sortBy - The field by which to sort the products.\n * @param {string} order - The order in which to sort the products, either 'ASC' or 'DESC'.\n * @returns {Promise\u003cArray\u003e} A promise that resolves to an array of sorted products.\n */"
+        },
+        {
+          "name": "updateUserRole",
+          "start_line": 57,
+          "docstring": "/**\n * Updates the role of a user in the database.\n *\n * @param {number} userId - The ID of the user whose role is to be updated.\n * @param {string} newRole - The new role to assign to the user.\n * @returns {Promise\u003cboolean\u003e} A promise that resolves to true if the update was successful.\n */"
+        }
+      ]
+    },
+    {
+      "file": "typescript-express.ts",
+      "functions": [
+        {
+          "name": "anonymous",
+          "start_line": 31,
+          "docstring": "/**\n * Retrieves user data from the database based on the user ID provided in the request parameters.\n *\n * @param {Request} req - The request object from the client containing the user ID in the parameters.\n * @param {Response} res - The response object used to send back user data or an error message.\n * @returns {Promise\u003cvoid\u003e} A promise that resolves to void after sending the JSON response.\n */"
+        },
+        {
+          "name": "anonymous",
+          "start_line": 48,
+          "docstring": "/**\n * Handles user login by validating provided credentials.\n *\n * @param {Request\u003c{}, {}, LoginRequest\u003e} req - The HTTP request object containing login details.\n * @param {Response} res - The HTTP response object used to send back the desired HTTP response.\n * @returns {Promise\u003cvoid\u003e} A promise that resolves when the response has been sent.\n */"
+        },
+        {
+          "name": "searchProducts",
+          "start_line": 64,
+          "docstring": "/**\n * Searches for products in the database based on a search term and optional category.\n *\n * @param {Request} req - The request object containing query parameters.\n * @param {Response} res - The response object used to send the results.\n * @returns {Promise\u003cvoid\u003e} A promise that resolves when the response has been sent.\n * @throws {Error} If there is an issue querying the database.\n */"
+        },
+        {
+          "name": "updateUser",
+          "start_line": 85,
+          "docstring": "/**\n * Updates the email of a user in the database.\n *\n * @param {Request} req - The request object containing the user's ID and new email.\n * @param {Response} res - The response object to send the result back to the client.\n * @returns {Promise\u003cvoid\u003e} A promise that resolves when the update is complete.\n * @throws {Error} If the database update fails.\n */"
+        },
+        {
+          "name": "anonymous",
+          "start_line": 101,
+          "docstring": "/**\n * This function updates a user in the database.\n *\n * @param {Request} req - The HTTP request object containing user data.\n * @param {Response} res - The HTTP response object used to send a response.\n *\n * @returns {void} - Returns nothing.\n */"
+        },
+        {
+          "name": "anonymous",
+          "start_line": 103,
+          "docstring": "/**\n * Logs a message indicating that the TypeScript Express server is running.\n *\n * @returns {void} This function does not return a value.\n */"
+        }
+      ]
+    },
+    {
+      "file": "typescript-prisma.ts",
+      "functions": [
+        {
+          "name": "findUserById",
+          "start_line": 22,
+          "docstring": "/**\n * Retrieves a user from the database by their unique identifier.\n * \n * @param {number} userId - The unique identifier of the user to retrieve.\n * @returns {Promise\u003cany\u003e} A promise that resolves to the user data if found, otherwise null.\n */"
+        },
+        {
+          "name": "updateUserStatus",
+          "start_line": 26,
+          "docstring": "/**\n * Updates the status of a user in the database.\n *\n * @param {number} userId - The ID of the user whose status is to be updated.\n * @param {string} status - The new status to set for the user.\n * @returns {Promise\u003cnumber\u003e} The number of rows affected by the update operation.\n */"
+        },
+        {
+          "name": "filterUsers",
+          "start_line": 30,
+          "docstring": "/**\n * Filters users based on the provided criteria.\n *\n * @param {UserFilter} filter - The filter criteria which includes optional properties such as role, status, ageMin, and ageMax.\n * @returns {Promise\u003cany[]\u003e} - A promise that resolves to an array of users matching the filter criteria.\n */"
+        },
+        {
+          "name": "search",
+          "start_line": 52,
+          "docstring": "/**\n * Performs a database search based on the provided parameters.\n *\n * @param {SearchParams} params - The search parameters including field, operator, and value.\n * @param {string} params.field - The field to search in the database.\n * @param {string} [params.operator='='] - The operator to use in the search (default is '=').\n * @param {string} params.value - The value to compare against in the search.\n * @returns {Promise\u003cany[]\u003e} A promise that resolves to an array of results from the database.\n */"
+        },
+        {
+          "name": "getUsersByDepartment",
+          "start_line": 59,
+          "docstring": "/**\n * Retrieves a list of users belonging to a specified department.\n *\n * @param {string} department - The department name to filter users.\n * @param {number} limit - The maximum number of users to return.\n * @returns {Promise\u003cany[]\u003e} A promise that resolves to an array of users from the specified department.\n */"
+        },
+        {
+          "name": "executeQuery",
+          "start_line": 75,
+          "docstring": "/**\n * Executes a SQL query based on the provided QueryBuilder configuration.\n * \n * @param {QueryBuilder} builder - The configuration object that defines the SQL query.\n * @returns {Promise\u003cany[]\u003e} A promise that resolves to an array of results from the executed query.\n */"
+        },
+        {
+          "name": "constructor",
+          "start_line": 94,
+          "docstring": "/**\n * Creates an instance of a class with a specific table name.\n *\n * @param tableName - The name of the database table associated with this instance.\n * @returns An instance of the class with the provided table name.\n */"
+        },
+        {
+          "name": "findByField",
+          "start_line": 96,
+          "docstring": "/**\n * Finds records in the database by a specified field and value.\n *\n * @param {string} fieldName - The name of the field to query.\n * @param {string | number} value - The value to match against the specified field.\n * @returns {Promise\u003cT[]\u003e} - A promise that resolves to an array of records matching the criteria.\n */"
+        },
+        {
+          "name": "deleteWhere",
+          "start_line": 101,
+          "docstring": "/**\n * Deletes records from the database table based on the specified condition.\n *\n * @param condition - The condition used to filter which records to delete.\n *                      This should be a valid SQL WHERE clause.\n * @returns A Promise that resolves to the number of rows deleted.\n */"
+        }
+      ]
+    }
+  ],
+  "generated_at": "2026-07-10T16:35:29Z",
+  "target": "test-samples/js-ts-sqli-clean",
+  "total_cost_usd": 0.00427815,
+  "total_functions": 46
+}

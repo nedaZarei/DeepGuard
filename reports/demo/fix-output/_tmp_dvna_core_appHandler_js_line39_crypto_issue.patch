@@ -1,0 +1,23 @@
+# Deep-Guard Fix — 2026-07-10T20:08:08+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 39  Severity: high
+# Type: crypto_issue
+
+## Root Cause
+The use of direct string concatenation with user input can lead to command injection vulnerabilities.
+
+## Explanation
+The patch replaces the `exec` call with `execFile`, which executes a specified file with given arguments in a safer manner, effectively mitigating the risk of injection attacks. Additionally, it properly uses an array for arguments to prevent any shell interpretation of user input.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -38,8 +38,7 @@
+ 
+ module.exports.ping = function (req, res) {
+-  exec('ping -c 2 ' + req.body.address, function (err, stdout, stderr) {
++  execFile('ping', ['-c', '2', req.body.address], function (err, stdout, stderr) {
+     output = stdout + stderr
+     res.render('app/ping', {
+         output: output
+     })
+

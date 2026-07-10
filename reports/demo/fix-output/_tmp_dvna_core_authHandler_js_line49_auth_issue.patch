@@ -1,0 +1,32 @@
+# Deep-Guard Fix — 2026-07-10T20:09:15+03:30
+# File: /tmp/dvna/core/authHandler.js  Line: 49  Severity: high
+# Type: auth_issue
+
+## Root Cause
+The use of MD5 for token generation is insecure and can be easily guessed or forged.
+
+## Explanation
+The patch replaces the insecure MD5 token validation with a secure HMAC-based token mechanism. Using HMAC ensures that the token is generated with a secret key, providing integrity and authenticity, making it difficult to forge.
+
+## Patch
+--- a/tmp/dvna/core/authHandler.js
++++ b/tmp/dvna/core/authHandler.js
+@@ -48,7 +48,12 @@
+         }).then(user => {
+             if (user) {
+-                if (req.query.token == md5(req.query.login)) {
++                const crypto = require('crypto');
++                const secret = process.env.TOKEN_SECRET; // Add your secure secret key
++                const token = crypto.createHmac('sha256', secret)
++                    .update(req.query.login)
++                    .digest('hex');
++                if (req.query.token === token) {
+                     res.render('resetpw', {
+                         login: req.query.login,
+                         token: req.query.token
+                     })
+```}  } else {
+                     req.flash('danger', "Invalid reset token")
+                     res.redirect('/forgotpw')
+                 }
+```

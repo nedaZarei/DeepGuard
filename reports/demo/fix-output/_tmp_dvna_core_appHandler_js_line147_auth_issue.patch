@@ -1,0 +1,27 @@
+# Deep-Guard Fix — 2026-07-10T20:07:36+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 147  Severity: high
+# Type: auth_issue
+
+## Root Cause
+The code directly accesses user records based on the ID from the request body without validating if the requesting user has the right to edit that user.
+
+## Explanation
+The patch adds an ownership validation check to ensure that only the authenticated user can edit their own data. This prevents unauthorized access to user records and enhances the security of the application by ensuring that users cannot manipulate other users' information.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -146,6 +146,12 @@
+     db.User.find({
+         where: {
+             'id': req.body.id
++        }
++    }).then(user => {
++        // Check if the user is authorized to edit this user record
++        if (user.id !== req.user.id) {
++            return res.status(403).send('Forbidden: You do not have permission to edit this user.');
++        }
+     
+     if(req.body.password.length>0){
+         if(req.body.password.length>0){
+             if (req.body.password == req.body.cpassword) {

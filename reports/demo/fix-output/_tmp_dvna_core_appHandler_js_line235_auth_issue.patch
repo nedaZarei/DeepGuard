@@ -1,0 +1,16 @@
+# Deep-Guard Fix — 2026-07-10T20:07:57+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 235  Severity: critical
+# Type: auth_issue
+
+## Root Cause
+The code allows external entity resolution in XML parsing, which can lead to XML External Entity (XXE) attacks.
+
+## Explanation
+By setting the 'noent' option to false, the patch disables the resolution of external entities during XML parsing. This mitigates risks associated with XXE attacks, ensuring that external resources cannot be included in XML payloads, thereby enhancing the application's security.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -235 +235 @@
+-        var products = libxmljs.parseXmlString(req.files.products.data.toString('utf8'), {noent:true,noblanks:true})
++        var products = libxmljs.parseXmlString(req.files.products.data.toString('utf8'), {noent:false,noblanks:true})

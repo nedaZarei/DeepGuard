@@ -1,0 +1,29 @@
+# Deep-Guard Fix — 2026-07-10T20:05:52+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 39  Severity: critical
+# Type: path_traversal
+
+## Root Cause
+The use of user-provided input in a system command allows for arbitrary command execution, leading to a path traversal vulnerability.
+
+## Explanation
+The patch sanitizes the 'req.body.address' input to only allow valid IP addresses or hostnames. By using a regular expression to validate the input, it ensures that no malicious characters or patterns can be executed, thus preventing command injection attacks.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -38,6 +38,12 @@
+ module.exports.ping = function (req, res) {
+-    exec('ping -c 2 ' + req.body.address, function (err, stdout, stderr) {
++    const address = req.body.address;
++    const validAddress = /^(([0-9]{1,3}\.){3}[0-9]{1,3}|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,}))$/;
++
++    if (!validAddress.test(address)) {
++        return res.status(400).send('Invalid address format');
++    }
++    exec('ping -c 2 ' + address, function (err, stdout, stderr) {
+      output = stdout + stderr
+      res.render('app/ping', {
+          output: output
+      })
+    })
+

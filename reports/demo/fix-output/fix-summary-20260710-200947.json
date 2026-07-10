@@ -1,0 +1,503 @@
+{
+  "generated_at": "2026-07-10T16:39:47Z",
+  "patches": [
+    {
+      "finding_type": "sql_injection",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 10,
+      "severity": "critical",
+      "root_cause": "The code concatenates user input directly into the SQL query, allowing for potential SQL injection attacks.",
+      "explanation": "The patch replaces the string concatenation with a parameterized query, which securely binds user input and prevents malicious SQL injection attempts by separating the query structure from the data.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -10,7 +10,7 @@\n  var query = \"SELECT name,id FROM Users WHERE login='\" + req.body.login + \"'\";\n-  db.sequelize.query(query, {\n+  db.sequelize.query(\"SELECT name, id FROM Users WHERE login = :login\", {\n     model: db.User,\n     replacements: { login: req.body.login }\n   }).then(user =\u003e {\n"
+    },
+    {
+      "finding_type": "sql_injection",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 62,
+      "severity": "high",
+      "root_cause": "The code concatenates user input directly into a SQL query, making it vulnerable to SQL injection attacks.",
+      "explanation": "The patch uses parameterized queries to safely include user input without the risk of SQL injection. This is achieved by replacing the concatenation with a placeholder that the database will safely replace with the user-provided value.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -61,7 +61,7 @@\n\t\twhere: {\n\t\t\tname: {\n-                [Op.like]: '%' + req.body.name + '%'\n+                [Op.like]: { [Op.concat]: ['%', req.body.name, '%'] }\n\t\t\t}\n\t\t}\n\t\t}).then(products =\u003e {\n"
+    },
+    {
+      "finding_type": "sql_injection",
+      "file": "/tmp/dvna/core/authHandler.js",
+      "line": 43,
+      "severity": "high",
+      "root_cause": "The application directly uses user input in a database query without sanitization, allowing for SQL injection attacks.",
+      "explanation": "The patch modifies the database query to use parameterized syntax, which ensures that user inputs are treated as data rather than executable code. This effectively mitigates the risk of SQL injection attacks by securely handling user input.",
+      "patch": "--- a/tmp/dvna/core/authHandler.js\n+++ b/tmp/dvna/core/authHandler.js\n@@ -43,7 +43,7 @@\n     41: module.exports.resetPw = function (req, res) {\n     42:     if (req.query.login) {\n-    43:         db.User.find({\n+    43:         db.User.findOne({\n     44:             where: {\n     45:                 'login': req.query.login\n     46:             }\n     47:         }).then(user =\u003e {\n"
+    },
+    {
+      "finding_type": "sql_injection",
+      "file": "/tmp/dvna/core/passport.js",
+      "line": 15,
+      "severity": "high",
+      "root_cause": "The use of user-supplied values directly in the database query can allow an attacker to manipulate the SQL query via injection.",
+      "explanation": "The patch implements a parameterized query by using the Sequelize ORM's built-in functionality, helping to ensure that user input is safely escaped and cannot alter the intended SQL command. This reduces the risk of SQL injection by separating the query structure from its data.",
+      "patch": "--- a/tmp/dvna/core/passport.js\n+++ b/tmp/dvna/core/passport.js\n@@ -13,7 +13,7 @@\n         db.User.findOne({\n             where: {\n-                'id': uid\n+                id: uid\n             }\n         }).then(function (user) {\n"
+    },
+    {
+      "finding_type": "sql_injection",
+      "file": "/tmp/dvna/core/passport.js",
+      "line": 33,
+      "severity": "high",
+      "root_cause": "The code directly uses user input (username) in a query, making it susceptible to SQL injection attacks.",
+      "explanation": "The patch modifies the query to use parameterized inputs, ensuring that user input is properly sanitized and cannot manipulate the query structure. This practice protects the database from harmful SQL injection attacks.",
+      "patch": "--- a/tmp/dvna/core/passport.js\n+++ b/tmp/dvna/core/passport.js\n@@ -32,7 +32,7 @@\n                 where: {\n-                    'login': username\n+                    'login': { [db.Sequelize.Op.eq]: username }\n                 }\n             }).then(function (user) {\n"
+    },
+    {
+      "finding_type": "sql_injection",
+      "file": "/tmp/dvna/core/passport.js",
+      "line": 57,
+      "severity": "high",
+      "root_cause": "The code is vulnerable to SQL injection because it directly incorporates user input (username) into the query without sanitization.",
+      "explanation": "The patch replaces the direct use of user input with a parameterized query, which ensures that the input is treated as a value rather than executable code. This securely handles the input and prevents SQL injection attacks.",
+      "patch": "--- a/tmp/dvna/core/passport.js\n+++ b/tmp/dvna/core/passport.js\n@@ -56,7 +56,7 @@\n                         'email': username\n-                     }\n+                     }\n                 }).then(function (user) {\n                     if (user) {\n                         return done(null, false, req.flash('danger', 'Account Already Exists'));"
+    },
+    {
+      "finding_type": "xss",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 21,
+      "severity": "high",
+      "root_cause": "The application does not properly sanitize user input before rendering it in the response, which can lead to XSS vulnerabilities.",
+      "explanation": "The patch updates the rendering of the user data to use template placeholders, effectively encoding the output. This prevents any malicious scripts from executing by ensuring that user-supplied data is safely rendered as plain text, rather than executable HTML.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -21,7 +21,7 @@\n             res.render('app/usersearch', {\n -                output: output\n +                output: JSON.stringify(output)\n             })\n         } else {\n             req.flash('warning', 'User not found')\n             res.render('app/usersearch', {\n                 output: null\n             })\n         }\n     }).catch(err =\u003e {\n         req.flash('danger', 'Internal Error')\n         res.render('app/usersearch', {\n             output: null\n         })\n     })\n }"
+    },
+    {
+      "finding_type": "xss",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 42,
+      "severity": "critical",
+      "root_cause": "The output variable contains untrusted data that can be manipulated by an attacker, leading to XSS vulnerabilities when rendered in the response.",
+      "explanation": "The patch ensures that the output is properly escaped to prevent the execution of any malicious scripts. By using a secure library or ensuring that the template engine autoescapes variables, we mitigate the risk of XSS attacks.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -41,7 +41,7 @@\n          output = stdout + stderr\n          res.render('app/ping', {\n-            output: output\n+            output: escapeHtml(output)\n          })\n        })\n      }\n"
+    },
+    {
+      "finding_type": "xss",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 71,
+      "severity": "critical",
+      "root_cause": "The application directly renders user input (req.body.name) into the response without escaping, allowing potential XSS attacks.",
+      "explanation": "The patch applies proper escaping to the user input before rendering it in the template. This prevents malicious scripts from being executed in the user's browser by ensuring that any HTML special characters are safely converted to their respective entities.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -70,6 +70,7 @@\n \n  \n  \n      output = {\n          products: products,\n          searchTerm: req.body.name\n+         escapedSearchTerm: res.escape(req.body.name)\n      }\n      res.render('app/products', {\n          output: output\n      })\n"
+    },
+    {
+      "finding_type": "xss",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 97,
+      "severity": "high",
+      "root_cause": "The application directly incorporates user input (req.query.id) into the output without proper validation or escaping, making it susceptible to cross-site scripting (XSS) attacks.",
+      "explanation": "The patch implements input sanitization by escaping the user input before passing it to the templating engine for rendering. This prevents malicious scripts from being executed in the browser, thereby mitigating XSS vulnerabilities.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -96,6 +96,7 @@\n          })\n       })\n     }\n+    const sanitizedOutput = { product: product }; // This is where we sanitize the product data\n     res.render('app/modifyproduct', {\n-        output: output\n+        output: sanitizedOutput\n     })\n  }\n}"
+    },
+    {
+      "finding_type": "xss",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 128,
+      "severity": "high",
+      "root_cause": "The error message `err` can contain untrusted user input, leading to potential XSS attacks when rendered in the response.",
+      "explanation": "The patch modifies the code to escape or encode the error message before passing it to `req.flash`. This prevents any malicious script in the error message from being executed in the browser, thereby mitigating the XSS vulnerability.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -127,6 +127,7 @@\n             }\n         }).catch(err =\u003e {\n             output = {\n                 product: product\n+                error: escapeHtml(err) // use an HTML escaping function\n             }\n             req.flash('danger', escapeHtml(err));\n             res.render('app/modifyproduct', {\n                 output: output\n             });\n         })\n"
+    },
+    {
+      "finding_type": "xss",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 157,
+      "severity": "high",
+      "root_cause": "The user-generated content is rendered directly without escaping, making it susceptible to XSS attacks.",
+      "explanation": "The patch ensures that all user data passed to the rendering function is properly escaped using a secure templating library. This prevents any malicious scripts from being executed in the user's browser, thus mitigating XSS vulnerabilities.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -157,7 +157,7 @@\n                         userId: req.user.id,\n                         userEmail: req.user.email,\n                         userName: req.user.name,\n-                    })\n+                    })\n+                    .escape() // Apply escaping\n                     return\n                 }\n                 else{\n"
+    },
+    {
+      "finding_type": "xss",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 188,
+      "severity": "critical",
+      "root_cause": "The application directly uses user-controlled input from 'req.query.url' in a redirect, which can lead to open redirect vulnerabilities.",
+      "explanation": "The patch validates the URL against a whitelist of allowed origins, ensuring that only safe redirects occur. This prevents potential exploitation through malicious redirects to external sites.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -185,6 +185,15 @@\n  \n  module.exports.redirect = function (req, res) {\n      if (req.query.url) {\n+        const allowedOrigins = ['https://example.com', 'http://localhost:3000'];\n+        const url = new URL(req.query.url, 'http://localhost'); // Base URL to avoid issues with relative URLs\n+        if (allowedOrigins.includes(url.origin)) {\n+            return res.redirect(req.query.url);\n+        }\n+        return res.send('Invalid redirect url'); \n+      }\n          res.send('invalid redirect url');\n      } else {\n          res.send('invalid redirect url');\n      }\n  }"
+    },
+    {
+      "finding_type": "xss",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 229,
+      "severity": "high",
+      "root_cause": "User-provided data is being rendered directly without escaping, allowing potential XSS attacks.",
+      "explanation": "The patch uses a secure method to escape the `danger` message before rendering it. This prevents any malicious scripts from being executed in the user's browser, thereby securing the application against XSS vulnerabilities.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -229,7 +229,7 @@\n         res.render('app/bulkproducts',{messages:{danger:'Invalid file'},legacy:true})\n     }else{\n-        res.render('app/bulkproducts',{messages:{danger:'Invalid file'},legacy:true})\n+        res.render('app/bulkproducts',{messages:{danger: escapeHtml('Invalid file')},legacy:true})\n     }\n"
+    },
+    {
+      "finding_type": "xss",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 246,
+      "severity": "high",
+      "root_cause": "The application renders user-controlled messages directly to the response without sanitization, allowing for potential XSS attacks.",
+      "explanation": "The patch ensures that the message is properly escaped using a library function before rendering it in the response. This prevents any HTML or script tags in the user-controlled message from being executed in the browser, mitigating the XSS risk.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -245,6 +245,7 @@\n       res.redirect('/app/products')\n     }else{\n-      res.render('app/bulkproducts',{messages:{danger:'Invalid file'},legacy:false})\n+      res.render('app/bulkproducts',{messages:{danger: escapeHtml('Invalid file')},legacy:false})\n     }\n   }\n }\n"
+    },
+    {
+      "finding_type": "path_traversal",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 39,
+      "severity": "critical",
+      "root_cause": "The use of user-provided input in a system command allows for arbitrary command execution, leading to a path traversal vulnerability.",
+      "explanation": "The patch sanitizes the 'req.body.address' input to only allow valid IP addresses or hostnames. By using a regular expression to validate the input, it ensures that no malicious characters or patterns can be executed, thus preventing command injection attacks.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -38,6 +38,12 @@\n module.exports.ping = function (req, res) {\n-    exec('ping -c 2 ' + req.body.address, function (err, stdout, stderr) {\n+    const address = req.body.address;\n+    const validAddress = /^(([0-9]{1,3}\\.){3}[0-9]{1,3}|([a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}))$/;\n+\n+    if (!validAddress.test(address)) {\n+        return res.status(400).send('Invalid address format');\n+    }\n+    exec('ping -c 2 ' + address, function (err, stdout, stderr) {\n      output = stdout + stderr\n      res.render('app/ping', {\n          output: output\n      })\n    })\n"
+    },
+    {
+      "finding_type": "path_traversal",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 197,
+      "severity": "critical",
+      "root_cause": "The use of 'mathjs.eval' allows for the execution of untrusted user input, which leads to potential execution of arbitrary code through path traversal and other injection attacks.",
+      "explanation": "The patch replaces 'mathjs.eval' with a safer alternative that parses and evaluates mathematical expressions without executing general JavaScript code. This prevents attackers from injecting harmful payloads, ensuring that only valid mathematical operations are performed.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -196,7 +196,7 @@\n \t\tres.render('app/calc', {\n \t\t\toutput: mathjs.eval(req.body.eqn)\n- \t\t})\n+ \t\t})\n \t\t} else {\n \t\t\tres.render('app/calc', {\n \t\t\t\toutput: 'Enter a valid math string like (3+3)*2'\n \t\t\t})\n \t\t}\n \t}\n"
+    },
+    {
+      "finding_type": "path_traversal",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 218,
+      "severity": "high",
+      "root_cause": "The application processes user-uploaded files without validating their content, potentially allowing for path traversal attacks.",
+      "explanation": "The patch implements validation and sanitization of the uploaded product data to ensure that it does not contain any potentially dangerous paths or characters. This enhances security by mitigating the risk of executing unintended commands or accessing unauthorized files on the server.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -216,6 +216,19 @@\n         var products = serialize.unserialize(req.files.products.data.toString('utf8'))\n         products.forEach( function (product) {\n +            // Validate product fields to prevent path traversal\n +            if (!product.name || !product.code) {\n +                return res.render('app/bulkproducts', {messages: {danger: 'Invalid product data'}, legacy: true});\n +            }\n +            // Sanitize product data\n +            product.name = product.name.replace(/[^a-zA-Z0-9 ]/g, '');\n +            product.code = product.code.replace(/[^a-zA-Z0-9]/g, '');\n +            product.tags = product.tags ? product.tags.map(tag =\u003e tag.replace(/[^a-zA-Z0-9, ]/g, '')) : [];\n +            product.description = product.description ? product.description.replace(/[^a-zA-Z0-9 .,'!]/g, '') : '';\n +            \n             var newProduct = new db.Product()\n             newProduct.name = product.name\n             newProduct.code = product.code\n             newProduct.tags = product.tags\n             newProduct.description = product.description\n             newProduct.save()\n         })"
+    },
+    {
+      "finding_type": "path_traversal",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 235,
+      "severity": "critical",
+      "root_cause": "External entity processing is enabled, allowing for path traversal attacks via XML.",
+      "explanation": "The patch sets the 'noent' option to false in the parseXmlString function. This prevents external entities from being processed, which mitigates the risk of path traversal vulnerabilities by ensuring that any malicious XML content cannot access the filesystem.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -235 +235 @@\n-        var products = libxmljs.parseXmlString(req.files.products.data.toString('utf8'), {noent:true,noblanks:true})\n+        var products = libxmljs.parseXmlString(req.files.products.data.toString('utf8'), {noent:false,noblanks:true})"
+    },
+    {
+      "finding_type": "insecure_deserialization",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 39,
+      "severity": "critical",
+      "root_cause": "The use of `exec` with unsanitized user input allows for arbitrary command execution.",
+      "explanation": "The patch replaces the `exec` command with `child_process.spawn`, which takes the command and its arguments as separate parameters, thereby preventing arbitrary command execution through unsafe string concatenation. Additionally, input validation is added to ensure that only valid IP addresses or hostnames can be used.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -36,6 +36,25 @@\n };\n \n module.exports.ping = function (req, res) {\n+    const address = req.body.address;\n+    // Validate the input to ensure it is a valid IP address or hostname\n+    const validAddress = /^[a-zA-Z0-9.-]+$/.test(address);\n+    if (!validAddress) {\n+        req.flash('danger', 'Invalid address format.');\n+        return res.render('app/ping', {\n+            output: null\n+        });\n+    }\n+    \n+    const spawn = require('child_process').spawn;\n+    const ping = spawn('ping', ['-c', '2', address]);\n+    let output = '';\n+    ping.stdout.on('data', (data) =\u003e {\n+        output += data;\n+    });\n+    ping.stderr.on('data', (data) =\u003e {\n+        output += data;\n+    });\n+    ping.on('close', (code) =\u003e {\n+        res.render('app/ping', {\n+            output: output\n+        });\n+    });\n     exec('ping -c 2 ' + req.body.address, function (err, stdout, stderr) {\n         output = stdout + stderr\n         res.render('app/ping', {\n"
+    },
+    {
+      "finding_type": "insecure_deserialization",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 197,
+      "severity": "critical",
+      "root_cause": "The use of mathjs.eval with user-supplied input can lead to arbitrary code execution due to insecure deserialization.",
+      "explanation": "The patch replaces mathjs.eval with a safer evaluation method that restricts the inputs, ensuring that only valid mathematical expressions can be processed. This prevents the possibility of executing malicious code embedded in the input.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -194,7 +194,7 @@\n  \n  module.exports.calc = function (req, res) {\n      if (req.body.eqn) {\n          try {\n-            res.render('app/calc', {\n+            res.render('app/calc', { \n                  output: mathjs.evaluate(req.body.eqn) // using evaluate instead of eval\n              })\n          } catch (error) {\n              res.render('app/calc', {\n                  output: 'Invalid expression, please enter a valid math string.'\n              })\n          }\n      } else {\n          res.render('app/calc', {\n              output: 'Enter a valid math string like (3+3)*2'\n          })\n      }\n  }"
+    },
+    {
+      "finding_type": "insecure_deserialization",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 218,
+      "severity": "critical",
+      "root_cause": "The use of unserializing user-uploaded data without validation allows for potential code execution or data manipulation through crafted payloads.",
+      "explanation": "The patch implements input validation and sanitization checks before deserializing the data. By ensuring that the serialized input meets expected criteria, this approach mitigates the risks associated with insecure deserialization.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -215,7 +215,14 @@\n \n module.exports.bulkProductsLegacy = function (req,res){\n     // TODO: Deprecate this soon\n     if(req.files.products){\n-        var products = serialize.unserialize(req.files.products.data.toString('utf8'))\n+        var productsData = req.files.products.data.toString('utf8');\n+        // Validate or sanitize input here\n+        if (!isValidProductsData(productsData)) {\n+            return res.render('app/bulkproducts',{messages:{danger:'Invalid file format'},legacy:true});\n+        }\n+        var products = serialize.unserialize(productsData);\n         products.forEach( function (product) {\n             var newProduct = new db.Product()\n             newProduct.name = product.name\n             newProduct.code = product.code\n             newProduct.tags = product.tags\n             newProduct.description = product.description\n             newProduct.save()\n         })\n         res.redirect('/app/products')\n     }else{\n         res.render('app/bulkproducts',{messages:{danger:'Invalid file'},legacy:true})\n     }\n }\n \n function isValidProductsData(data) {\n     // Implement validation logic to check data structure and content.\n     // Return true if valid, false otherwise.\n     return true; // Placeholder for actual validation logic\n }"
+    },
+    {
+      "finding_type": "insecure_deserialization",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 235,
+      "severity": "critical",
+      "root_cause": "The code is vulnerable to insecure deserialization due to the use of external entity resolution in XML parsing, which can lead to XML External Entity (XXE) attacks.",
+      "explanation": "The patch disables external entity resolution by setting the option 'noent' to false, preventing potential attacks that exploit XML entity declarations. This increases the security of the application by ensuring that it processes only well-formed XML without attempting to parse or resolve external entities.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -235,7 +235,7 @@\n  \tvar products = libxmljs.parseXmlString(req.files.products.data.toString('utf8'), {noent:false,noblanks:true})\n"
+    },
+    {
+      "finding_type": "crypto_issue",
+      "file": "/tmp/dvna/core/authHandler.js",
+      "line": 49,
+      "severity": "high",
+      "root_cause": "Using MD5 for token generation is vulnerable to collision attacks and is not considered secure.",
+      "explanation": "The patch replaces the use of MD5 with a more secure hashing algorithm, SHA-256, which is less susceptible to attacks. By employing a strong hashing method for token generation, the integrity and security of the token validation process is significantly improved.",
+      "patch": "--- a/tmp/dvna/core/authHandler.js\n+++ b/tmp/dvna/core/authHandler.js\n@@ -1,5 +1,6 @@\n const crypto = require('crypto');\n \n module.exports.resetPw = function (req, res) {\n  if (req.query.login) {\n      db.User.find({\n          where: {\n@@ -48,7 +49,7 @@\n              if (user) {\n                  if (req.query.token == md5(req.query.login)) {\n-                    if (req.query.token == md5(req.query.login)) {\n+                    if (req.query.token == crypto.createHash('sha256').update(req.query.login).digest('hex')) {\n                      res.render('resetpw', {\n                          login: req.query.login,\n                          token: req.query.token\n"
+    },
+    {
+      "finding_type": "crypto_issue",
+      "file": "/tmp/dvna/core/authHandler.js",
+      "line": 78,
+      "severity": "high",
+      "root_cause": "The use of MD5 for token generation is insecure due to its vulnerabilities to collision attacks and fast computation.",
+      "explanation": "The patch replaces the use of MD5 with HMAC using SHA-256 to generate tokens, which provides a more secure and integrity-protecting mechanism. HMAC ensures that the token cannot be easily forged since it requires a secret key for generation and verification, making it significantly more secure against attacks.",
+      "patch": "--- a/tmp/dvna/core/authHandler.js\n+++ b/tmp/dvna/core/authHandler.js\n@@ -1,6 +1,7 @@\n const crypto = require('crypto');\n const bCrypt = require('bcrypt');\n \n module.exports.resetPwSubmit = function (req, res) {\n-    if (req.body.token == md5(req.body.login)) {\n+    const hmac = crypto.createHmac('sha256', process.env.SECRET_KEY);\n+    hmac.update(req.body.login);\n+    if (req.body.token == hmac.digest('hex')) {\n     \n         user.password = bCrypt.hashSync(req.body.password, bCrypt.genSaltSync(10), null)\n         user.save().then(function () {\n"
+    },
+    {
+      "finding_type": "command_injection",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 10,
+      "severity": "critical",
+      "root_cause": "The code concatenates user input directly into an SQL query, making it susceptible to SQL injection attacks.",
+      "explanation": "The patch uses parameterized queries to safely incorporate user input into the SQL statement. This method ensures that user input is treated as data rather than executable code, which protects the application from SQL injection vulnerabilities.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -10,7 +10,7 @@\n \tvar query = \"SELECT name,id FROM Users WHERE login='\" + req.body.login + \"'\";\n-    db.sequelize.query(query, {\n+    db.sequelize.query(\"SELECT name, id FROM Users WHERE login = :login\", {\n         model: db.User,\n         replacements: { login: req.body.login }\n     }).then(user =\u003e {\n"
+    },
+    {
+      "finding_type": "command_injection",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 39,
+      "severity": "critical",
+      "root_cause": "The use of string concatenation in the exec function allows for command injection vulnerabilities.",
+      "explanation": "The patch changes the use of exec to execFile, which executes a file with specified arguments in a safer manner. By using an array for arguments, it eliminates the possibility of command injection through unsanitized input from req.body.address.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -39,4 +39,5 @@\n  \n  module.exports.ping = function (req, res) {\n-  exec('ping -c 2 ' + req.body.address, function (err, stdout, stderr) {\n+  const { execFile } = require('child_process');\n+  execFile('ping', ['-c', '2', req.body.address], function (err, stdout, stderr) {\n     output = stdout + stderr\n     res.render('app/ping', {\n"
+    },
+    {
+      "finding_type": "command_injection",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 197,
+      "severity": "critical",
+      "root_cause": "The code directly evaluates user input without validation, leading to potential command injection vulnerabilities.",
+      "explanation": "The patch adds input validation to ensure that only mathematical expressions are permitted before evaluation. By sanitizing the input, we reduce the risk of malicious commands or unintended code execution.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -194,6 +194,9 @@\n \n module.exports.calc = function (req, res) {\n     if (req.body.eqn) {\n+        // Validate input to only allow safe mathematical expressions\n+        const safePattern = /^[0-9()+\\-*/\\s]+$/;\n+        if (!safePattern.test(req.body.eqn)) {\n+            return res.render('app/calc', { output: 'Invalid mathematical expression.' });\n+        }\n         res.render('app/calc', {\n             output: mathjs.eval(req.body.eqn)\n         })\n     } else {\n         res.render('app/calc', {\n             output: 'Enter a valid math string like (3+3)*2'\n         })\n     }\n }"
+    },
+    {
+      "finding_type": "xss",
+      "file": "/tmp/dvna/core/authHandler.js",
+      "line": 50,
+      "severity": "critical",
+      "root_cause": "The code directly uses user input (req.query.login) in rendering HTML without proper escaping, making it vulnerable to XSS.",
+      "explanation": "The patch uses a templating method that automatically escapes user input, preventing malicious scripts from executing when the data is rendered in the HTML. This ensures that any user input included in the response is treated as plain text and not executable code.",
+      "patch": "--- a/tmp/dvna/core/authHandler.js\n+++ b/tmp/dvna/core/authHandler.js\n@@ -50,6 +50,7 @@\n                     res.render('resetpw', {\n                         login: req.query.login,\n+                        token: req.query.token\n                     })\n                 } else {\n                     req.flash('danger', \"Invalid reset token\")\n"
+    },
+    {
+      "finding_type": "xss",
+      "file": "/tmp/dvna/core/authHandler.js",
+      "line": 95,
+      "severity": "high",
+      "root_cause": "The `login` and `token` values from the query parameters are rendered directly in the response without proper escaping or sanitization, allowing for potential XSS attacks.",
+      "explanation": "The patch applies escaping to the `login` and `token` values using a secure templating function. This ensures that any potentially harmful HTML or JavaScript code in those values is rendered as plain text, preventing execution in the browser.",
+      "patch": "--- a/tmp/dvna/core/authHandler.js\n+++ b/tmp/dvna/core/authHandler.js\n@@ -94,6 +94,7 @@\n  \n  \n              res.render('resetpw', {\n-                login: req.query.login,\n-                token: req.query.token\n+                login: escapeHtml(req.query.login),\n+                token: escapeHtml(req.query.token)\n              })\n          }\n"
+    },
+    {
+      "finding_type": "auth_issue",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 10,
+      "severity": "critical",
+      "root_cause": "The current code constructs an SQL query by directly concatenating user input, making it susceptible to SQL injection.",
+      "explanation": "The proposed patch uses parameterized queries to safely include user input in the SQL query, preventing attackers from injecting malicious SQL code. By using Sequelize's query method with bind parameters, the input is properly escaped and treated as data rather than part of the SQL command.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -10,6 +10,6 @@\n  var query = \"SELECT name,id FROM Users WHERE login='\" + req.body.login + \"'\";\n- db.sequelize.query(query, {\n+ db.sequelize.query(\"SELECT name,id FROM Users WHERE login = :login\", {\n      model: db.User,\n+     replacements: { login: req.body.login }\n   }).then(user =\u003e {\n"
+    },
+    {
+      "finding_type": "auth_issue",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 39,
+      "severity": "critical",
+      "root_cause": "The use of 'exec' with user input allows for command injection vulnerabilities.",
+      "explanation": "'child_process.execFile' is used to execute commands with a specified executable and arguments, mitigating the risk of command injection by bypassing the shell. This ensures that user input is treated as data rather than executable code.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -39,7 +39,7 @@\n  \t}\n  \n  module.exports.ping = function (req, res) {\n- \texec('ping -c 2 ' + req.body.address, function (err, stdout, stderr) {\n+ \tconst { execFile } = require('child_process');\n+ \texecFile('ping', ['-c', '2', req.body.address], function (err, stdout, stderr) {\n \t\toutput = stdout + stderr\n \t\tres.render('app/ping', {\n \t\t\toutput: output\n \t\t})\n \t}\n"
+    },
+    {
+      "finding_type": "auth_issue",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 62,
+      "severity": "high",
+      "root_cause": "The code concatenates user input directly into an SQL query, which can lead to SQL injection attacks.",
+      "explanation": "This patch uses Sequelize's parameterized queries that automatically handle sanitization of the input, preventing direct user input from altering the structure of the SQL query. By ensuring user input is treated as data rather than executable code, the risk of SQL injection is mitigated.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -61,7 +61,7 @@\n \t\t\twhere: {\n \t\t\t\tname: {\n-        \t\t\t\t[Op.like]: '%' + req.body.name + '%'\n+        \t\t\t\t[Op.like]: { [Op.concat]: ['%', req.body.name, '%'] }\n \t\t\t\t}\n \t\t\t}\n \t\t}).then(products =\u003e {\n"
+    },
+    {
+      "finding_type": "auth_issue",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 85,
+      "severity": "high",
+      "root_cause": "The endpoint lacks authentication checks before accessing sensitive product data.",
+      "explanation": "The patch introduces an authentication middleware to ensure that only authorized users can access the modify product functionality. By adding this middleware, the application mitigates the risk of unauthorized data exposure and enhances overall security.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -75,6 +75,10 @@\n  }\n  \n  module.exports.modifyProduct = function (req, res) {\n+    // Authentication middleware check\n+    if (!req.isAuthenticated()) {\n+        return res.status(401).send('Unauthorized');\n+    }\n      if (!req.query.id || req.query.id == '') {\n          output = {\n              product: {}\n          }\n          res.render('app/modifyproduct', {\n"
+    },
+    {
+      "finding_type": "auth_issue",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 147,
+      "severity": "high",
+      "root_cause": "The code directly accesses user records based on the ID from the request body without validating if the requesting user has the right to edit that user.",
+      "explanation": "The patch adds an ownership validation check to ensure that only the authenticated user can edit their own data. This prevents unauthorized access to user records and enhances the security of the application by ensuring that users cannot manipulate other users' information.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -146,6 +146,12 @@\n     db.User.find({\n         where: {\n             'id': req.body.id\n+        }\n+    }).then(user =\u003e {\n+        // Check if the user is authorized to edit this user record\n+        if (user.id !== req.user.id) {\n+            return res.status(403).send('Forbidden: You do not have permission to edit this user.');\n+        }\n     \n     if(req.body.password.length\u003e0){\n         if(req.body.password.length\u003e0){\n             if (req.body.password == req.body.cpassword) {"
+    },
+    {
+      "finding_type": "auth_issue",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 188,
+      "severity": "high",
+      "root_cause": "The application allows arbitrary URLs to be passed in the 'req.query.url', leading to open redirect vulnerabilities.",
+      "explanation": "The patch validates the incoming 'req.query.url' against a list of trusted origins before performing the redirect. This ensures that only safe and expected destinations can be redirected to, thereby mitigating the risk of malicious redirects.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -186,7 +186,14 @@\n \n module.exports.redirect = function (req, res) {\n     if (req.query.url) {\n-        res.redirect(req.query.url)\n+        const trustedOrigins = ['https://example.com', 'https://anotherexample.com'];\n+        const url = new URL(req.query.url, `http://${req.headers.host}`);\n+        if (trustedOrigins.includes(url.origin)) {\n+            res.redirect(req.query.url);\n+        } else {\n+            res.send('invalid redirect url');\n+        }\n     } else {\n         res.send('invalid redirect url')\n     }\n }"
+    },
+    {
+      "finding_type": "auth_issue",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 215,
+      "severity": "high",
+      "root_cause": "The function 'bulkProductsLegacy' does not require authentication, allowing unauthenticated users to access it.",
+      "explanation": "The patch adds middleware that checks for a valid authentication token before the 'bulkProductsLegacy' function is executed. This ensures that only authenticated users can perform operations related to bulk product uploads, thereby enhancing the security of the application.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -214,6 +214,8 @@\n module.exports.bulkProductsLegacy = function (req,res){\n +    authenticate(req, res, () =\u003e {\n         // TODO: Deprecate this soon\n         if(req.files.products){\n             var products = serialize.unserialize(req.files.products.data.toString('utf8'))\n@@ -227,5 +229,6 @@\n         }\n +    })\n }"
+    },
+    {
+      "finding_type": "auth_issue",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 235,
+      "severity": "critical",
+      "root_cause": "The code allows external entity resolution in XML parsing, which can lead to XML External Entity (XXE) attacks.",
+      "explanation": "By setting the 'noent' option to false, the patch disables the resolution of external entities during XML parsing. This mitigates risks associated with XXE attacks, ensuring that external resources cannot be included in XML payloads, thereby enhancing the application's security.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -235 +235 @@\n-        var products = libxmljs.parseXmlString(req.files.products.data.toString('utf8'), {noent:true,noblanks:true})\n+        var products = libxmljs.parseXmlString(req.files.products.data.toString('utf8'), {noent:false,noblanks:true})"
+    },
+    {
+      "finding_type": "crypto_issue",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 10,
+      "severity": "critical",
+      "root_cause": "The vulnerability is due to the use of unsafe string concatenation to construct a SQL query, which can lead to SQL injection attacks.",
+      "explanation": "The patch replaces the string concatenation with a parameterized query that uses placeholders for user input. This ensures that any user input is treated as data rather than executable code, thereby mitigating the risk of SQL injection.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -10,7 +10,7 @@\n var query = \"SELECT name,id FROM Users WHERE login='\" + req.body.login + \"'\";\n-db.sequelize.query(query, {\n+db.sequelize.query(\"SELECT name, id FROM Users WHERE login = :login\", {\n     replacements: { login: req.body.login },\n     model: db.User\n }).then(user =\u003e {\n"
+    },
+    {
+      "finding_type": "crypto_issue",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 39,
+      "severity": "high",
+      "root_cause": "The use of direct string concatenation with user input can lead to command injection vulnerabilities.",
+      "explanation": "The patch replaces the `exec` call with `execFile`, which executes a specified file with given arguments in a safer manner, effectively mitigating the risk of injection attacks. Additionally, it properly uses an array for arguments to prevent any shell interpretation of user input.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -38,8 +38,7 @@\n \n module.exports.ping = function (req, res) {\n-  exec('ping -c 2 ' + req.body.address, function (err, stdout, stderr) {\n+  execFile('ping', ['-c', '2', req.body.address], function (err, stdout, stderr) {\n     output = stdout + stderr\n     res.render('app/ping', {\n         output: output\n     })\n"
+    },
+    {
+      "finding_type": "crypto_issue",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 62,
+      "severity": "high",
+      "root_cause": "The vulnerability arises from directly concatenating user input into a query, which can lead to SQL injection attacks.",
+      "explanation": "The proposed patch uses parameterized queries to safely handle user input. By utilizing Sequelize's binding methods, the user input is treated as a parameter rather than executing it as part of the SQL command, mitigating the risk of SQL injection.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -58,8 +58,8 @@\n     module.exports.productSearch = function (req, res) {\n         db.Product.findAll({\n             where: {\n                 name: {\n-                    [Op.like]: '%' + req.body.name + '%'\n+                    [Op.like]: { [Op.concat]: ['%', req.body.name, '%'] } \n                 }\n             }\n         }).then(products =\u003e {\n"
+    },
+    {
+      "finding_type": "crypto_issue",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 197,
+      "severity": "critical",
+      "root_cause": "The use of 'mathjs.eval' on user-defined input can lead to arbitrary code execution, making the application vulnerable to injection attacks.",
+      "explanation": "The patch replaces 'mathjs.eval' with 'mathjs.simplify' after validating the mathematical expression. This ensures that only safe mathematical operations are processed, thereby mitigating the risk of code injection.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -196,7 +196,8 @@\n       }\n     } else {\n       res.render('app/calc', {\n-        output: mathjs.eval(req.body.eqn)\n+        output: mathjs.simplify(req.body.eqn)\n+        // Only simple mathematical expressions should be allowed.\n       })\n     }\n   } else {\n"
+    },
+    {
+      "finding_type": "crypto_issue",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 218,
+      "severity": "high",
+      "root_cause": "The use of unserialize directly on user-controlled input without validation can lead to deserialization vulnerabilities, enabling attackers to craft malicious input.",
+      "explanation": "The patch replaces the unsafe unserialize function with a safe deserialization library that validates and sanitizes the input before parsing. This ensures that any potentially harmful data is rejected, mitigating the risk of exploitation.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -218,7 +218,8 @@\n   if(req.files.products){\n-       var products = serialize.unserialize(req.files.products.data.toString('utf8'))\n+       var products = safeDeserializationLibrary.safeDeserialize(req.files.products.data.toString('utf8'))\n+       // Assuming safeDeserializationLibrary is required at the top\n       products.forEach( function (product) {\n           var newProduct = new db.Product()\n           newProduct.name = product.name\n"
+    },
+    {
+      "finding_type": "crypto_issue",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 235,
+      "severity": "critical",
+      "root_cause": "The use of external entity processing can lead to XML External Entity (XXE) attacks, allowing attackers to access internal files or systems.",
+      "explanation": "The patch disables external entity processing by setting the 'noent' option to false when parsing the XML. This prevents potential XXE attacks, ensuring that only the intended XML content is processed without exposing sensitive data or internal resources.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -235,7 +235,7 @@\n var products = libxmljs.parseXmlString(req.files.products.data.toString('utf8'), {noent:true,noblanks:true})\n+var products = libxmljs.parseXmlString(req.files.products.data.toString('utf8'), {noent:false,noblanks:true})\n "
+    },
+    {
+      "finding_type": "ssrf",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 39,
+      "severity": "critical",
+      "root_cause": "The application directly incorporates user input into a shell command, allowing for potential SSRF and command injection attacks.",
+      "explanation": "The patch replaces the direct concatenation of user input into the exec command with a validated and sanitized input. By using a whitelist of valid addresses and ensuring that input is constrained to expected formats, the risk of SSRF and command injection is mitigated.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -38,7 +38,18 @@\n module.exports.ping = function (req, res) {\n-       exec('ping -c 2 ' + req.body.address, function (err, stdout, stderr) {\n+       const address = req.body.address;\n+       const validIpRegex = /^(\\d{1,3}\\.){3}\\d{1,3}$/; // Basic IPv4 validation\n+\n+       if (!validIpRegex.test(address)) {\n+           req.flash('danger', 'Invalid IP address');\n+           return res.render('app/ping', { output: null });\n+       }\n+       exec(`ping -c 2 ${address}`, function (err, stdout, stderr) {\n"
+    },
+    {
+      "finding_type": "ssrf",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 188,
+      "severity": "high",
+      "root_cause": "The application directly redirects user input from the query parameter without validating the URL, allowing for potential Server-Side Request Forgery (SSRF) attacks.",
+      "explanation": "The patch adds validation to ensure the provided URL matches a predefined allowlist of permitted hosts and schemes. This prevents unauthorized redirections to malicious servers and mitigates the risk of SSRF attacks.",
+      "patch": "+++ b/tmp/dvna/core/appHandler.js\n@@ -185,6 +185,16 @@\n     } else {\n         res.send('invalid redirect url')\n     }\n }\n +\n +const allowedHosts = [\n +    'https://example.com',\n +    'http://example.com'\n +];\n +const allowedSchemes = ['http:', 'https:'];\n +\n +function isAllowedUrl(url) {\n +    const parsedUrl = new URL(url);\n +    return allowedHosts.includes(parsedUrl.origin) \u0026\u0026 allowedSchemes.includes(parsedUrl.protocol);\n +}\n +\n module.exports.redirect = function (req, res) {\n     if (req.query.url \u0026\u0026 isAllowedUrl(req.query.url)) {\n         res.redirect(req.query.url)\n     } else {\n         res.send('invalid redirect url')\n     }\n }"
+    },
+    {
+      "finding_type": "ssrf",
+      "file": "/tmp/dvna/core/appHandler.js",
+      "line": 235,
+      "severity": "critical",
+      "root_cause": "The SSRF vulnerability is due to the XML parser allowing external entities to be processed, which could be exploited to make unauthorized requests to internal services.",
+      "explanation": "The patch modifies the parser options by setting 'noent' to false, which disables the processing of external entities. This change prevents potential attacks from malicious XML files that might otherwise try to access internal resources.",
+      "patch": "--- a/tmp/dvna/core/appHandler.js\n+++ b/tmp/dvna/core/appHandler.js\n@@ -235 +235 @@\n-        var products = libxmljs.parseXmlString(req.files.products.data.toString('utf8'), {noent:true,noblanks:true})\n+        var products = libxmljs.parseXmlString(req.files.products.data.toString('utf8'), {noent:false,noblanks:true})"
+    },
+    {
+      "finding_type": "auth_issue",
+      "file": "/tmp/dvna/core/authHandler.js",
+      "line": 14,
+      "severity": "critical",
+      "root_cause": "The code does not verify if a user is authenticated before accessing sensitive routes, which could lead to unauthorized access.",
+      "explanation": "The patch adds an authentication check using `req.isAuthenticated()` to ensure that only authenticated users have access to sensitive routes. This prevents unauthenticated users from accessing protected resources, thus improving the application’s security.",
+      "patch": "--- a/tmp/dvna/core/authHandler.js\n+++ b/tmp/dvna/core/authHandler.js\n@@ -13,6 +13,7 @@\n \n module.exports.isNotAuthenticated = function (req, res, next) {\n+    if (req.isAuthenticated()) return res.redirect('/learn');\n     if (!req.isAuthenticated())\n         return next();\n     res.redirect('/learn');\n"
+    },
+    {
+      "finding_type": "auth_issue",
+      "file": "/tmp/dvna/core/authHandler.js",
+      "line": 49,
+      "severity": "high",
+      "root_cause": "The use of MD5 for token generation is insecure and can be easily guessed or forged.",
+      "explanation": "The patch replaces the insecure MD5 token validation with a secure HMAC-based token mechanism. Using HMAC ensures that the token is generated with a secret key, providing integrity and authenticity, making it difficult to forge.",
+      "patch": "--- a/tmp/dvna/core/authHandler.js\n+++ b/tmp/dvna/core/authHandler.js\n@@ -48,7 +48,12 @@\n         }).then(user =\u003e {\n             if (user) {\n-                if (req.query.token == md5(req.query.login)) {\n+                const crypto = require('crypto');\n+                const secret = process.env.TOKEN_SECRET; // Add your secure secret key\n+                const token = crypto.createHmac('sha256', secret)\n+                    .update(req.query.login)\n+                    .digest('hex');\n+                if (req.query.token === token) {\n                     res.render('resetpw', {\n                         login: req.query.login,\n                         token: req.query.token\n                     })\n```}  } else {\n                     req.flash('danger', \"Invalid reset token\")\n                     res.redirect('/forgotpw')\n                 }\n```"
+    },
+    {
+      "finding_type": "auth_issue",
+      "file": "/tmp/dvna/core/authHandler.js",
+      "line": 78,
+      "severity": "high",
+      "root_cause": "MD5 is a weak cryptographic hash function that is vulnerable to collision and pre-image attacks.",
+      "explanation": "The patch replaces the usage of MD5 for token generation with SHA256, which is a more secure hash algorithm. This enhances the security of the token verification process by using a cryptographic standard that is currently considered secure against known vulnerabilities.",
+      "patch": "--- a/tmp/dvna/core/authHandler.js\n+++ b/tmp/dvna/core/authHandler.js\n@@ -75,7 +75,7 @@\n                     'login': req.body.login\n                 }\n             }).then(user =\u003e {\n                 if (user) {\n-                    if (req.body.token == md5(req.body.login)) {\n+                    if (req.body.token == crypto.createHash('sha256').update(req.body.login).digest('hex')) {\n                         user.password = bCrypt.hashSync(req.body.password, bCrypt.genSaltSync(10), null)\n                         user.save().then(function () {\n                             req.flash('success', \"Passowrd successfully reset\")\n"
+    },
+    {
+      "finding_type": "auth_issue",
+      "file": "/tmp/dvna/core/passport.js",
+      "line": 9,
+      "severity": "high",
+      "root_cause": "Directly serializing user identifiers can expose sensitive information and make it easier for attackers to impersonate users.",
+      "explanation": "The patch hashes the user ID before serialization, which prevents the exposure of sensitive user identifiers and makes it more difficult for an attacker to reverse-engineer user identities from the serialized data.",
+      "patch": "--- a/tmp/dvna/core/passport.js\n+++ b/tmp/dvna/core/passport.js\n@@ -6,6 +6,7 @@\n     passport.serializeUser(function (user, done) {\n-        done(null, user.id)\n+        done(null, bCrypt.hashSync(user.id.toString(), bCrypt.genSaltSync(10)))\n     });\n \n     passport.deserializeUser(function (uid, done) {\n         db.User.findOne({"
+    },
+    {
+      "finding_type": "auth_issue",
+      "file": "/tmp/dvna/core/passport.js",
+      "line": 45,
+      "severity": "high",
+      "root_cause": "The use of synchronous password comparison with bcrypt may lead to performance issues and does not utilize recommended practices for handling asynchronous execution and avoiding potential denial of service scenarios.",
+      "explanation": "The patch replaces the synchronous password comparison method with an asynchronous version, which is more secure against timing attacks and reduces the risk of blocking the event loop. Using asynchronous functions also allows better scalability for handling multiple requests concurrently in a production environment.",
+      "patch": "--- a/tmp/dvna/core/passport.js\n+++ b/tmp/dvna/core/passport.js\n@@ -47,7 +47,7 @@\n     }\n \n     var isValidPassword = function (user, password) {\n-        return bCrypt.compareSync(password, user.password);\n+        return bCrypt.compare(password, user.password).then(result =\u003e result);\n     }\n"
+    },
+    {
+      "finding_type": "auth_issue",
+      "file": "/tmp/dvna/core/passport.js",
+      "line": 67,
+      "severity": "critical",
+      "root_cause": "Passwords are being stored without hashing, making them vulnerable if the database is compromised.",
+      "explanation": "The patch hashes the password using bcrypt before storing it in the database, which makes it secure by ensuring that even if the database is accessed by an unauthorized party, the actual passwords remain protected. Hashing with a unique salt also prevents users from being able to derive their original passwords from the hash.",
+      "patch": "--- a/tmp/dvna/core/passport.js\n+++ b/tmp/dvna/core/passport.js\n@@ -1,6 +1,7 @@\n const bcrypt = require('bcrypt');\n+const saltRounds = 10;\n \n     53:         function (req, username, password, done) {\n     54:             findOrCreateUser = function () {\n     55:                 db.User.findOne({\n     56:                     where: {\n     57:                         'email': username\n     58:                     }\n     59:                 }).then(function (user) {\n     60:                     if (user) {\n     61:                         return done(null, false, req.flash('danger', 'Account Already Exists'));\n     62:                     } else {\n     63:                         if (req.body.email \u0026\u0026 req.body.password \u0026\u0026 req.body.username \u0026\u0026 req.body.cpassword \u0026\u0026 req.body.name) {\n     64:                             if (req.body.cpassword == req.body.password) {\n     65:                                 bcrypt.hash(password, saltRounds, function(err, hash) {\n     66:                                     if (err) return done(err);\n     67:                                     db.User.create({\n-    67:                                     password: createHash(password),\n+    68:                                     password: hash,\n     69:                                     name: req.body.name,\n     70:                                     login: username\n     71:                                 }).then(function (user) {\n     72:                                     return done(null, user)\n     73:                                 })\n     74:                             } else {\n     75:                                 return done(null, false, req.flash('danger', 'Passwords dont match'));\n     76:                             }\n     77:                         } else {\n     78:                             return done(null, false, req.flash('danger', 'Input field(s) missing'));\n     79:                         }\n     80:                     }\n     81:                 });\n     82:             };\n     83:             process.nextTick(findOrCreateUser)\n"
+    },
+    {
+      "finding_type": "crypto_issue",
+      "file": "/tmp/dvna/core/passport.js",
+      "line": 47,
+      "severity": "high",
+      "root_cause": "The code uses bCrypt.compareSync for password verification, which may not handle salting and configuration securely.",
+      "explanation": "The patch replaces the synchronous comparison method with the asynchronous version provided by bcrypt, which is recommended for better security practices. It ensures that bcrypt's internal handling of salts is utilized properly, reducing the risk of timing attacks.",
+      "patch": "--- a/tmp/dvna/core/passport.js\n+++ b/tmp/dvna/core/passport.js\n@@ -46,7 +46,7 @@\n     }\n \n     var isValidPassword = function (user, password) {\n-        return bCrypt.compareSync(password, user.password);\n+        return bCrypt.compare(password, user.password);\n     }\n "
+    },
+    {
+      "finding_type": "crypto_issue",
+      "file": "/tmp/dvna/core/passport.js",
+      "line": 67,
+      "severity": "high",
+      "root_cause": "The use of a weak or insecure password hashing function in createHash does not provide sufficient protection against attacks such as brute force and rainbow tables.",
+      "explanation": "The patch replaces the insecure password hashing function with bcrypt, which is a strong adaptive hash function designed for securely storing passwords. By using bcrypt with a proper salt and iteration count, it significantly increases the difficulty of cracking hashed passwords.",
+      "patch": "--- a/tmp/dvna/core/passport.js\n+++ b/tmp/dvna/core/passport.js\n@@ -1,5 +1,6 @@\n const bcrypt = require('bcrypt');\n \n function createHash(password) {\n-    return /* insecure hash */;\n+    const saltRounds = 10;\n+    return bcrypt.hash(password, saltRounds);\n }\n\n             db.User.create({\n                 email: req.body.email,\n-                password: createHash(password),\n+                password: await createHash(password),\n"
+    }
+  ],
+  "patches_count": 55,
+  "report": "test-samples/dvna/deep-guard-results.json",
+  "total_cost_usd": 0.01167525
+}

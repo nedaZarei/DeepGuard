@@ -23,6 +23,7 @@ vendor/
 # Scan output directory
 reports/*
 !reports/evaluation-metrics/
+!reports/demo/
 
 # Go workspace file
 go.work

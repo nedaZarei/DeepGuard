@@ -1,0 +1,33 @@
+# Deep-Guard Fix — 2026-07-10T20:06:05+03:30
+# File: /tmp/dvna/core/appHandler.js  Line: 218  Severity: high
+# Type: path_traversal
+
+## Root Cause
+The application processes user-uploaded files without validating their content, potentially allowing for path traversal attacks.
+
+## Explanation
+The patch implements validation and sanitization of the uploaded product data to ensure that it does not contain any potentially dangerous paths or characters. This enhances security by mitigating the risk of executing unintended commands or accessing unauthorized files on the server.
+
+## Patch
+--- a/tmp/dvna/core/appHandler.js
++++ b/tmp/dvna/core/appHandler.js
+@@ -216,6 +216,19 @@
+         var products = serialize.unserialize(req.files.products.data.toString('utf8'))
+         products.forEach( function (product) {
+ +            // Validate product fields to prevent path traversal
+ +            if (!product.name || !product.code) {
+ +                return res.render('app/bulkproducts', {messages: {danger: 'Invalid product data'}, legacy: true});
+ +            }
+ +            // Sanitize product data
+ +            product.name = product.name.replace(/[^a-zA-Z0-9 ]/g, '');
+ +            product.code = product.code.replace(/[^a-zA-Z0-9]/g, '');
+ +            product.tags = product.tags ? product.tags.map(tag => tag.replace(/[^a-zA-Z0-9, ]/g, '')) : [];
+ +            product.description = product.description ? product.description.replace(/[^a-zA-Z0-9 .,'!]/g, '') : '';
+ +            
+             var newProduct = new db.Product()
+             newProduct.name = product.name
+             newProduct.code = product.code
+             newProduct.tags = product.tags
+             newProduct.description = product.description
+             newProduct.save()
+         })

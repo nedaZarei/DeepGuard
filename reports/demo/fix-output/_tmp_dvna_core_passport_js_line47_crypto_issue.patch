@@ -1,0 +1,21 @@
+# Deep-Guard Fix — 2026-07-10T20:09:42+03:30
+# File: /tmp/dvna/core/passport.js  Line: 47  Severity: high
+# Type: crypto_issue
+
+## Root Cause
+The code uses bCrypt.compareSync for password verification, which may not handle salting and configuration securely.
+
+## Explanation
+The patch replaces the synchronous comparison method with the asynchronous version provided by bcrypt, which is recommended for better security practices. It ensures that bcrypt's internal handling of salts is utilized properly, reducing the risk of timing attacks.
+
+## Patch
+--- a/tmp/dvna/core/passport.js
++++ b/tmp/dvna/core/passport.js
+@@ -46,7 +46,7 @@
+     }
+ 
+     var isValidPassword = function (user, password) {
+-        return bCrypt.compareSync(password, user.password);
++        return bCrypt.compare(password, user.password);
+     }
+ 

@@ -1,0 +1,20 @@
+# Deep-Guard Fix — 2026-07-10T20:05:01+03:30
+# File: /tmp/dvna/core/passport.js  Line: 33  Severity: high
+# Type: sql_injection
+
+## Root Cause
+The code directly uses user input (username) in a query, making it susceptible to SQL injection attacks.
+
+## Explanation
+The patch modifies the query to use parameterized inputs, ensuring that user input is properly sanitized and cannot manipulate the query structure. This practice protects the database from harmful SQL injection attacks.
+
+## Patch
+--- a/tmp/dvna/core/passport.js
++++ b/tmp/dvna/core/passport.js
+@@ -32,7 +32,7 @@
+                 where: {
+-                    'login': username
++                    'login': { [db.Sequelize.Op.eq]: username }
+                 }
+             }).then(function (user) {
+

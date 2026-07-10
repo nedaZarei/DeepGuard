@@ -1,0 +1,26 @@
+# Deep-Guard Fix — 2026-07-10T20:06:49+03:30
+# File: /tmp/dvna/core/authHandler.js  Line: 78  Severity: high
+# Type: crypto_issue
+
+## Root Cause
+The use of MD5 for token generation is insecure due to its vulnerabilities to collision attacks and fast computation.
+
+## Explanation
+The patch replaces the use of MD5 with HMAC using SHA-256 to generate tokens, which provides a more secure and integrity-protecting mechanism. HMAC ensures that the token cannot be easily forged since it requires a secret key for generation and verification, making it significantly more secure against attacks.
+
+## Patch
+--- a/tmp/dvna/core/authHandler.js
++++ b/tmp/dvna/core/authHandler.js
+@@ -1,6 +1,7 @@
+ const crypto = require('crypto');
+ const bCrypt = require('bcrypt');
+ 
+ module.exports.resetPwSubmit = function (req, res) {
+-    if (req.body.token == md5(req.body.login)) {
++    const hmac = crypto.createHmac('sha256', process.env.SECRET_KEY);
++    hmac.update(req.body.login);
++    if (req.body.token == hmac.digest('hex')) {
+     
+         user.password = bCrypt.hashSync(req.body.password, bCrypt.genSaltSync(10), null)
+         user.save().then(function () {
+
