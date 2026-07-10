@@ -31,7 +31,7 @@ from typing import Optional
 
 # ─── Configuration ──────────────────────────────────────────────────────────
 
-REPO_ROOT = Path(__file__).parent.parent
+REPO_ROOT = Path(__file__).parent.parent.resolve()
 BINARY    = REPO_ROOT / "deepguard"
 API_KEY   = os.environ.get("DEEPGUARD_OPENAI_API_KEY", "")
 BASE_URL  = os.environ.get("DEEPGUARD_OPENAI_BASE_URL", "https://api.gapgpt.app/v1")
@@ -60,16 +60,25 @@ def scan_c_function(func_code: str, func_name: str) -> Optional[bool]:
 
         cmd = [str(BINARY), "scan", "--path", str(tmpdir), "--output", str(out_dir),
                "--languages", "c,cpp"]
-        result = subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=120)
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=120)
+        except subprocess.TimeoutExpired:
+            return None
+        except Exception:
+            return None
 
         if result.returncode != 0:
             return None
 
         # Check if any finding was emitted
-        for f in out_dir.glob("scan-*.json"):
+        out_files = list(out_dir.glob("scan-*.json"))
+        if not out_files:
+            # rc=0 but no report: scan ran but produced no output (0 chunks found)
+            return False
+        for f in out_files:
             try:
                 data = json.loads(f.read_text())
-                findings = data.get("findings", [])
+                findings = data.get("findings") or []
                 # A positive prediction: any C-type finding present
                 for finding in findings:
                     if finding.get("type") in C_VULN_TYPES:
@@ -112,7 +121,11 @@ def evaluate(dataset_path: str, sample: int, output_path: Optional[str]) -> dict
         idx     = s.get("idx", i)
 
         print(f"  [{i+1:>4}/{len(samples)}] idx={idx} label={label} ", end="", flush=True)
-        pred = scan_c_function(code, f"fn_{idx}")
+        try:
+            pred = scan_c_function(code, f"fn_{idx}")
+        except Exception as e:
+            print(f"\n    [EXCEPTION] {type(e).__name__}: {e}", flush=True)
+            pred = None
 
         if pred is None:
             errors += 1
