@@ -149,6 +149,9 @@ export DEEPGUARD_OPENAI_MODEL=gpt-4o-mini
 export DEEPGUARD_BUDGET_CAP=5.0
 export DEEPGUARD_CONFIDENCE_THRESHOLD=0.7
 export DEEPGUARD_VERBOSE=true
+
+# Optional: override the API endpoint (any OpenAI-compatible provider)
+# export DEEPGUARD_OPENAI_BASE_URL=https://api.gapgpt.app/v1
 ```
 
 ---

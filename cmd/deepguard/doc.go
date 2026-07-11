@@ -67,7 +67,7 @@ func runDoc(cmd *cobra.Command, args []string) error {
 
 	baseURL := os.Getenv("DEEPGUARD_OPENAI_BASE_URL")
 	if baseURL == "" {
-		baseURL = llm.GapGPTBaseURL
+		baseURL = llm.OpenAIBaseURL
 	}
 
 	fmt.Printf("Deep-Guard Doc Generator\n")

@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 echo "==================================="
 echo "DeepGuard Smoke Tests"
@@ -13,13 +12,11 @@ TEST_SAMPLES_DIR="$PROJECT_ROOT/test-samples/smoke-tests"
 # Colors for output
 GREEN='\033[0;32m'
 RED='\033[0;31m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 FAILED_TESTS=0
 PASSED_TESTS=0
 
-# Test helper functions
 test_directory_exists() {
     local dir=$1
     local lang=$2
@@ -27,12 +24,10 @@ test_directory_exists() {
     echo -n "  [${lang}] Checking test directory exists... "
     if [ -d "$dir" ]; then
         echo -e "${GREEN}PASS${NC}"
-        ((PASSED_TESTS++))
-        return 0
+        PASSED_TESTS=$((PASSED_TESTS + 1))
     else
         echo -e "${RED}FAIL${NC} - Directory not found: $dir"
-        ((FAILED_TESTS++))
-        return 1
+        FAILED_TESTS=$((FAILED_TESTS + 1))
     fi
 }
 
@@ -42,16 +37,14 @@ test_files_exist() {
     local min_files=$3
 
     echo -n "  [${lang}] Checking test files exist... "
-    file_count=$(find "$dir" -type f | wc -l | tr -d ' ')
+    file_count=$(find "$dir" -type f 2>/dev/null | wc -l | tr -d ' ')
 
     if [ "$file_count" -ge "$min_files" ]; then
         echo -e "${GREEN}PASS${NC} - Found $file_count files"
-        ((PASSED_TESTS++))
-        return 0
+        PASSED_TESTS=$((PASSED_TESTS + 1))
     else
         echo -e "${RED}FAIL${NC} - Expected at least $min_files files, found $file_count"
-        ((FAILED_TESTS++))
-        return 1
+        FAILED_TESTS=$((FAILED_TESTS + 1))
     fi
 }
 
@@ -62,14 +55,12 @@ test_file_contains_pattern() {
     local description=$4
 
     echo -n "  [${lang}] Checking for $description... "
-    if grep -q "$pattern" "$file"; then
+    if grep -q "$pattern" "$file" 2>/dev/null; then
         echo -e "${GREEN}PASS${NC}"
-        ((PASSED_TESTS++))
-        return 0
+        PASSED_TESTS=$((PASSED_TESTS + 1))
     else
         echo -e "${RED}FAIL${NC} - Pattern not found: $pattern"
-        ((FAILED_TESTS++))
-        return 1
+        FAILED_TESTS=$((FAILED_TESTS + 1))
     fi
 }
 
@@ -142,10 +133,10 @@ echo -e "Passed: ${GREEN}${PASSED_TESTS}${NC}"
 echo -e "Failed: ${RED}${FAILED_TESTS}${NC}"
 echo ""
 
-if [ $FAILED_TESTS -eq 0 ]; then
-    echo -e "${GREEN}✓ All smoke tests passed!${NC}"
+if [ "$FAILED_TESTS" -eq 0 ]; then
+    echo -e "${GREEN}All smoke tests passed!${NC}"
     exit 0
 else
-    echo -e "${RED}✗ Some smoke tests failed${NC}"
+    echo -e "${RED}Some smoke tests failed${NC}"
     exit 1
 fi

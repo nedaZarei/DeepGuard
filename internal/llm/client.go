@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/Neda-Zarei/deep-guard/internal/chunker"
 	"github.com/Neda-Zarei/deep-guard/internal/kb"
@@ -13,11 +14,13 @@ import (
 )
 
 const (
-	// gapgpt api base url (compatible with openai api)
-	GapGPTBaseURL = "https://api.gapgpt.app/v1"
+	// OpenAIBaseURL is the default API endpoint.
+	OpenAIBaseURL = "https://api.openai.com/v1"
 
-	// alternative cdn url for gapgpt
-	GapGPTCDNURL = "https://api.gapapi.com/v1"
+	// GapGPTBaseURL and GapGPTCDNURL are OpenAI-compatible academic proxy endpoints.
+	// Override the default by setting DEEPGUARD_OPENAI_BASE_URL to either value.
+	GapGPTBaseURL = "https://api.gapgpt.app/v1"
+	GapGPTCDNURL  = "https://api.gapapi.com/v1"
 )
 
 // client wraps the openai api client with retry logic and token tracking
@@ -27,10 +30,14 @@ type Client struct {
 	tracker *Tracker
 }
 
-// newClient creates a new llm client configured for gapgpt service
+// NewClient creates a new LLM client. It targets the OpenAI API by default.
+// Override the endpoint by setting DEEPGUARD_OPENAI_BASE_URL (e.g. to use
+// an OpenAI-compatible proxy such as GapGPT).
 func NewClient(apiKey, model string) *Client {
 	config := openai.DefaultConfig(apiKey)
-	config.BaseURL = GapGPTBaseURL
+	if baseURL := os.Getenv("DEEPGUARD_OPENAI_BASE_URL"); baseURL != "" {
+		config.BaseURL = baseURL
+	}
 
 	return &Client{
 		client:  openai.NewClientWithConfig(config),

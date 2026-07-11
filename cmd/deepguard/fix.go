@@ -70,7 +70,7 @@ func runFix(cmd *cobra.Command, args []string) error {
 
 	baseURL := os.Getenv("DEEPGUARD_OPENAI_BASE_URL")
 	if baseURL == "" {
-		baseURL = llm.GapGPTBaseURL
+		baseURL = llm.OpenAIBaseURL
 	}
 
 	raw, err := os.ReadFile(reportPath)
