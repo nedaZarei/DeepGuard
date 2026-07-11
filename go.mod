@@ -3,8 +3,18 @@ module github.com/Neda-Zarei/deep-guard
 go 1.24.0
 
 require (
+	github.com/blevesearch/bleve v1.0.14
+	github.com/rs/zerolog v1.34.0
+	github.com/sashabaranov/go-openai v1.41.2
+	github.com/smacker/go-tree-sitter v0.0.0-20240827094217-dd81d9e9be82
+	github.com/spf13/cobra v1.10.1
+	github.com/spf13/viper v1.16.0
+	golang.org/x/term v0.37.0
+	gopkg.in/yaml.v3 v3.0.1
+)
+
+require (
 	github.com/RoaringBitmap/roaring v0.4.23 // indirect
-	github.com/blevesearch/bleve v1.0.14 // indirect
 	github.com/blevesearch/go-porterstemmer v1.0.3 // indirect
 	github.com/blevesearch/mmap-go v1.0.2 // indirect
 	github.com/blevesearch/segment v0.9.0 // indirect
@@ -28,24 +38,17 @@ require (
 	github.com/mschoch/smat v0.2.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/philhofer/fwd v1.0.0 // indirect
-	github.com/rs/zerolog v1.34.0 // indirect
-	github.com/sashabaranov/go-openai v1.41.2 // indirect
-	github.com/smacker/go-tree-sitter v0.0.0-20240827094217-dd81d9e9be82 // indirect
 	github.com/spf13/afero v1.9.5 // indirect
 	github.com/spf13/cast v1.5.1 // indirect
-	github.com/spf13/cobra v1.10.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
-	github.com/spf13/viper v1.16.0 // indirect
 	github.com/steveyen/gtreap v0.1.0 // indirect
 	github.com/subosito/gotenv v1.4.2 // indirect
 	github.com/tinylib/msgp v1.1.0 // indirect
 	github.com/willf/bitset v1.1.10 // indirect
 	go.etcd.io/bbolt v1.3.5 // indirect
 	golang.org/x/sys v0.38.0 // indirect
-	golang.org/x/term v0.37.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
