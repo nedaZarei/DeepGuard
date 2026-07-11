@@ -182,9 +182,9 @@ func getTemplateName(vulnType VulnerabilityType) string {
 // number so the LLM can report exact line numbers without guessing offsets.
 // Example output:
 //
-//	 50: app.get('/user', (req, res) => {
-//	 51:   const id = req.query.id;
-//	 52:   db.query("SELECT * FROM t WHERE id=" + id);
+//	50: app.get('/user', (req, res) => {
+//	51:   const id = req.query.id;
+//	52:   db.query("SELECT * FROM t WHERE id=" + id);
 func buildNumberedSource(source string, startLine int) string {
 	lines := strings.Split(source, "\n")
 	endLine := startLine + len(lines) - 1

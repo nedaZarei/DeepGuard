@@ -152,11 +152,11 @@ func runFix(cmd *cobra.Command, args []string) error {
 	summaryPath := filepath.Join(outputDir, fmt.Sprintf("fix-summary-%s.json",
 		time.Now().Format("20060102-150405")))
 	summaryData, _ := json.MarshalIndent(map[string]any{
-		"generated_at":  time.Now().UTC().Format(time.RFC3339),
-		"report":        reportPath,
-		"patches_count": len(patches),
+		"generated_at":   time.Now().UTC().Format(time.RFC3339),
+		"report":         reportPath,
+		"patches_count":  len(patches),
 		"total_cost_usd": totalCost,
-		"patches":       patches,
+		"patches":        patches,
 	}, "", "  ")
 	os.WriteFile(summaryPath, summaryData, 0644)
 

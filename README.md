@@ -1,6 +1,6 @@
 # DeepGuard
 
-[![CI](https://github.com/Neda-Zarei/deep-guard/actions/workflows/ci.yml/badge.svg)](https://github.com/Neda-Zarei/deep-guard/actions/workflows/ci.yml)
+[![CI](https://github.com/nedaZarei/DeepGuard/actions/workflows/ci.yml/badge.svg)](https://github.com/nedaZarei/DeepGuard/actions/workflows/ci.yml)
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://go.dev/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -8,7 +8,7 @@
 
 DeepGuard is a Go-based security scanner that detects vulnerabilities in JavaScript/TypeScript, Python, Java, and C/C++ projects. It combines Tree-sitter AST parsing with BM25 knowledge-base retrieval and GPT-4o analysis to produce structured, line-level vulnerability reports.
 
-> This tool was developed as a Master's thesis prototype at Amirkabir University of Technology (AUT).
+> This tool was developed as a Bachelor's thesis prototype at Amirkabir University of Technology (AUT).
 > Supervisor: Dr. Hamidreza Shahriari.
 
 ---
@@ -78,7 +78,7 @@ Scan complete!
 ### Build from Source
 
 ```bash
-git clone https://github.com/Neda-Zarei/deep-guard.git
+git clone https://github.com/nedaZarei/DeepGuard.git
 cd deep-guard
 go mod download
 CGO_ENABLED=1 go build -o deepguard ./cmd/deepguard

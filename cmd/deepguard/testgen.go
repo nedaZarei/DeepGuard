@@ -174,11 +174,11 @@ func runTestgen(cmd *cobra.Command, args []string) error {
 	reportPath := filepath.Join(outputDir, fmt.Sprintf("testgen-report-%s.json",
 		time.Now().Format("20060102-150405")))
 	reportData, _ := json.MarshalIndent(map[string]any{
-		"generated_at":  time.Now().UTC().Format(time.RFC3339),
-		"target":        scanPath,
-		"total_tests":   totalTests,
+		"generated_at":   time.Now().UTC().Format(time.RFC3339),
+		"target":         scanPath,
+		"total_tests":    totalTests,
 		"total_cost_usd": totalCost,
-		"files":         allResults,
+		"files":          allResults,
 	}, "", "  ")
 	os.WriteFile(reportPath, reportData, 0644)
 
