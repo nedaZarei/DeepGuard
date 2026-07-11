@@ -1,0 +1,616 @@
+{
+  "dataset": "/tmp/codexglue-test.jsonl",
+  "samples": 100,
+  "evaluable": 0,
+  "errors": 100,
+  "TP": 0,
+  "FP": 0,
+  "TN": 0,
+  "FN": 0,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "accuracy": 0.0,
+  "per_sample": [
+    {
+      "idx": 0,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 1,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 2,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 3,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 4,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 5,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 6,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 7,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 8,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 9,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 10,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 11,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 12,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 13,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 14,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 15,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 16,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 17,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 18,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 19,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 20,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 21,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 22,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 23,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 24,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 25,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 26,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 27,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 28,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 29,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 30,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 31,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 32,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 33,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 34,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 35,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 36,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 37,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 38,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 39,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 40,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 41,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 42,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 43,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 44,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 45,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 46,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 47,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 48,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 49,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 50,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 51,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 52,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 53,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 54,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 55,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 56,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 57,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 58,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 59,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 60,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 61,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 62,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 63,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 64,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 65,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 66,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 67,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 68,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 69,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 70,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 71,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 72,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 73,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 74,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 75,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 76,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 77,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 78,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 79,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 80,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 81,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 82,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 83,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 84,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 85,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 86,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 87,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 88,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 89,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 90,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 91,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 92,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 93,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 94,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 95,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 96,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 97,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 98,
+      "label": 1,
+      "predicted": null,
+      "status": "ERROR"
+    },
+    {
+      "idx": 99,
+      "label": 0,
+      "predicted": null,
+      "status": "ERROR"
+    }
+  ]
+}

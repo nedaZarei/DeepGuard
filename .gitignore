@@ -34,3 +34,6 @@ docker-compose.override.yml
 # Environment files
 .env
 .env.local
+
+# Claude Code settings (IDE tooling, not part of the project)
+.claude/

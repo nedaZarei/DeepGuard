@@ -368,7 +368,7 @@ func runScan(cmd *cobra.Command, args []string) error {
 			TargetPath:          cfg.ScanPath,
 			Languages:           cfg.Languages,
 			Frameworks:          allFrameworks,
-			ModelUsed:           cfg.OpenAIModel,
+			ModelUsed:           orc.GetFinalModel(),
 			TotalCost:           totalCost,
 			ScanDurationSeconds: int(time.Since(startTime).Seconds()),
 			Filtering: &report.FilteringStats{

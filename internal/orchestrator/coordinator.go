@@ -44,6 +44,16 @@ func (o *Orchestrator) SetRetriever(r *rag.Retriever) {
 	o.retriever = r
 }
 
+// GetFinalModel returns the model actually in effect at the current point in the
+// scan, accounting for automatic budget-based fallback (see internal/budget).
+// Callers that need to report which model produced the results (e.g. when
+// writing scan_metadata.model_used) should use this instead of the
+// originally configured model, since fallback may have switched it mid-scan.
+func (o *Orchestrator) GetFinalModel() string {
+	budgetStatus := o.budgetTracker.GetCurrentStatus()
+	return o.fallbackManager.GetModelUsageReport(budgetStatus).FinalModel
+}
+
 // NewOrchestrator creates a new analysis orchestrator
 func NewOrchestrator(config *OrchestratorConfig, client *llm.Client, model string) (*Orchestrator, error) {
 	if config == nil {
