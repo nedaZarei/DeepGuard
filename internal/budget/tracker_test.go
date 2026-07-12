@@ -1,10 +1,19 @@
 package budget
 
 import (
+	"math"
 	"sync"
 	"testing"
 	"time"
 )
+
+// costEqual returns true if two cost values are within 1 nano-dollar of each other.
+// Exact float64 equality for computed costs fails across architectures (arm64 vs
+// amd64) because compile-time constant folding uses arbitrary precision while
+// runtime arithmetic uses IEEE 754 — results can differ by 1 ULP.
+func costEqual(a, b float64) bool {
+	return math.Abs(a-b) < 1e-9
+}
 
 func TestNewBudgetTracker(t *testing.T) {
 	tracker := NewBudgetTracker(10.0)
@@ -30,8 +39,8 @@ func TestCalculateCost_GPT4o(t *testing.T) {
 	cost := CalculateCost(1000, 2000, "gpt-4o")
 
 	expectedCost := (1000.0/1_000_000.0)*2.50 + (2000.0/1_000_000.0)*10.00
-	if cost != expectedCost {
-		t.Errorf("Expected cost %.6f, got %.6f", expectedCost, cost)
+	if !costEqual(cost, expectedCost) {
+		t.Errorf("Expected cost %.9f, got %.9f", expectedCost, cost)
 	}
 }
 
@@ -42,8 +51,8 @@ func TestCalculateCost_GPT4oMini(t *testing.T) {
 	cost := CalculateCost(10000, 5000, "gpt-4o-mini")
 
 	expectedCost := (10000.0/1_000_000.0)*0.150 + (5000.0/1_000_000.0)*0.600
-	if cost != expectedCost {
-		t.Errorf("Expected cost %.6f, got %.6f", expectedCost, cost)
+	if !costEqual(cost, expectedCost) {
+		t.Errorf("Expected cost %.9f, got %.9f", expectedCost, cost)
 	}
 }
 
@@ -53,8 +62,8 @@ func TestCalculateCost_GPT45Preview(t *testing.T) {
 	cost := CalculateCost(1000, 1000, "gpt-4.5-preview")
 
 	expectedCost := (1000.0/1_000_000.0)*37.50 + (1000.0/1_000_000.0)*150.00
-	if cost != expectedCost {
-		t.Errorf("Expected cost %.6f, got %.6f", expectedCost, cost)
+	if !costEqual(cost, expectedCost) {
+		t.Errorf("Expected cost %.9f, got %.9f", expectedCost, cost)
 	}
 }
 
@@ -64,8 +73,8 @@ func TestCalculateCost_GPT41(t *testing.T) {
 	cost := CalculateCost(5000, 3000, "gpt-4.1")
 
 	expectedCost := (5000.0/1_000_000.0)*0.50 + (3000.0/1_000_000.0)*8.00
-	if cost != expectedCost {
-		t.Errorf("Expected cost %.6f, got %.6f", expectedCost, cost)
+	if !costEqual(cost, expectedCost) {
+		t.Errorf("Expected cost %.9f, got %.9f", expectedCost, cost)
 	}
 }
 
@@ -74,8 +83,8 @@ func TestCalculateCost_UnknownModel(t *testing.T) {
 	cost := CalculateCost(1000, 2000, "unknown-model")
 
 	expectedCost := (1000.0/1_000_000.0)*GPT4oInputPricePer1M + (2000.0/1_000_000.0)*GPT4oOutputPricePer1M
-	if cost != expectedCost {
-		t.Errorf("Expected cost %.6f for unknown model, got %.6f", expectedCost, cost)
+	if !costEqual(cost, expectedCost) {
+		t.Errorf("Expected cost %.9f for unknown model, got %.9f", expectedCost, cost)
 	}
 }
 
