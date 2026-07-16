@@ -229,7 +229,7 @@ DeepGuard includes a `FallbackManager` that monitors cumulative spend and switch
 | Dataset | Files | Chunks | Cost | Duration |
 |---------|-------|--------|------|----------|
 | JS/TS SQLi benchmark (8 files) | 8 | 46 | $1.67 | ~305 s |
-| DVNA (Node.js real-world app) | 22 | ~65 | $0.72 | ~189 s |
+| DVNA (Node.js real-world app) | 3 | 4 | $0.72 | ~189 s |
 
 ---
 
