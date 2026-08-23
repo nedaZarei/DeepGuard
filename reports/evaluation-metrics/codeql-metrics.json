@@ -1,0 +1,30 @@
+{
+  "tool": "CodeQL (javascript-queries:Security/CWE-089)",
+  "codeql_version": "2.26.2",
+  "query": "codeql/javascript-queries:Security/CWE-089/SqlInjection.ql",
+  "dataset": "clean-bench-v3",
+  "total_findings": 12,
+  "sqli_findings": 12,
+  "type_constrained": {
+    "TP": 12,
+    "FP": 0,
+    "FN": 30,
+    "precision": 1.0,
+    "recall": 0.2857,
+    "f1": 0.4444
+  },
+  "line_tolerance": 20,
+  "key_finding": "CodeQL achieves perfect precision (0 FP) but only 28.6% recall. It correctly detects Express/Node.js string-concatenation SQLi where req.query -> string -> db.query is traceable. However it has NO taint sinks modelled for Prisma ($queryRaw, $executeRaw) or Sequelize (sequelize.query with raw strings), missing all 26 ORM-level findings. This confirms the gap: modern ORM-level injection is invisible to even the most capable rule-based dataflow tools.",
+  "files_with_findings": [
+    "express-complex.js",
+    "express-routes.js",
+    "typescript-express.ts"
+  ],
+  "files_with_zero_findings": [
+    "prisma-service.js",
+    "prisma-unsafe.js",
+    "typescript-prisma.ts",
+    "sequelize-models.js",
+    "sequelize-dynamic.js"
+  ]
+}

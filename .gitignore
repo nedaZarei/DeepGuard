@@ -37,3 +37,8 @@ docker-compose.override.yml
 
 # Claude Code settings (IDE tooling, not part of the project)
 .claude/
+
+# CodeQL binary distribution (installed via brew or downloaded manually)
+tools/codeql/
+tools/codeql.zip
+tools/codeql-bundle.tar.gz
