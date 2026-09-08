@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -12,11 +13,22 @@ import (
 
 const (
 	// retry configuration
-	maxRetries     = 5
-	baseDelay      = 2 * time.Second
-	maxDelay       = 64 * time.Second
-	requestTimeout = 60 * time.Second
+	maxRetries = 5
+	baseDelay  = 2 * time.Second
+	maxDelay   = 64 * time.Second
 )
+
+// requestTimeout bounds a single attempt. Default 60s suits hosted APIs; local
+// models (Ollama) that queue concurrent workers may need more:
+// DEEPGUARD_REQUEST_TIMEOUT=180 (seconds).
+var requestTimeout = func() time.Duration {
+	if v := os.Getenv("DEEPGUARD_REQUEST_TIMEOUT"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			return time.Duration(n) * time.Second
+		}
+	}
+	return 60 * time.Second
+}()
 
 // retryableError represents an error that can be retried
 type retryableError struct {
