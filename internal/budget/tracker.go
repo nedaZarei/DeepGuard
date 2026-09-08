@@ -2,6 +2,7 @@ package budget
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -96,6 +97,24 @@ func NewBudgetTracker(budgetCap float64) *BudgetTracker {
 	}
 }
 
+// zeroCostPrefixes are model-name prefixes for open-weight families that are
+// typically served without per-token billing (local Ollama, Groq free tier).
+var zeroCostPrefixes = []string{
+	"llama", "meta-llama", "qwen", "gemma", "mistral", "mixtral",
+	"deepseek", "phi", "codellama", "codestral", "codegemma", "starcoder",
+}
+
+// IsZeroCostModel reports whether cost tracking should treat the model as free.
+func IsZeroCostModel(model string) bool {
+	m := strings.ToLower(model)
+	for _, p := range zeroCostPrefixes {
+		if strings.HasPrefix(m, p) {
+			return true
+		}
+	}
+	return false
+}
+
 // CalculateCost computes the cost in USD for a given token usage
 func CalculateCost(promptTokens, completionTokens int, model string) float64 {
 	var inputPrice, outputPrice float64
@@ -114,6 +133,11 @@ func CalculateCost(promptTokens, completionTokens int, model string) float64 {
 		inputPrice = GPT41InputPricePer1M
 		outputPrice = GPT41OutputPricePer1M
 	default:
+		if IsZeroCostModel(model) {
+			// Open-weight models served locally (Ollama) or on free tiers (Groq):
+			// no per-token charge, so don't accrue fake gpt-4o cost against the cap.
+			return 0
+		}
 		// Log warning for unknown model
 		log.Warn().
 			Str("component", "budget").

@@ -389,3 +389,28 @@ func TestDefaultFallbackConfig_Values(t *testing.T) {
 		t.Errorf("Expected default fallback model 'gpt-4o-mini', got '%s'", config.FallbackModel)
 	}
 }
+
+func TestResolveFallbackModel(t *testing.T) {
+	cases := []struct{ primary, explicit, want string }{
+		{"gpt-4o", "", "gpt-4o-mini"},
+		{"gpt-4o-mini", "", "gpt-4o-mini"},
+		{"llama-3.3-70b-versatile", "", "llama-3.3-70b-versatile"},
+		{"qwen2.5-coder:7b", "", "qwen2.5-coder:7b"},
+		{"gpt-4o", "gpt-4.1", "gpt-4.1"},
+	}
+	for _, c := range cases {
+		if got := ResolveFallbackModel(c.primary, c.explicit); got != c.want {
+			t.Errorf("ResolveFallbackModel(%q,%q)=%q want %q", c.primary, c.explicit, got, c.want)
+		}
+	}
+}
+
+func TestFallbackManager_UsesConfiguredPrimary(t *testing.T) {
+	fm := NewFallbackManager(&FallbackConfig{BudgetCap: 5, SwitchThreshold: 3, PrimaryModel: "qwen2.5-coder:7b", FallbackModel: "qwen2.5-coder:7b"})
+	if got := fm.SelectModel(0); got != "qwen2.5-coder:7b" {
+		t.Errorf("first call selected %q, want configured primary", got)
+	}
+	if got := fm.SelectModel(10); got != "qwen2.5-coder:7b" {
+		t.Errorf("after threshold selected %q, want same model (no switch)", got)
+	}
+}

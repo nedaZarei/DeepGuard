@@ -69,6 +69,21 @@ func DefaultFallbackConfig() *FallbackConfig {
 	}
 }
 
+// ResolveFallbackModel picks the model to switch to when spend crosses the
+// switch threshold. An explicit choice always wins. Otherwise gpt-4o keeps its
+// historical gpt-4o-mini fallback, and every other model (gpt-4o-mini itself,
+// Groq/Ollama/other OpenAI-compatible endpoints) falls back to itself, i.e. no
+// switch — the provider may not serve gpt-4o-mini at all.
+func ResolveFallbackModel(primary, explicit string) string {
+	if explicit != "" {
+		return explicit
+	}
+	if primary == "gpt-4o" {
+		return "gpt-4o-mini"
+	}
+	return primary
+}
+
 // NewFallbackManager creates a new fallback manager
 func NewFallbackManager(config *FallbackConfig) *FallbackManager {
 	if config == nil {

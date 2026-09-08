@@ -259,6 +259,7 @@ func runScan(cmd *cobra.Command, args []string) error {
 	// Initialize orchestrator
 	orchConfig := orchestrator.DefaultConfig()
 	orchConfig.BudgetCap = cfg.BudgetCap
+	orchConfig.FallbackModel = cfg.FallbackModel
 	orc, err := orchestrator.NewOrchestrator(orchConfig, llmClient, cfg.OpenAIModel)
 	if err != nil {
 		return fmt.Errorf("failed to create orchestrator: %w", err)

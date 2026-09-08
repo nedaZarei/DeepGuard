@@ -34,6 +34,11 @@ type Config struct {
 	// Model name passed to the API endpoint (any model supported by the provider)
 	OpenAIModel string `mapstructure:"openai_model"`
 
+	// FallbackModel is the model switched to when spend crosses the fallback
+	// threshold. Empty means: gpt-4o -> gpt-4o-mini (historical default); any other
+	// primary model keeps itself (no switch). Env: DEEPGUARD_FALLBACK_MODEL
+	FallbackModel string `mapstructure:"fallback_model"`
+
 	// BudgetCap is the maximum cost in USD for a single scan
 	// Must be a positive float
 	BudgetCap float64 `mapstructure:"budget_cap"`
@@ -122,6 +127,7 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("languages", []string{"js", "ts", "python", "java"})
 	v.SetDefault("openai_api_key", "")
 	v.SetDefault("openai_model", "gpt-4o-mini")
+	v.SetDefault("fallback_model", "")
 	v.SetDefault("budget_cap", 3.0)
 	v.SetDefault("confidence_threshold", 0.5)
 	v.SetDefault("verbose", false)

@@ -408,3 +408,19 @@ func TestCostAccuracy(t *testing.T) {
 		})
 	}
 }
+
+func TestIsZeroCostModel(t *testing.T) {
+	for _, m := range []string{"llama-3.3-70b-versatile", "qwen2.5-coder:7b", "Mistral-7B", "deepseek-coder"} {
+		if !IsZeroCostModel(m) {
+			t.Errorf("%q should be zero-cost", m)
+		}
+		if c := CalculateCost(1000, 1000, m); c != 0 {
+			t.Errorf("CalculateCost(%q)=%v want 0", m, c)
+		}
+	}
+	for _, m := range []string{"gpt-4o", "gpt-4o-mini", "unknown-model"} {
+		if IsZeroCostModel(m) {
+			t.Errorf("%q should NOT be zero-cost", m)
+		}
+	}
+}

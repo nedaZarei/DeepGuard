@@ -69,9 +69,12 @@ func NewOrchestrator(config *OrchestratorConfig, client *llm.Client, model strin
 	// Create budget tracker
 	budgetTracker := budget.NewBudgetTracker(config.BudgetCap)
 
-	// Create fallback manager with default config
+	// Create fallback manager: primary is the configured model (previously
+	// hardcoded to gpt-4o, which overrode the user's model on the first call).
 	fallbackConfig := budget.DefaultFallbackConfig()
 	fallbackConfig.BudgetCap = config.BudgetCap
+	fallbackConfig.PrimaryModel = model
+	fallbackConfig.FallbackModel = budget.ResolveFallbackModel(model, config.FallbackModel)
 	fallbackManager := budget.NewFallbackManager(fallbackConfig)
 
 	return &Orchestrator{

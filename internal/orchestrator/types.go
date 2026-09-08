@@ -160,6 +160,7 @@ func (pt *ProgressTracker) GetPercentage() float64 {
 type OrchestratorConfig struct {
 	WorkerCount       int     // Number of concurrent workers (default: 5)
 	BudgetCap         float64 // Budget cap in USD (default: 5.0)
+	FallbackModel     string  // Model to switch to near the cap; "" = auto (see budget.ResolveFallbackModel)
 	ErrorThreshold    int     // Max consecutive errors before stopping (default: 10)
 	WorkChannelSize   int     // Size of work channel buffer (default: 100)
 	ResultChannelSize int     // Size of result channel buffer (default: 100)
