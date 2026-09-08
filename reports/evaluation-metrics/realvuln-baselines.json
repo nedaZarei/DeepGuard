@@ -1,0 +1,162 @@
+{
+  "dataset": "RealVuln human-authored subset (26 Python repos)",
+  "line_tolerance": 10,
+  "full": {
+    "semgrep": {
+      "repos": 26,
+      "TP": 134.0,
+      "FP": 481.0,
+      "FN": 569.0,
+      "TN": 116.0,
+      "precision": 0.2179,
+      "recall": 0.1906,
+      "f1": 0.2033,
+      "f2_score": 19.6
+    },
+    "snyk": {
+      "repos": 25,
+      "TP": 121.0,
+      "FP": 280.0,
+      "FN": 561.0,
+      "TN": 113.0,
+      "precision": 0.3017,
+      "recall": 0.1774,
+      "f1": 0.2235,
+      "f2_score": 19.3
+    },
+    "sonarqube": {
+      "repos": 26,
+      "TP": 44.0,
+      "FP": 28.0,
+      "FN": 659.0,
+      "TN": 120.0,
+      "precision": 0.6111,
+      "recall": 0.0626,
+      "f1": 0.1135,
+      "f2_score": 7.6
+    },
+    "gpt-5.5-agentic-v1": {
+      "repos": 26,
+      "TP": 410.7,
+      "FP": 78.7,
+      "FN": 292.3,
+      "TN": 120.3,
+      "precision": 0.8392,
+      "recall": 0.5842,
+      "f1": 0.6888,
+      "f2_score": 62.2
+    },
+    "claude-opus-5-cc-agentic-v1": {
+      "repos": 26,
+      "TP": 487.0,
+      "FP": 331.0,
+      "FN": 216.0,
+      "TN": 117.0,
+      "precision": 0.5954,
+      "recall": 0.6927,
+      "f1": 0.6404,
+      "f2_score": 67.1
+    },
+    "gemini-3.5-flash-agentic-v1": {
+      "repos": 25,
+      "TP": 226.2,
+      "FP": 39.5,
+      "FN": 449.8,
+      "TN": 113.7,
+      "precision": 0.8513,
+      "recall": 0.3346,
+      "f1": 0.4804,
+      "f2_score": 38.1
+    },
+    "gemma4-31b-agentic-v1": {
+      "repos": 26,
+      "TP": 185.0,
+      "FP": 22.0,
+      "FN": 518.0,
+      "TN": 118.0,
+      "precision": 0.8937,
+      "recall": 0.2632,
+      "f1": 0.4066,
+      "f2_score": 30.6
+    }
+  },
+  "in_scope": {
+    "semgrep": {
+      "repos": 26,
+      "TP": 87.0,
+      "FP": 181.0,
+      "FN": 267.0,
+      "TN": 104.0,
+      "precision": 0.3246,
+      "recall": 0.2458,
+      "f1": 0.2797,
+      "f2_score": 25.8
+    },
+    "snyk": {
+      "repos": 25,
+      "TP": 74.0,
+      "FP": 239.0,
+      "FN": 269.0,
+      "TN": 102.0,
+      "precision": 0.2364,
+      "recall": 0.2157,
+      "f1": 0.2256,
+      "f2_score": 22.0
+    },
+    "sonarqube": {
+      "repos": 26,
+      "TP": 28.0,
+      "FP": 36.0,
+      "FN": 326.0,
+      "TN": 109.0,
+      "precision": 0.4375,
+      "recall": 0.0791,
+      "f1": 0.134,
+      "f2_score": 9.5
+    },
+    "gpt-5.5-agentic-v1": {
+      "repos": 26,
+      "TP": 243.8,
+      "FP": 136.0,
+      "FN": 110.2,
+      "TN": 108.3,
+      "precision": 0.6419,
+      "recall": 0.6888,
+      "f1": 0.6645,
+      "f2_score": 67.9
+    },
+    "claude-opus-5-cc-agentic-v1": {
+      "repos": 26,
+      "TP": 272.0,
+      "FP": 314.0,
+      "FN": 82.0,
+      "TN": 108.0,
+      "precision": 0.4642,
+      "recall": 0.7684,
+      "f1": 0.5787,
+      "f2_score": 67.9
+    },
+    "gemini-3.5-flash-agentic-v1": {
+      "repos": 25,
+      "TP": 165.5,
+      "FP": 66.8,
+      "FN": 174.5,
+      "TN": 102.7,
+      "precision": 0.7123,
+      "recall": 0.4868,
+      "f1": 0.5783,
+      "f2_score": 52.0
+    },
+    "gemma4-31b-agentic-v1": {
+      "repos": 26,
+      "TP": 136.0,
+      "FP": 48.0,
+      "FN": 218.0,
+      "TN": 107.0,
+      "precision": 0.7391,
+      "recall": 0.3842,
+      "f1": 0.5056,
+      "f2_score": 42.5
+    }
+  }
+}
