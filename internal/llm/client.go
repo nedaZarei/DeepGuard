@@ -186,6 +186,11 @@ func (c *Client) AnalyzeWithParsing(ctx context.Context, chunk chunker.CodeChunk
 
 // callAPI makes a single api call to openai/gapgpt
 func (c *Client) callAPI(ctx context.Context, prompt string) (*Response, error) {
+	// Space out calls across workers when a provider rate limit is configured.
+	if err := throttle(ctx); err != nil {
+		return nil, err
+	}
+
 	// create chat completion request
 	req := openai.ChatCompletionRequest{
 		Model: c.model,
