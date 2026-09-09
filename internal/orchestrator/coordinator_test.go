@@ -224,3 +224,16 @@ func TestConcurrentTrackerAccess(t *testing.T) {
 		t.Errorf("Expected 1000 processed chunks, got %d", processed)
 	}
 }
+
+func TestNewOrchestrator_NormalisesWorkerCount(t *testing.T) {
+	// A zero WorkerCount must not start zero workers (which would hang forever).
+	cfg := DefaultConfig()
+	cfg.WorkerCount = 0
+	o, err := NewOrchestrator(cfg, nil, "test-model")
+	if err != nil {
+		t.Fatalf("NewOrchestrator: %v", err)
+	}
+	if o.config.WorkerCount < 1 {
+		t.Errorf("WorkerCount=%d, want >= 1", o.config.WorkerCount)
+	}
+}

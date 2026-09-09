@@ -405,3 +405,30 @@ func TestValidate_BothModels(t *testing.T) {
 		t.Errorf("Model 'gpt-4o-mini' should be valid: %v", err)
 	}
 }
+
+func TestValidate_WorkerCount(t *testing.T) {
+	base := func() *Config {
+		return &Config{
+			ScanPath: ".", OutputDir: "./out", Languages: []string{"python"},
+			OpenAIAPIKey: "k", OpenAIModel: "m", WorkerCount: 5,
+			BudgetCap: 1.0, ConfidenceThreshold: 0.5,
+		}
+	}
+	if err := base().Validate(); err != nil {
+		t.Fatalf("valid config rejected: %v", err)
+	}
+	// negative is an error
+	c := base()
+	c.WorkerCount = -1
+	if err := c.Validate(); err == nil {
+		t.Error("worker_count=-1 should be rejected")
+	}
+	// zero means unset and is normalised to the default
+	c = base()
+	c.WorkerCount = 0
+	if err := c.Validate(); err != nil {
+		t.Errorf("worker_count=0 should normalise, got: %v", err)
+	} else if c.WorkerCount != DefaultWorkerCount {
+		t.Errorf("worker_count=0 should normalise to %d, got %d", DefaultWorkerCount, c.WorkerCount)
+	}
+}

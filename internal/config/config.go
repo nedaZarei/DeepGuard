@@ -9,6 +9,9 @@ import (
 	"github.com/spf13/viper"
 )
 
+// DefaultWorkerCount is the worker count used when worker_count is unset.
+const DefaultWorkerCount = 5
+
 // Config holds all configuration for DeepGuard scanner.
 // Configuration is loaded from multiple sources with the following precedence:
 //  1. CLI flags (highest priority) - handled by Cobra
@@ -38,6 +41,11 @@ type Config struct {
 	// threshold. Empty means: gpt-4o -> gpt-4o-mini (historical default); any other
 	// primary model keeps itself (no switch). Env: DEEPGUARD_FALLBACK_MODEL
 	FallbackModel string `mapstructure:"fallback_model"`
+
+	// WorkerCount is the number of concurrent analysis workers.
+	// Lower it for rate-limited providers (Groq free tier allows ~5 requests/min).
+	// Env: DEEPGUARD_WORKER_COUNT
+	WorkerCount int `mapstructure:"worker_count"`
 
 	// BudgetCap is the maximum cost in USD for a single scan
 	// Must be a positive float
@@ -128,6 +136,7 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("openai_api_key", "")
 	v.SetDefault("openai_model", "gpt-4o-mini")
 	v.SetDefault("fallback_model", "")
+	v.SetDefault("worker_count", 5)
 	v.SetDefault("budget_cap", 3.0)
 	v.SetDefault("confidence_threshold", 0.5)
 	v.SetDefault("verbose", false)
@@ -185,6 +194,15 @@ func (c *Config) Validate() error {
 	// Validate openai_model: any non-empty string is accepted (GapGPT proxy supports many models)
 	if c.OpenAIModel == "" {
 		return fmt.Errorf("openai_model must not be empty")
+	}
+
+	// Validate worker_count. Zero means "unset" (zero-value struct or omitted
+	// config key) and is normalised to the default; only negatives are an error.
+	if c.WorkerCount < 0 {
+		return fmt.Errorf("worker_count must not be negative, got: %d", c.WorkerCount)
+	}
+	if c.WorkerCount == 0 {
+		c.WorkerCount = DefaultWorkerCount
 	}
 
 	// Validate budget_cap

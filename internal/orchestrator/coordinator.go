@@ -66,6 +66,12 @@ func NewOrchestrator(config *OrchestratorConfig, client *llm.Client, model strin
 		return nil, fmt.Errorf("failed to create prompt renderer: %w", err)
 	}
 
+	// A zero WorkerCount means "unset" (see config.DefaultWorkerCount); fall back
+	// to the package default rather than starting zero workers and hanging.
+	if config.WorkerCount < 1 {
+		config.WorkerCount = DefaultConfig().WorkerCount
+	}
+
 	// Create budget tracker
 	budgetTracker := budget.NewBudgetTracker(config.BudgetCap)
 

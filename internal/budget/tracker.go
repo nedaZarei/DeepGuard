@@ -102,6 +102,8 @@ func NewBudgetTracker(budgetCap float64) *BudgetTracker {
 var zeroCostPrefixes = []string{
 	"llama", "meta-llama", "qwen", "gemma", "mistral", "mixtral",
 	"deepseek", "phi", "codellama", "codestral", "codegemma", "starcoder",
+	// Groq-hosted open-weight families (free tier)
+	"openai/gpt-oss", "gpt-oss", "groq/compound", "allam",
 }
 
 // IsZeroCostModel reports whether cost tracking should treat the model as free.

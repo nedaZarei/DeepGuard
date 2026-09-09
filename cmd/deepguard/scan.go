@@ -59,10 +59,12 @@ func init() {
 	scanCmd.Flags().StringP("output", "o", "./reports/", "output directory for scan reports")
 	scanCmd.Flags().StringSliceP("languages", "l", []string{"js", "ts", "python", "java"}, "languages to scan (comma-separated)")
 	scanCmd.Flags().Float64("confidence-threshold", 0.5, "minimum confidence score (0.0-1.0) for reporting findings")
+	scanCmd.Flags().Int("workers", 5, "concurrent analysis workers (lower for rate-limited providers)")
 
 	// Bind flags to viper config keys
 	viper.BindPFlag("scan_path", scanCmd.Flags().Lookup("path"))
 	viper.BindPFlag("output_dir", scanCmd.Flags().Lookup("output"))
+	viper.BindPFlag("worker_count", scanCmd.Flags().Lookup("workers"))
 	viper.BindPFlag("languages", scanCmd.Flags().Lookup("languages"))
 	viper.BindPFlag("confidence_threshold", scanCmd.Flags().Lookup("confidence-threshold"))
 }
@@ -260,6 +262,7 @@ func runScan(cmd *cobra.Command, args []string) error {
 	orchConfig := orchestrator.DefaultConfig()
 	orchConfig.BudgetCap = cfg.BudgetCap
 	orchConfig.FallbackModel = cfg.FallbackModel
+	orchConfig.WorkerCount = cfg.WorkerCount
 	orc, err := orchestrator.NewOrchestrator(orchConfig, llmClient, cfg.OpenAIModel)
 	if err != nil {
 		return fmt.Errorf("failed to create orchestrator: %w", err)
