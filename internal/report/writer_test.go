@@ -1,6 +1,7 @@
 package report
 
 import (
+	"bytes"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -607,5 +608,36 @@ func TestEnsureDirectory_FileExistsWithSameName(t *testing.T) {
 		t.Error("Expected error when path exists but is not a directory")
 	} else if !strings.Contains(err.Error(), "not a directory") {
 		t.Errorf("Expected 'not a directory' error, got: %v", err)
+	}
+}
+
+func TestWriteReport_EmptyFindingsIsArrayNotNull(t *testing.T) {
+	dir := t.TempDir()
+	r := ScanReport{
+		ScanMetadata: ScanMetadata{
+			Timestamp:  time.Now().UTC().Format(time.RFC3339),
+			TargetPath: "/tmp/x",
+			Languages:  []string{"python"},
+		},
+		Findings: nil, // a clean scan that found nothing
+		Summary:  Summary{TotalFindings: 0},
+	}
+	path, err := WriteReport(r, dir)
+	if err != nil {
+		t.Fatalf("WriteReport: %v", err)
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("ReadFile: %v", err)
+	}
+	if bytes.Contains(data, []byte(`"findings": null`)) {
+		t.Error(`report contains "findings": null; consumers expect an array`)
+	}
+	var round map[string]interface{}
+	if err := json.Unmarshal(data, &round); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if _, ok := round["findings"].([]interface{}); !ok {
+		t.Errorf("findings is %T, want []interface{}", round["findings"])
 	}
 }

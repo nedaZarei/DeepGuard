@@ -51,7 +51,9 @@ def convert(report: dict, repo_root: str, conf_min: float = 0.0) -> dict:
     target_path = report.get("scan_metadata", {}).get("target_path", "")
     results = []
     skipped = {}
-    for f in report.get("findings", []):
+    # `or []` matters: a zero-finding scan writes "findings": null, and
+    # .get(key, default) returns None for an explicit null rather than the default.
+    for f in (report.get("findings") or []):
         if f.get("confidence", 1.0) < conf_min:
             continue
         cwe = TYPE_TO_CWE.get(f.get("type"))

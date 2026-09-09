@@ -128,6 +128,12 @@ func writeReportAtomic(report ScanReport, outputPath string) error {
 		}
 	}()
 
+	// A nil Findings slice marshals to JSON null, which breaks consumers that
+	// expect an array (a scan with zero findings is valid, not malformed).
+	if report.Findings == nil {
+		report.Findings = []Finding{}
+	}
+
 	// Marshal report to pretty-printed JSON
 	jsonData, err := json.MarshalIndent(report, "", "  ")
 	if err != nil {

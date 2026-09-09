@@ -41,7 +41,10 @@ for repo in "${REPOS[@]}"; do
     2>&1 | grep -E "Extracted|Findings:|Cost:|Duration:|ERR" || true
   report="$(ls -t "$scan_out"/scan-*.json 2>/dev/null | head -1)"
   [ -n "$report" ] || { echo "no report for $repo"; continue; }
-  python3 "$ROOT/scripts/realvuln_adapter.py" "$report" "$src" "$RV/scan-results/$repo/$SLUG/results.json"
+  if ! python3 "$ROOT/scripts/realvuln_adapter.py" "$report" "$src" "$RV/scan-results/$repo/$SLUG/results.json"; then
+    echo "  ADAPTER FAILED for $repo - skipping, continuing batch"
+    continue
+  fi
   (cd "$RV" && python3 score.py --repo "$repo" --scanner "$SLUG" --gt-dir "$GT_DIR" | grep -E "^$SLUG" || true)
 done
 
