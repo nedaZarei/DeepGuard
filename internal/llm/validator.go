@@ -40,7 +40,7 @@ func ValidateFinding(finding *types.Finding, index int) error {
 	if !types.IsValidVulnerabilityType(finding.Type) {
 		return NewValidationError(
 			fmt.Sprintf("findings[%d].type", index),
-			"must be one of: sql_injection, xss, path_traversal, insecure_deserialization, auth_issue, crypto_issue",
+			"must be one of the 13 template vulnerability types (see pkg/types.IsValidVulnerabilityType)",
 			finding.Type,
 		)
 	}

@@ -53,6 +53,11 @@ const (
 	VulnTypeCryptoIssue             VulnerabilityType = "crypto_issue"
 	VulnTypeCommandInjection        VulnerabilityType = "command_injection"
 	VulnTypeSSRF                    VulnerabilityType = "ssrf"
+	VulnTypeXXEInjection            VulnerabilityType = "xxe_injection"
+	VulnTypeBufferOverflow          VulnerabilityType = "buffer_overflow"
+	VulnTypeFormatString            VulnerabilityType = "format_string"
+	VulnTypeUseAfterFree            VulnerabilityType = "use_after_free"
+	VulnTypeIntegerOverflow         VulnerabilityType = "integer_overflow"
 )
 
 // SeverityLevel represents allowed severity levels
@@ -70,7 +75,12 @@ func IsValidVulnerabilityType(t string) bool {
 	switch VulnerabilityType(t) {
 	case VulnTypeSQLInjection, VulnTypeXSS, VulnTypePathTraversal,
 		VulnTypeInsecureDeserialization, VulnTypeAuthIssue, VulnTypeCryptoIssue,
-		VulnTypeCommandInjection, VulnTypeSSRF:
+		VulnTypeCommandInjection, VulnTypeSSRF,
+		// Previously missing: the xxe, buffer_overflow, format_string,
+		// use_after_free and integer_overflow templates emit these types, so
+		// every finding from those five templates was rejected at validation.
+		VulnTypeXXEInjection, VulnTypeBufferOverflow, VulnTypeFormatString,
+		VulnTypeUseAfterFree, VulnTypeIntegerOverflow:
 		return true
 	default:
 		return false

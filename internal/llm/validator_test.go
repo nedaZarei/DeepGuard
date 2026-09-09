@@ -30,7 +30,7 @@ func TestValidateFinding_InvalidType(t *testing.T) {
 		wantErr bool
 	}{
 		{"empty type", "", true},
-		{"invalid type", "buffer_overflow", true},
+		{"invalid type", "not_a_vuln_type", true},
 		{"valid sql_injection", "sql_injection", false},
 		{"valid xss", "xss", false},
 		{"valid path_traversal", "path_traversal", false},

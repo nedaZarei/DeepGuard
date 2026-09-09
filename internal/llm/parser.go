@@ -48,7 +48,10 @@ func ParseResponse(rawResponse string) (*APIResponse, error) {
 // ParseResponseWithRetry attempts to parse a response, and if it fails, it can signal a retry
 // Returns: (response, shouldRetry, error)
 func ParseResponseWithRetry(rawResponse string, attemptNumber int) (*APIResponse, bool, error) {
-	response, err := ParseResponse(rawResponse)
+	// Lenient: strict JSON first, then unwrap ```json fences / surrounding prose.
+	// Local and smaller models fence their JSON despite the instruction; without
+	// this every fenced reply cost a second API call and was often still dropped.
+	response, err := ParseResponseLenient(rawResponse)
 
 	if err == nil {
 		// Success

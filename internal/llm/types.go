@@ -1,5 +1,7 @@
 package llm
 
+import "github.com/Neda-Zarei/deep-guard/internal/budget"
+
 // response contains the structured output from an llm analysis request
 type Response struct {
 	// findings contains the raw text response from the llm
@@ -42,6 +44,9 @@ func calculateCost(model string, promptTokens, completionTokens int) float64 {
 		inputPrice = GPT4oMiniInputPricePer1M
 		outputPrice = GPT4oMiniOutputPricePer1M
 	default:
+		if budget.IsZeroCostModel(model) {
+			return 0 // open-weight model on Ollama/Groq free tier: no per-token charge
+		}
 		// default to gpt-4o-mini pricing for unknown models
 		inputPrice = GPT4oMiniInputPricePer1M
 		outputPrice = GPT4oMiniOutputPricePer1M

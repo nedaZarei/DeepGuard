@@ -16,7 +16,7 @@ func TestIsValidVulnerabilityType(t *testing.T) {
 		{"insecure_deserialization", "insecure_deserialization", true},
 		{"auth_issue", "auth_issue", true},
 		{"crypto_issue", "crypto_issue", true},
-		{"invalid", "buffer_overflow", false},
+		{"invalid", "not_a_vuln_type", false},
 		{"empty", "", false},
 		{"random", "random_vuln", false},
 	}
@@ -144,5 +144,22 @@ func TestFindingJSONTags(t *testing.T) {
 	}
 	if finding.LineRangeEnd != 110 {
 		t.Error("LineRangeEnd not set correctly")
+	}
+}
+
+func TestIsValidVulnerabilityType_AllTemplateTypes(t *testing.T) {
+	// One entry per prompt template in internal/llm/templates; each must validate,
+	// otherwise that template's findings are silently discarded.
+	for _, tt := range []string{
+		"sql_injection", "xss", "path_traversal", "insecure_deserialization", "auth_issue",
+		"crypto_issue", "command_injection", "ssrf", "xxe_injection",
+		"buffer_overflow", "format_string", "use_after_free", "integer_overflow",
+	} {
+		if !IsValidVulnerabilityType(tt) {
+			t.Errorf("template type %q rejected by IsValidVulnerabilityType", tt)
+		}
+	}
+	if IsValidVulnerabilityType("xxe") || IsValidVulnerabilityType("") {
+		t.Error("non-template types must be rejected")
 	}
 }
