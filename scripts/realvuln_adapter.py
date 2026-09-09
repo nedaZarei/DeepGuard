@@ -47,11 +47,13 @@ def to_repo_relative(path: str, target_path: str, repo_root: str) -> str:
     return p
 
 
-def convert(report: dict, repo_root: str) -> dict:
+def convert(report: dict, repo_root: str, conf_min: float = 0.0) -> dict:
     target_path = report.get("scan_metadata", {}).get("target_path", "")
     results = []
     skipped = {}
     for f in report.get("findings", []):
+        if f.get("confidence", 1.0) < conf_min:
+            continue
         cwe = TYPE_TO_CWE.get(f.get("type"))
         if not cwe:
             skipped[f.get("type")] = skipped.get(f.get("type"), 0) + 1
@@ -84,7 +86,9 @@ def main():
     src, repo_root, dst = sys.argv[1:4]
     with open(src) as fh:
         report = json.load(fh)
-    out = convert(report, repo_root)
+    # REALVULN_CONF_MIN lets us sweep the confidence threshold at scoring time
+    # without re-running the (slow) scan; the raw report keeps everything >= 0.5.
+    out = convert(report, repo_root, float(os.environ.get("REALVULN_CONF_MIN", "0")))
     os.makedirs(os.path.dirname(os.path.abspath(dst)), exist_ok=True)
     with open(dst, "w") as fh:
         json.dump(out, fh, indent=2)
