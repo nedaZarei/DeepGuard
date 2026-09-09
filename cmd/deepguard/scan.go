@@ -331,6 +331,7 @@ func runScan(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
 	typeFindings, analysisErr := orc.AnalyzeRepositoryAllTypes(ctx, allChunks)
+	analysisStats := orc.Stats()
 	if analysisErr != nil && len(typeFindings) == 0 {
 		return fmt.Errorf("analysis failed: %w", analysisErr)
 	}
@@ -375,6 +376,11 @@ func runScan(cmd *cobra.Command, args []string) error {
 			ModelUsed:           orc.GetFinalModel(),
 			TotalCost:           totalCost,
 			ScanDurationSeconds: int(time.Since(startTime).Seconds()),
+			Analysis: &report.AnalysisStats{
+				Attempted: analysisStats.Attempted,
+				Failed:    analysisStats.Failed,
+				Complete:  analysisStats.Failed == 0,
+			},
 			Filtering: &report.FilteringStats{
 				Enabled:          filterStats.Enabled,
 				ThresholdUsed:    filterStats.ThresholdUsed,
@@ -399,6 +405,11 @@ func runScan(cmd *cobra.Command, args []string) error {
 
 	duration := time.Since(startTime)
 	fmt.Printf("\nScan complete!\n")
+	if analysisStats.Failed > 0 {
+		fmt.Printf("  WARNING:   %d of %d chunk analyses failed - results are incomplete\n",
+			analysisStats.Failed, analysisStats.Attempted)
+	}
+
 	fmt.Printf("  Findings:  %d (critical: %d, high: %d, medium: %d, low: %d)\n",
 		len(finalFindings),
 		scanReport.Summary.BySeverity["critical"],

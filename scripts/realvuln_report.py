@@ -26,6 +26,26 @@ repos = sorted(os.path.basename(os.path.dirname(os.path.dirname(p)))
 if not repos:
     sys.exit(f"no results for {slug}")
 
+# A scan whose API calls partly failed produced fewer findings than a clean run,
+# so its recall is understated. Surface that instead of averaging it in silently.
+REPORT_ROOT = os.path.join(os.path.dirname(__file__), "..", "reports/realvuln", slug)
+incomplete = {}
+for repo in repos:
+    scans = sorted(glob.glob(os.path.join(REPORT_ROOT, repo, "scan-*.json")))
+    if not scans:
+        continue
+    meta = json.load(open(scans[-1])).get("scan_metadata", {})
+    a = meta.get("analysis")
+    if a is None:
+        incomplete[repo] = "unknown (scan predates completeness tracking)"
+    elif a.get("failed"):
+        incomplete[repo] = f"{a['failed']}/{a['attempted']} analyses failed"
+if incomplete:
+    print("WARNING - incomplete scans, recall understated for these repos:")
+    for r, why in incomplete.items():
+        print(f"  {r}: {why}")
+    print()
+
 def conf_of(f):
     return f.metadata.get("confidence") if hasattr(f, "metadata") and isinstance(f.metadata, dict) else None
 
@@ -77,7 +97,8 @@ def score(scanner, gt_dir, conf_min=None):
         cards.append(c); per_repo[repo] = dict(TP=c.tp, FP=c.fp, FN=c.fn)
     return metrics(cards), per_repo
 
-out = {"slug": slug, "repos": repos, "line_tolerance": 10, "full": {}, "in_scope": {}}
+out = {"slug": slug, "repos": repos, "line_tolerance": 10,
+       "incomplete_scans": incomplete, "full": {}, "in_scope": {}}
 print(f"Repos scored by {slug}: {len(repos)}\n")
 for gt_label, gt_dir in (("full", "ground-truth"), ("in_scope", "ground-truth-inscope")):
     print(f"=== {gt_label} ground truth, same {len(repos)} repos ===")

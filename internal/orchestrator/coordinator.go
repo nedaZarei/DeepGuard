@@ -37,6 +37,37 @@ type Orchestrator struct {
 	errorTracker    *ErrorTracker
 	progressTracker *ProgressTracker
 	retriever       *rag.Retriever
+
+	// Cumulative analysis counters across every vulnerability type. errorTracker
+	// is reset per AnalyzeRepository call, so totals must be accumulated here to
+	// know whether a scan was complete or silently degraded (e.g. by API errors).
+	statsMu           sync.Mutex
+	attemptedAnalyses int
+	failedAnalyses    int
+}
+
+// AnalysisStats reports how many chunk analyses were attempted and how many
+// failed across the whole scan. A scan with failures produced fewer findings
+// than a clean one and must not be compared against complete runs as if equal.
+type AnalysisStats struct {
+	Attempted int
+	Failed    int
+}
+
+// Stats returns cumulative analysis counters for the scan.
+func (o *Orchestrator) Stats() AnalysisStats {
+	o.statsMu.Lock()
+	defer o.statsMu.Unlock()
+	return AnalysisStats{Attempted: o.attemptedAnalyses, Failed: o.failedAnalyses}
+}
+
+func (o *Orchestrator) recordAnalysisOutcome(success bool) {
+	o.statsMu.Lock()
+	defer o.statsMu.Unlock()
+	o.attemptedAnalyses++
+	if !success {
+		o.failedAnalyses++
+	}
 }
 
 // SetRetriever attaches a RAG retriever to the orchestrator for KB context injection.
@@ -159,6 +190,9 @@ func (o *Orchestrator) AnalyzeRepository(
 		for result := range resultsChan {
 			// Report per-chunk metrics
 			ReportWorkerMetrics(&result)
+
+			// Track completeness across all vulnerability types
+			o.recordAnalysisOutcome(result.Success)
 
 			// Aggregate findings
 			if result.Success && len(result.Findings) > 0 {

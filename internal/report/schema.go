@@ -13,6 +13,16 @@ type ScanReport struct {
 }
 
 // ScanMetadata contains metadata about the scan execution
+// AnalysisStats records how many chunk analyses were attempted and how many
+// failed (API errors, unparseable responses). A scan with a non-zero Failed
+// count is incomplete: it produced fewer findings than a clean run would have,
+// so its recall is understated and it must not be compared as if complete.
+type AnalysisStats struct {
+	Attempted int  `json:"attempted"`
+	Failed    int  `json:"failed"`
+	Complete  bool `json:"complete"`
+}
+
 type ScanMetadata struct {
 	Timestamp           string            `json:"timestamp"` // RFC3339 format
 	TargetPath          string            `json:"target_path"`
@@ -21,6 +31,7 @@ type ScanMetadata struct {
 	ModelUsed           string            `json:"model_used"`
 	TotalCost           float64           `json:"total_cost"`
 	ScanDurationSeconds int               `json:"scan_duration_seconds"`
+	Analysis            *AnalysisStats    `json:"analysis,omitempty"`    // Chunk-analysis completeness
 	Filtering           *FilteringStats   `json:"filtering,omitempty"`   // Optional filtering statistics
 	Suppression         *SuppressionStats `json:"suppression,omitempty"` // Optional suppression statistics
 }

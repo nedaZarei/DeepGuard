@@ -2,6 +2,7 @@ package orchestrator
 
 import (
 	"context"
+	"sync"
 	"testing"
 	"time"
 
@@ -235,5 +236,46 @@ func TestNewOrchestrator_NormalisesWorkerCount(t *testing.T) {
 	}
 	if o.config.WorkerCount < 1 {
 		t.Errorf("WorkerCount=%d, want >= 1", o.config.WorkerCount)
+	}
+}
+
+func TestOrchestrator_StatsTrackCompleteness(t *testing.T) {
+	o, err := NewOrchestrator(DefaultConfig(), nil, "test-model")
+	if err != nil {
+		t.Fatalf("NewOrchestrator: %v", err)
+	}
+	if s := o.Stats(); s.Attempted != 0 || s.Failed != 0 {
+		t.Fatalf("fresh orchestrator has stats %+v, want zeros", s)
+	}
+	// Simulate results arriving across several vulnerability types. errorTracker
+	// is reset per type, so these counters must survive that reset.
+	o.recordAnalysisOutcome(true)
+	o.recordAnalysisOutcome(false)
+	o.errorTracker = NewErrorTracker(10) // per-type reset
+	o.recordAnalysisOutcome(true)
+	o.recordAnalysisOutcome(false)
+
+	s := o.Stats()
+	if s.Attempted != 4 || s.Failed != 2 {
+		t.Errorf("Stats() = %+v, want Attempted=4 Failed=2", s)
+	}
+}
+
+func TestOrchestrator_StatsConcurrentSafe(t *testing.T) {
+	o, err := NewOrchestrator(DefaultConfig(), nil, "test-model")
+	if err != nil {
+		t.Fatalf("NewOrchestrator: %v", err)
+	}
+	var wg sync.WaitGroup
+	for i := 0; i < 50; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			o.recordAnalysisOutcome(i%2 == 0)
+		}(i)
+	}
+	wg.Wait()
+	if s := o.Stats(); s.Attempted != 50 || s.Failed != 25 {
+		t.Errorf("Stats() = %+v, want Attempted=50 Failed=25", s)
 	}
 }
