@@ -1,12 +1,12 @@
 # DeepGuard
 
 [![CI](https://github.com/nedaZarei/DeepGuard/actions/workflows/ci.yml/badge.svg)](https://github.com/nedaZarei/DeepGuard/actions/workflows/ci.yml)
-[![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://go.dev/)
+[![Go Version](https://img.shields.io/badge/Go-1.24+-00ADD8?style=flat&logo=go)](https://go.dev/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **AI-powered static vulnerability scanner for multi-language codebases**
 
-DeepGuard is a Go-based security scanner that detects vulnerabilities in JavaScript/TypeScript, Python, Java, and C/C++ projects. It combines Tree-sitter AST parsing with BM25 knowledge-base retrieval and GPT-4o analysis to produce structured, line-level vulnerability reports.
+DeepGuard is a Go-based security scanner that detects vulnerabilities in JavaScript/TypeScript, Python, Java, and C/C++ projects. It combines Tree-sitter AST parsing with BM25 knowledge-base retrieval and LLM analysis to produce structured, line-level vulnerability reports.
 
 > This tool was developed as a Bachelor's thesis prototype at Amirkabir University of Technology (AUT).
 > Supervisor: Dr. Hamidreza Shahriari.
@@ -28,7 +28,7 @@ File Discovery → Framework Detection → AST Parsing (Tree-sitter)
 3. **AST Parsing** — Tree-sitter parses each file into a syntax tree
 4. **Function Chunking** — extracts function-level code chunks with absolute line numbers
 5. **BM25 Retrieval** — queries a local Bleve index to find relevant KB entries per chunk per vuln type
-6. **LLM Analysis** — sends each (chunk, vuln-type, KB context) triple to GPT-4o with a structured prompt; 13 templates × N chunks in parallel across 5 workers
+6. **LLM Analysis** — sends each (chunk, vuln-type, KB context) triple to the configured LLM with a structured prompt; 13 templates × N chunks in parallel across 5 workers
 7. **Post-processing** — applies confidence threshold, inline suppression, deduplication, and writes the JSON report
 
 ---
@@ -36,8 +36,8 @@ File Discovery → Framework Detection → AST Parsing (Tree-sitter)
 ## Quick Start
 
 ```bash
-# 1. Set your OpenAI API key
-export OPENAI_API_KEY=sk-...
+# 1. Set your API key
+export DEEPGUARD_OPENAI_API_KEY=sk-...
 
 # 2. Build DeepGuard (CGO required for Tree-sitter)
 CGO_ENABLED=1 go build -o deepguard ./cmd/deepguard
@@ -71,9 +71,9 @@ Scan complete!
 
 ### Prerequisites
 
-- **Go 1.21+**
+- **Go 1.24+**
 - **GCC or Clang** (CGO is required for Tree-sitter)
-- **OpenAI API key** ([platform.openai.com/api-keys](https://platform.openai.com/api-keys))
+- **API key** for OpenAI ([platform.openai.com/api-keys](https://platform.openai.com/api-keys)) or any OpenAI-compatible provider
 
 ### Build from Source
 
@@ -86,7 +86,7 @@ CGO_ENABLED=1 go build -o deepguard ./cmd/deepguard
 ```
 
 **macOS:** `xcode-select --install` installs the required compiler.  
-**Linux:** `sudo apt-get install build-essential golang-1.21`
+**Linux:** `sudo apt-get install build-essential`, then install Go from [go.dev/dl](https://go.dev/dl/)
 
 ---
 
@@ -126,6 +126,7 @@ Priority order: **CLI flags → environment variables → config file → defaul
   --output ./reports \              # default: ./reports/
   --languages js,ts \               # default: js,ts,python,java
   --confidence-threshold 0.5 \      # default: 0.5
+  --workers 5 \                     # default: 5; lower for rate-limited providers
   --verbose
 ```
 
@@ -136,7 +137,7 @@ scan_path: "./src"
 output_dir: "./reports/"
 languages: [js, ts]
 openai_model: "gpt-4o"        # primary model
-budget_cap: 5.0               # USD; switches to gpt-4o-mini at 60% of cap
+budget_cap: 5.0               # USD; scan stops at this spend
 confidence_threshold: 0.5
 verbose: false
 ```
@@ -144,14 +145,14 @@ verbose: false
 ### Environment variables
 
 ```bash
-export OPENAI_API_KEY=sk-...
+export DEEPGUARD_OPENAI_API_KEY=sk-...
 export DEEPGUARD_OPENAI_MODEL=gpt-4o-mini
 export DEEPGUARD_BUDGET_CAP=5.0
 export DEEPGUARD_CONFIDENCE_THRESHOLD=0.7
 export DEEPGUARD_VERBOSE=true
 
-# Optional: override the API endpoint (any OpenAI-compatible provider)
-# export DEEPGUARD_OPENAI_BASE_URL=https://api.gapgpt.app/v1
+# Optional: any OpenAI-compatible provider, e.g. a local Ollama server
+# export DEEPGUARD_OPENAI_BASE_URL=http://localhost:11434/v1
 ```
 
 ---
@@ -220,8 +221,8 @@ DeepGuard includes a `FallbackManager` that monitors cumulative spend and switch
 
 | Phase | Model | Trigger |
 |-------|-------|---------|
-| Start | `gpt-4o` | — |
-| Approaching cap | `gpt-4o-mini` | cost > 60% of `budget_cap` |
+| Start | configured `openai_model` | — |
+| Fallback (only if the model is `gpt-4o`) | `gpt-4o-mini` | cost > $3.00 |
 | Hard stop | scan terminates | cost ≥ `budget_cap` |
 
 **Observed costs on benchmark data:**
@@ -272,7 +273,7 @@ Evaluated on two datasets:
 
 ### JS/TS SQLi benchmark (`clean-bench-v3`)
 
-42 hand-labelled SQL injection instances across 8 TypeScript files, compared against SonarQube and Semgrep.
+42 hand-labelled SQL injection instances across 8 JavaScript/TypeScript files, compared against SonarQube and Semgrep.
 
 | Tool | TP | FP | FN | Precision | Recall | F1 |
 |------|----|----|-----|-----------|--------|----|
@@ -284,11 +285,11 @@ Evaluated on two datasets:
 
 ### DVNA (real-world Node.js app)
 
-5 CVEs from the Damn Vulnerable Node Application, type-constrained evaluation.
+5 documented vulnerabilities in the Damn Vulnerable Node Application.
 
 | Metric | Value |
 |--------|-------|
-| CVE recall (type-agnostic) | 5/5 = 1.000 |
+| Recall (type-agnostic) | 5/5 = 1.000 |
 | Type-constrained TP | 4 |
 | Type-constrained FP | 19 |
 | Type-constrained FN | 1 |
@@ -313,14 +314,14 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: '1.24'
 
       - name: Build DeepGuard
         run: CGO_ENABLED=1 go build -o deepguard ./cmd/deepguard
 
       - name: Run Security Scan
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          DEEPGUARD_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           DEEPGUARD_BUDGET_CAP: 3.0
         run: ./deepguard scan --path . --languages js,ts
 
@@ -348,7 +349,7 @@ deep-guard/
 │   ├── kb/                 # Knowledge base: schema, Bleve index, 19 KB entries
 │   ├── llm/                # OpenAI client, prompt templates (13 vuln types)
 │   ├── logger/             # Structured zerolog wrapper
-│   ├── orchestrator/       # Worker pool (5 workers), per-type analysis coordinator
+│   ├── orchestrator/       # Worker pool (5 workers by default), per-type analysis coordinator
 │   ├── parser/             # Tree-sitter parser (JS/TS/Python/Java/C/C++)
 │   ├── rag/                # BM25 retriever (Bleve), result caching
 │   ├── redactor/           # Secret detection and redaction before LLM calls
@@ -357,7 +358,7 @@ deep-guard/
 │   └── suppression/        # deepguard:ignore comment parser
 ├── scripts/
 │   ├── smoke-test.sh               # Pattern-based smoke tests (no API required)
-│   ├── sonar_comparison.py         # SonarQube vs DeepGuard comparison
+│   ├── compare_sonar.py            # SonarQube vs DeepGuard comparison
 │   ├── codexglue_evaluation.py     # CodeXGLUE C/C++ defect detection evaluation
 │   └── scalability.py              # Scalability metrics across repo sizes
 ├── test-samples/           # Labelled vulnerable code for evaluation
@@ -372,13 +373,15 @@ deep-guard/
 
 ## Troubleshooting
 
-**`OPENAI_API_KEY not set`** — `export OPENAI_API_KEY=sk-...`
+**`openai_api_key is required`** — `export DEEPGUARD_OPENAI_API_KEY=sk-...`
 
 **`CGO is not enabled`** — prefix your build command with `CGO_ENABLED=1`
 
 **`gcc: command not found`** — macOS: `xcode-select --install` · Linux: `sudo apt-get install build-essential`
 
 **High false positive count** — raise the confidence threshold: `--confidence-threshold 0.7`
+
+**Rate-limit errors (429) on free tiers** — lower `--workers` and set `DEEPGUARD_MIN_REQUEST_INTERVAL_MS` (e.g. `12000`)
 
 **Budget cap exceeded before scan finishes** — increase cap: `export DEEPGUARD_BUDGET_CAP=10.0`, or narrow scope with `--languages js,ts`
 
@@ -388,10 +391,10 @@ deep-guard/
 
 | Component | Library |
 |-----------|---------|
-| Language | Go 1.21+ |
+| Language | Go 1.24+ |
 | AST parsing | [Tree-sitter](https://tree-sitter.github.io/) (go-tree-sitter) |
 | Full-text search | [Bleve](https://blevesearch.com/) (BM25) |
-| LLM | OpenAI GPT-4o / GPT-4o-mini |
+| LLM | Any OpenAI-compatible API (default `gpt-4o-mini`) |
 | CLI | [Cobra](https://github.com/spf13/cobra) |
 | Config | [Viper](https://github.com/spf13/viper) |
 | Logging | [zerolog](https://github.com/rs/zerolog) |
