@@ -35,6 +35,9 @@ import time
 import urllib.request
 from pathlib import Path
 
+# urllib's default User-Agent is rejected by Cloudflare in front of some providers
+# (Groq returns 403 "error code: 1010"); identify the client explicitly.
+USER_AGENT = "DeepGuard-research/0.1 (+https://github.com/nedaZarei/DeepGuard)"
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # Same 9 type names as DeepGuard's Python/JS templates, so type-constrained
@@ -104,7 +107,7 @@ def call_api(base_url: str, api_key: str, model: str, messages: list,
     req = urllib.request.Request(
         base_url.rstrip("/") + "/chat/completions",
         data=json.dumps(payload).encode(),
-        headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"},
+        headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}", "User-Agent": USER_AGENT},
         method="POST",
     )
     for attempt in range(retries + 1):

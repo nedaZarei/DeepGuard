@@ -41,6 +41,9 @@ import urllib.request
 from collections import Counter, defaultdict
 
 RV = os.environ.get("RV") or sys.exit("set RV to the Real-Vuln-Benchmark checkout")
+# urllib's default User-Agent is rejected by Cloudflare in front of some providers
+# (Groq returns 403 "error code: 1010"); identify the client explicitly.
+USER_AGENT = "DeepGuard-research/0.1 (+https://github.com/nedaZarei/DeepGuard)"
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 JUDGE_SYSTEM = (
@@ -138,7 +141,7 @@ def call(base_url: str, api_key: str, model: str, system: str, user: str, timeou
                "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
                "response_format": {"type": "json_object"}}
     req = urllib.request.Request(base_url.rstrip("/") + "/chat/completions", data=json.dumps(payload).encode(),
-                                 headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"},
+                                 headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}", "User-Agent": USER_AGENT},
                                  method="POST")
     last = None
     for attempt in range(3):
