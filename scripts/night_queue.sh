@@ -14,7 +14,7 @@ export DEEPGUARD_OPENAI_MODEL="${DEEPGUARD_OPENAI_MODEL:-qwen2.5-coder:7b}"
 export DEEPGUARD_REQUEST_TIMEOUT="${DEEPGUARD_REQUEST_TIMEOUT:-300}"
 export DEEPGUARD_BUDGET_CAP=100
 LOGS="$HOME/Documents/university/deepguard-runs/logs"; mkdir -p "$LOGS"
-STEPS="${STEPS:-wait judge1 judgeM verify1 js variance score}"
+STEPS="${STEPS:-wait zsfix judge1 judgeM verify1 js variance score}"
 PY8="realvuln-pythonssti realvuln-intentionally-vulnerable-python-application realvuln-insecure-web realvuln-dsvw realvuln-python-insecure-app realvuln-vulnerable-api realvuln-vulnerable-tornado-app realvuln-damn-vulnerable-flask-application"
 JS3="realvuln-vuln-node-express realvuln-dvna realvuln-node-api-goat"
 
@@ -28,6 +28,19 @@ if have wait; then
   while pgrep -f zero_shot_baseline.py >/dev/null; do sleep 60; done
 fi
 
+if have zsfix; then
+  step "re-run zero-shot on repos whose report records failed files (timeouts)"
+  for rep in reports/realvuln/zeroshot-qwen7b/realvuln-*/scan.json; do
+    repo=$(basename "$(dirname "$rep")")
+    failed=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['scan_metadata']['analysis']['failed'])" "$rep" 2>/dev/null || echo 0)
+    if [ "${failed:-0}" != "0" ]; then
+      echo "  $repo: $failed failed file(s) -> re-running with longer timeout and output cap"
+      rm -rf "reports/realvuln/zeroshot-qwen7b/$repo" "$RV/scan-results/$repo/zeroshot-qwen7b"
+      DEEPGUARD_REQUEST_TIMEOUT=900 SLUG=zeroshot-qwen7b ./scripts/realvuln_zeroshot.sh "$repo" > "$LOGS/zsfix-$repo.log" 2>&1
+      grep -E "Done|FAILED|skipped|^zeroshot" "$LOGS/zsfix-$repo.log" | tail -3
+    fi
+  done
+fi
 if have judge1; then
   step "judge, single-select, on deepguard-qwen7b"
   python3 scripts/realvuln_judge.py --slug deepguard-qwen7b --out-slug deepguard-qwen7b-judge1 \
