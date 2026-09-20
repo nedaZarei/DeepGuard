@@ -38,14 +38,14 @@ for repo in "${REPOS[@]}"; do
   src="$RV/repos/$repo"
   [ -d "$src" ] || { echo "skip $repo (not cloned)"; continue; }
   scan_out="$OUT/$repo"; mkdir -p "$scan_out"
-  report="$(ls -t "$scan_out"/scan-*.json 2>/dev/null | head -1)"
+  report="$(ls -t "$scan_out"/scan-*.json 2>/dev/null | head -1 || true)"
   if [ -n "$report" ] && [ "${FORCE:-0}" != "1" ]; then
     echo "=== $repo === (report exists, skipping scan; FORCE=1 to redo)"
   else
     echo "=== $repo ==="
     DEEPGUARD_BUDGET_CAP="$BUDGET" "$ROOT/deepguard" scan --path "$src" --languages "${LANGS:-python}" --output "$scan_out" \
       2>&1 | grep -E "Extracted|Findings:|Cost:|Duration:|ERR|line snapping" || true
-    report="$(ls -t "$scan_out"/scan-*.json 2>/dev/null | head -1)"
+    report="$(ls -t "$scan_out"/scan-*.json 2>/dev/null | head -1 || true)"
   fi
   [ -n "$report" ] || { echo "no report for $repo"; continue; }
   if ! python3 "$ROOT/scripts/realvuln_adapter.py" "$report" "$src" "$RV/scan-results/$repo/$SLUG/results.json"; then
