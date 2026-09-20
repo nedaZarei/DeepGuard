@@ -11,6 +11,16 @@
     "realvuln-vulnerable-tornado-app"
   ],
   "line_tolerance": 10,
+  "incomplete_scans": {
+    "realvuln-damn-vulnerable-flask-application": "unknown (scan predates completeness tracking)",
+    "realvuln-dsvw": "unknown (scan predates completeness tracking)",
+    "realvuln-insecure-web": "unknown (scan predates completeness tracking)",
+    "realvuln-intentionally-vulnerable-python-application": "unknown (scan predates completeness tracking)",
+    "realvuln-python-insecure-app": "unknown (scan predates completeness tracking)",
+    "realvuln-pythonssti": "unknown (scan predates completeness tracking)",
+    "realvuln-vulnerable-api": "unknown (scan predates completeness tracking)",
+    "realvuln-vulnerable-tornado-app": "unknown (scan predates completeness tracking)"
+  },
   "full": {
     "sonarqube": {
       "TP": 3.0,
@@ -20,7 +30,8 @@
       "precision": 0.75,
       "recall": 0.0316,
       "f1": 0.0606,
-      "f2_score": 3.9
+      "f2_score": 3.9,
+      "repos_covered": 8
     },
     "semgrep": {
       "TP": 18.0,
@@ -30,7 +41,8 @@
       "precision": 0.2903,
       "recall": 0.1895,
       "f1": 0.2293,
-      "f2_score": 20.4
+      "f2_score": 20.4,
+      "repos_covered": 8
     },
     "snyk": {
       "TP": 24.0,
@@ -40,7 +52,8 @@
       "precision": 0.6,
       "recall": 0.2526,
       "f1": 0.3556,
-      "f2_score": 28.6
+      "f2_score": 28.6,
+      "repos_covered": 8
     },
     "gemma4-31b-agentic-v1": {
       "TP": 43.0,
@@ -50,7 +63,8 @@
       "precision": 0.9348,
       "recall": 0.4526,
       "f1": 0.6099,
-      "f2_score": 50.5
+      "f2_score": 50.5,
+      "repos_covered": 8
     },
     "gemini-3.5-flash-agentic-v1": {
       "TP": 25.0,
@@ -60,7 +74,8 @@
       "precision": 0.8427,
       "recall": 0.3676,
       "f1": 0.5119,
-      "f2_score": 41.4
+      "f2_score": 41.4,
+      "repos_covered": 7
     },
     "claude-opus-5-cc-agentic-v1": {
       "TP": 77.0,
@@ -70,7 +85,8 @@
       "precision": 0.5923,
       "recall": 0.8105,
       "f1": 0.6844,
-      "f2_score": 75.5
+      "f2_score": 75.5,
+      "repos_covered": 8
     },
     "gpt-5.5-agentic-v1": {
       "TP": 61.7,
@@ -80,7 +96,8 @@
       "precision": 0.8409,
       "recall": 0.6491,
       "f1": 0.7327,
-      "f2_score": 68.0
+      "f2_score": 68.0,
+      "repos_covered": 8
     },
     "deepguard-qwen7b @conf>=0.5": {
       "TP": 41.0,
@@ -90,7 +107,8 @@
       "precision": 0.1559,
       "recall": 0.4316,
       "f1": 0.2291,
-      "f2_score": 31.9
+      "f2_score": 31.9,
+      "repos_covered": 8
     },
     "deepguard-qwen7b_per_repo": {
       "realvuln-damn-vulnerable-flask-application": {
@@ -142,7 +160,8 @@
       "precision": 0.164,
       "recall": 0.4316,
       "f1": 0.2377,
-      "f2_score": 32.5
+      "f2_score": 32.5,
+      "repos_covered": 8
     },
     "deepguard-qwen7b @conf>=0.8": {
       "TP": 40.0,
@@ -152,7 +171,8 @@
       "precision": 0.1835,
       "recall": 0.4211,
       "f1": 0.2556,
-      "f2_score": 33.4
+      "f2_score": 33.4,
+      "repos_covered": 8
     },
     "deepguard-qwen7b @conf>=0.9": {
       "TP": 34.0,
@@ -162,7 +182,8 @@
       "precision": 0.2012,
       "recall": 0.3579,
       "f1": 0.2576,
-      "f2_score": 31.0
+      "f2_score": 31.0,
+      "repos_covered": 8
     }
   },
   "in_scope": {
@@ -174,7 +195,8 @@
       "precision": 1.0,
       "recall": 0.0588,
       "f1": 0.1111,
-      "f2_score": 7.2
+      "f2_score": 7.2,
+      "repos_covered": 8
     },
     "semgrep": {
       "TP": 13.0,
@@ -184,7 +206,8 @@
       "precision": 0.3421,
       "recall": 0.2549,
       "f1": 0.2921,
-      "f2_score": 26.9
+      "f2_score": 26.9,
+      "repos_covered": 8
     },
     "snyk": {
       "TP": 18.0,
@@ -194,7 +217,8 @@
       "precision": 0.5625,
       "recall": 0.3529,
       "f1": 0.4337,
-      "f2_score": 38.1
+      "f2_score": 38.1,
+      "repos_covered": 8
     },
     "gemma4-31b-agentic-v1": {
       "TP": 28.0,
@@ -204,7 +228,8 @@
       "precision": 0.6667,
       "recall": 0.549,
       "f1": 0.6022,
-      "f2_score": 56.9
+      "f2_score": 56.9,
+      "repos_covered": 8
     },
     "gemini-3.5-flash-agentic-v1": {
       "TP": 15.0,
@@ -214,7 +239,8 @@
       "precision": 0.5921,
       "recall": 0.4054,
       "f1": 0.4813,
-      "f2_score": 43.3
+      "f2_score": 43.3,
+      "repos_covered": 7
     },
     "claude-opus-5-cc-agentic-v1": {
       "TP": 40.0,
@@ -224,7 +250,8 @@
       "precision": 0.4706,
       "recall": 0.7843,
       "f1": 0.5882,
-      "f2_score": 69.2
+      "f2_score": 69.2,
+      "repos_covered": 8
     },
     "gpt-5.5-agentic-v1": {
       "TP": 34.3,
@@ -234,7 +261,8 @@
       "precision": 0.6358,
       "recall": 0.6732,
       "f1": 0.654,
-      "f2_score": 66.5
+      "f2_score": 66.5,
+      "repos_covered": 8
     },
     "deepguard-qwen7b @conf>=0.5": {
       "TP": 40.0,
@@ -244,7 +272,8 @@
       "precision": 0.1521,
       "recall": 0.7843,
       "f1": 0.2548,
-      "f2_score": 42.8
+      "f2_score": 42.8,
+      "repos_covered": 8
     },
     "deepguard-qwen7b_per_repo": {
       "realvuln-damn-vulnerable-flask-application": {
@@ -296,7 +325,8 @@
       "precision": 0.16,
       "recall": 0.7843,
       "f1": 0.2658,
-      "f2_score": 44.1
+      "f2_score": 44.1,
+      "repos_covered": 8
     },
     "deepguard-qwen7b @conf>=0.8": {
       "TP": 39.0,
@@ -306,7 +336,8 @@
       "precision": 0.1789,
       "recall": 0.7647,
       "f1": 0.29,
-      "f2_score": 46.2
+      "f2_score": 46.2,
+      "repos_covered": 8
     },
     "deepguard-qwen7b @conf>=0.9": {
       "TP": 34.0,
@@ -316,7 +347,8 @@
       "precision": 0.2012,
       "recall": 0.6667,
       "f1": 0.3091,
-      "f2_score": 45.6
+      "f2_score": 45.6,
+      "repos_covered": 8
     }
   }
 }

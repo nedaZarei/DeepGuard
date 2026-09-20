@@ -1,0 +1,48 @@
+{
+  "slug": "deepguard-qwen7b",
+  "gt": "in_scope",
+  "repos": [
+    "realvuln-damn-vulnerable-flask-application",
+    "realvuln-dsvw",
+    "realvuln-insecure-web",
+    "realvuln-intentionally-vulnerable-python-application",
+    "realvuln-python-insecure-app",
+    "realvuln-pythonssti",
+    "realvuln-vulnerable-api",
+    "realvuln-vulnerable-tornado-app"
+  ],
+  "TP": 40,
+  "FP": 223,
+  "FN": 11,
+  "taxonomy": {
+    "no_nearby_gt": 16,
+    "wrong_type": 156,
+    "duplicate_site": 31,
+    "fp_trap": 7,
+    "gt_claimed_or_far": 8,
+    "line_off_11_30": 5
+  },
+  "wrong_type_also_line_off": 28,
+  "wrong_type_pairs": {
+    "said xss, GT sql_injection": 13,
+    "said CWE-327, GT reflected_xss": 8,
+    "said CWE-327, GT sql_injection": 8,
+    "said missing_auth, GT sql_injection": 7,
+    "said path_traversal, GT reflected_xss": 6,
+    "said sql_injection, GT reflected_xss": 6,
+    "said path_traversal, GT sql_injection": 6,
+    "said ssrf, GT sql_injection": 5,
+    "said ssrf, GT path_traversal": 5,
+    "said CWE-327, GT path_traversal": 5,
+    "said command_injection, GT sql_injection": 4,
+    "said sql_injection, GT path_traversal": 4,
+    "said missing_auth, GT path_traversal": 4,
+    "said xss, GT path_traversal": 4,
+    "said ssrf, GT reflected_xss": 3,
+    "said xss, GT missing_authentication": 3,
+    "said command_injection, GT reflected_xss": 3,
+    "said missing_auth, GT reflected_xss": 3,
+    "said missing_auth, GT insecure_deserialization": 3,
+    "said CWE-327, GT insecure_deserialization": 3
+  }
+}

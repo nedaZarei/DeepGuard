@@ -1,0 +1,35 @@
+{
+  "dataset": "python-multi-vuln (29 labels, +-20 lines, type-constrained)",
+  "pipeline": "sweep + quote line-snap (2026-09-20 build)",
+  "model": "qwen2.5-coder:7b local",
+  "runs": [
+    {
+      "run": 1,
+      "P": 0.138,
+      "R": 0.862,
+      "F1": 0.238
+    },
+    {
+      "run": 2,
+      "P": 0.149,
+      "R": 0.862,
+      "F1": 0.254
+    },
+    {
+      "run": 3,
+      "P": 0.15,
+      "R": 0.862,
+      "F1": 0.255
+    }
+  ],
+  "mean": {
+    "P": 0.146,
+    "R": 0.862,
+    "F1": 0.249
+  },
+  "sd": {
+    "P": 0.005,
+    "R": 0.0,
+    "F1": 0.008
+  }
+}
