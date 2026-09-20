@@ -3,15 +3,15 @@
   "line_tolerance": 10,
   "full": {
     "semgrep": {
-      "repos": 26,
-      "TP": 134.0,
-      "FP": 481.0,
-      "FN": 569.0,
+      "repos": 50,
+      "TP": 220.0,
+      "FP": 1444.0,
+      "FN": 1018.0,
       "TN": 116.0,
-      "precision": 0.2179,
-      "recall": 0.1906,
-      "f1": 0.2033,
-      "f2_score": 19.6
+      "precision": 0.1322,
+      "recall": 0.1777,
+      "f1": 0.1516,
+      "f2_score": 16.6
     },
     "snyk": {
       "repos": 25,
@@ -82,15 +82,15 @@
   },
   "in_scope": {
     "semgrep": {
-      "repos": 26,
-      "TP": 87.0,
-      "FP": 181.0,
-      "FN": 267.0,
+      "repos": 50,
+      "TP": 155.0,
+      "FP": 621.0,
+      "FN": 467.0,
       "TN": 104.0,
-      "precision": 0.3246,
-      "recall": 0.2458,
-      "f1": 0.2797,
-      "f2_score": 25.8
+      "precision": 0.1997,
+      "recall": 0.2492,
+      "f1": 0.2217,
+      "f2_score": 23.7
     },
     "snyk": {
       "repos": 25,

@@ -30,7 +30,21 @@ IN_SCOPE = {
     "session_fixation", "session_management", "session_hijacking", "insecure_session",
     "weak_cryptography", "weak_hash", "insecure_random", "weak_prng",
     "insecure_randomness", "plaintext_password_storage",
+    # RealVuln v3 (JS/TS repos) vocabulary, mapped to the same 9 DeepGuard templates:
+    "cross_site_scripting",                                   # xss
+    "os_command_injection",                                   # command_injection
+    "unsafe_deserialization",                                 # insecure_deserialization
+    "unsafe_file_upload",                                     # path_traversal (as unrestricted_file_upload)
+    "broken_object_level_authorization", "incorrect_authorization",
+    "client_asserted_authorization_bypass", "authentication_proof_not_verified",
+    "jwt_signature_verification_bypass", "insufficient_session_invalidation",
+    "missing_session_expiration",                             # auth_issue
+    "weak_password_hashing", "predictable_security_token", "plaintext_sensitive_storage",  # crypto_issue
 }
+# Deliberately out of scope (no DeepGuard template): hardcoded_credential(s),
+# hardcoded_cryptographic_key, csrf, open_redirect, prototype_pollution, ssti,
+# information/error disclosure, cookie flags, rate limiting, mass_assignment,
+# log/xpath injection. Reported under the "full" ground truth only.
 BASELINES = ["semgrep", "snyk", "sonarqube", "gpt-5.5-agentic-v1",
              "claude-opus-5-cc-agentic-v1", "gemini-3.5-flash-agentic-v1", "gemma4-31b-agentic-v1"]
 
