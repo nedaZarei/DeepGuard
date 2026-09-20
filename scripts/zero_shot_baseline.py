@@ -1,69 +1,56 @@
 #!/usr/bin/env python3
 """
-Zero-shot GPT-4 baseline for the JS/TS SQL injection benchmark.
+Zero-shot baseline: the model reads each file directly, with no pipeline.
 
-Sends each benchmark file directly to GPT-4 with a minimal security review
-prompt — NO KB retrieval, NO RAG context, NO framework-aware hints.
+No AST chunking, no KB retrieval / RAG, no framework hints, no per-type
+templates — one minimal prompt per file. This is the control that answers:
+  "Does DeepGuard's architecture add value over simply asking the model?"
 
-This is the ablation study that answers:
-  "Does Deep-Guard's architecture (AST chunking + KB/RAG + framework hints)
-   add value over simply asking GPT-4 to review the code?"
+Works against any OpenAI-compatible endpoint (OpenAI, GapGPT, Groq, local
+Ollama) and any language DeepGuard scans. Output is a DeepGuard-shaped scan
+report so the same evaluation scripts (evaluation_report.py,
+realvuln_adapter.py) consume it unchanged.
 
 Usage:
-  # Annotated benchmark (VULN comments visible — upper-bound comparison):
-  DEEPGUARD_OPENAI_API_KEY=<key> python3 scripts/zero_shot_baseline.py
-  python3 scripts/evaluation_report.py --results test-samples/js-ts-sqli/zero-shot-results.json
-
-  # CLEAN benchmark (annotation-stripped — fair comparison, no comment leakage):
+  # JS/TS benchmark (thesis-era usage, unchanged):
   DEEPGUARD_OPENAI_API_KEY=<key> python3 scripts/zero_shot_baseline.py \\
       --bench-dir test-samples/js-ts-sqli-clean
-  python3 scripts/evaluation_report.py \\
-      --results test-samples/js-ts-sqli-clean/zero-shot-results.json \\
-      --golden  test-samples/js-ts-sqli-clean/expected-findings.json
 
-NOTE on benchmark contamination:
-  The original js-ts-sqli files contain inline annotations (// VULN: SQL Injection,
-  // Line 19: Critical SQLi) that label every vulnerability for human readers.
-  Zero-shot GPT-4 reads these comments and scores F1≈0.99 on the annotated files —
-  NOT because of code analysis but because the comments name the vulnerabilities.
-  Use --bench-dir js-ts-sqli-clean for a contamination-free comparison.
+  # A RealVuln repo with the local 7B model:
+  DEEPGUARD_OPENAI_BASE_URL=http://localhost:11434/v1 DEEPGUARD_OPENAI_API_KEY=ollama \\
+  python3 scripts/zero_shot_baseline.py --bench-dir ~/Real-Vuln-Benchmark/repos/realvuln-dsvw \\
+      --lang py --model qwen2.5-coder:7b --output reports/realvuln/zeroshot-qwen7b/realvuln-dsvw/scan.json
+
+NOTE on benchmark contamination (JS/TS): the original js-ts-sqli files carry
+inline "// VULN:" annotations; use js-ts-sqli-clean for a fair comparison.
 """
+from __future__ import annotations
 
 import argparse
 import json
 import os
+import re
 import sys
 import time
+import urllib.request
 from pathlib import Path
 
-REPO_ROOT  = Path(__file__).parent.parent
+REPO_ROOT = Path(__file__).resolve().parent.parent
 
-_parser = argparse.ArgumentParser(description="Zero-shot GPT-4 baseline")
-_parser.add_argument("--bench-dir", default=None,
-                     help="Benchmark directory (default: test-samples/js-ts-sqli)")
-_args, _ = _parser.parse_known_args()
-
-if _args.bench_dir:
-    BENCH_DIR = Path(_args.bench_dir)
-    if not BENCH_DIR.is_absolute():
-        BENCH_DIR = REPO_ROOT / BENCH_DIR
-else:
-    BENCH_DIR = REPO_ROOT / "test-samples/js-ts-sqli"
-
-OUTPUT = BENCH_DIR / "zero-shot-results.json"
-
-API_URL = "https://api.gapgpt.app/v1/chat/completions"
-API_KEY = os.environ.get("DEEPGUARD_OPENAI_API_KEY") or os.environ.get("OPENAI_API_KEY", "")
-MODEL   = "gpt-4o"
-
-# Exactly the same type vocabulary as Deep-Guard — fair apples-to-apples
+# Same 9 type names as DeepGuard's Python/JS templates, so type-constrained
+# scoring and the RealVuln adapter's type->CWE map apply to both systems alike.
 ALLOWED_TYPES = (
-    "sql_injection command_injection path_traversal ssrf xss "
-    "crypto_issue insecure_deserialization insecure_secret xxe_injection"
+    "sql_injection xss path_traversal insecure_deserialization auth_issue "
+    "crypto_issue command_injection ssrf xxe_injection"
 )
 
-# ── Prompts ───────────────────────────────────────────────────────────────────
-# Intentionally minimal — no KB context, no framework hints, no examples.
+LANG_EXT = {"js": {".js", ".ts"}, "py": {".py"}, "java": {".java"}}
+SKIP_DIRS = {"node_modules", "venv", ".venv", "site-packages", "migrations",
+             "__pycache__", ".git", "dist", "build", "tests", "test"}
+
+# Rough guard so a whole-file prompt fits the serving context (chars/4 ~ tokens).
+MAX_PROMPT_TOKENS_DEFAULT = 6000
+
 SYSTEM = (
     "You are a security code reviewer. "
     "Identify security vulnerabilities in code and return structured JSON findings."
@@ -80,7 +67,7 @@ Schema:
       "type": "<one of: {types}>",
       "line": <integer line number where the vulnerability occurs>,
       "severity": "<critical|high|medium|low>",
-      "confidence": <float 0.0–1.0>,
+      "confidence": <float 0.0-1.0>,
       "message": "<concise description of the vulnerability>"
     }}
   ]
@@ -95,131 +82,192 @@ File: {filename}
 def number_lines(code: str) -> str:
     lines = code.splitlines()
     width = len(str(len(lines)))
-    return "\n".join(f"{i+1:{width}d}: {line}" for i, line in enumerate(lines))
+    return "\n".join(f"{i + 1:{width}d}: {line}" for i, line in enumerate(lines))
 
 
-def call_api(messages: list, retries: int = 2) -> dict:
-    import urllib.request
-    body = json.dumps({
-        "model": MODEL,
-        "messages": messages,
-        "temperature": 0,
-        "response_format": {"type": "json_object"},
-    }).encode()
+def price(model: str, pt: int, ct: int) -> float:
+    m = model.lower()
+    if m.startswith("gpt-4o-mini"):
+        return pt * 0.15e-6 + ct * 0.60e-6
+    if m.startswith("gpt-4o"):
+        return pt * 2.5e-6 + ct * 10e-6
+    return 0.0  # open-weight / local
+
+
+def call_api(base_url: str, api_key: str, model: str, messages: list,
+             timeout: int, retries: int = 2, json_mode: bool = True) -> dict:
+    payload = {"model": model, "messages": messages, "temperature": 0}
+    if json_mode:
+        payload["response_format"] = {"type": "json_object"}
     req = urllib.request.Request(
-        API_URL,
-        data=body,
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {API_KEY}",
-        },
+        base_url.rstrip("/") + "/chat/completions",
+        data=json.dumps(payload).encode(),
+        headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"},
         method="POST",
     )
     for attempt in range(retries + 1):
         try:
-            with urllib.request.urlopen(req, timeout=60) as resp:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
                 return json.loads(resp.read())
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - surface after retries
             if attempt == retries:
                 raise
-            print(f"  retry {attempt+1}: {e}")
-            time.sleep(2)
+            print(f"  retry {attempt + 1}: {e}", file=sys.stderr)
+            time.sleep(2 * (attempt + 1))
 
 
-def scan_file(path: Path) -> tuple[list[dict], float]:
-    code = path.read_text(encoding="utf-8")
-    numbered = number_lines(code)
-    user_msg = USER_TMPL.format(
-        types=ALLOWED_TYPES,
-        filename=path.name,
-        numbered_code=numbered,
-    )
-    resp = call_api([
-        {"role": "system", "content": SYSTEM},
-        {"role": "user",   "content": user_msg},
-    ])
-    usage = resp.get("usage", {})
-    pt = usage.get("prompt_tokens", 0)
-    ct = usage.get("completion_tokens", 0)
-    # gpt-4o pricing: $5/1M input, $15/1M output
-    cost = pt * 5e-6 + ct * 15e-6
-
-    raw = resp["choices"][0]["message"]["content"]
+def parse_findings(raw: str) -> dict:
     try:
-        data = json.loads(raw)
+        return json.loads(raw)
     except json.JSONDecodeError:
-        # strip accidental markdown fences
-        import re
-        cleaned = re.sub(r"```[a-z]*\n?", "", raw).strip()
-        data = json.loads(cleaned)
+        cleaned = re.sub(r"```[a-zA-Z]*\n?", "", raw).strip()
+        start, end = cleaned.find("{"), cleaned.rfind("}")
+        if start >= 0 and end > start:
+            return json.loads(cleaned[start:end + 1])
+        raise
+
+
+def iter_files(root: Path, exts: set) -> list:
+    out = []
+    for p in sorted(root.rglob("*")):
+        if not p.is_file() or p.suffix not in exts:
+            continue
+        if any(part in SKIP_DIRS for part in p.relative_to(root).parts[:-1]):
+            continue
+        out.append(p)
+    return out
+
+
+def scan_file(path: Path, args) -> tuple[list, float, str | None]:
+    code = path.read_text(encoding="utf-8", errors="replace")
+    user_msg = USER_TMPL.format(types=ALLOWED_TYPES, filename=path.name,
+                                numbered_code=number_lines(code))
+    est_tokens = (len(user_msg) + len(SYSTEM)) // 4
+    if est_tokens > args.max_prompt_tokens:
+        return [], 0.0, f"skipped: ~{est_tokens} tokens > limit {args.max_prompt_tokens}"
+
+    resp = call_api(args.base_url, args.api_key, args.model,
+                    [{"role": "system", "content": SYSTEM},
+                     {"role": "user", "content": user_msg}],
+                    timeout=args.timeout, json_mode=not args.no_json_mode)
+    usage = resp.get("usage", {}) or {}
+    cost = price(args.model, usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0))
+    raw = resp["choices"][0]["message"]["content"] or ""
+    data = parse_findings(raw)
 
     findings = []
-    for f in data.get("findings", []):
+    for f in data.get("findings", []) or []:
+        try:
+            line = int(f.get("line", 0))
+        except (TypeError, ValueError):
+            line = 0
+        try:
+            conf = float(f.get("confidence", 0.5))
+        except (TypeError, ValueError):
+            conf = 0.5
         findings.append({
-            "file": str(path),
-            "line": int(f.get("line", 0)),
-            "type": f.get("type", "unknown"),
-            "severity": f.get("severity", "medium"),
-            "confidence": float(f.get("confidence", 0.5)),
-            "message": f.get("message", ""),
+            "file": str(path.resolve()),
+            "line": line,
+            "type": str(f.get("type", "unknown")),
+            "severity": str(f.get("severity", "medium")).lower(),
+            "confidence": conf,
+            "message": str(f.get("message", "")),
             "recommendation": "",
         })
-    return findings, cost
+    return findings, cost, None
 
 
-def main():
-    if not API_KEY:
-        print("ERROR: set DEEPGUARD_OPENAI_API_KEY", file=sys.stderr)
-        sys.exit(1)
+def main() -> int:
+    ap = argparse.ArgumentParser(description="Zero-shot (no-pipeline) baseline")
+    ap.add_argument("--bench-dir", required=True, help="directory to scan (recursively)")
+    ap.add_argument("--lang", choices=sorted(LANG_EXT), default=None,
+                    help="language to scan; default: infer from files present")
+    ap.add_argument("--model", default=os.environ.get("DEEPGUARD_OPENAI_MODEL", "gpt-4o"))
+    ap.add_argument("--base-url", default=os.environ.get("DEEPGUARD_OPENAI_BASE_URL", "https://api.openai.com/v1"))
+    ap.add_argument("--output", default=None, help="report path (default: <bench-dir>/zero-shot-results.json)")
+    ap.add_argument("--timeout", type=int, default=int(os.environ.get("DEEPGUARD_REQUEST_TIMEOUT", "300")))
+    ap.add_argument("--max-prompt-tokens", type=int, default=MAX_PROMPT_TOKENS_DEFAULT)
+    ap.add_argument("--no-json-mode", action="store_true", help="don't request response_format=json_object")
+    args = ap.parse_args()
 
-    js_ts_files = sorted(
-        p for p in BENCH_DIR.iterdir()
-        if p.suffix in {".js", ".ts"} and p.name != "expected-findings.json"
-    )
-    if not js_ts_files:
-        print(f"ERROR: no JS/TS files found in {BENCH_DIR}", file=sys.stderr)
-        sys.exit(1)
+    args.api_key = os.environ.get("DEEPGUARD_OPENAI_API_KEY") or os.environ.get("OPENAI_API_KEY", "")
+    if not args.api_key:
+        print("ERROR: set DEEPGUARD_OPENAI_API_KEY (any non-empty value for local Ollama)", file=sys.stderr)
+        return 1
 
-    print(f"Zero-shot GPT-4 baseline — {len(js_ts_files)} files, model={MODEL}")
-    print(f"NO KB context · NO RAG · NO framework hints\n")
+    bench = Path(args.bench_dir).expanduser()
+    if not bench.is_absolute():
+        bench = REPO_ROOT / bench
+    if not bench.is_dir():
+        print(f"ERROR: not a directory: {bench}", file=sys.stderr)
+        return 1
 
-    all_findings: list[dict] = []
-    total_cost = 0.0
+    if args.lang is None:
+        args.lang = next((l for l, e in LANG_EXT.items() if iter_files(bench, e)), "js")
+    files = iter_files(bench, LANG_EXT[args.lang])
+    if not files:
+        print(f"ERROR: no {args.lang} files under {bench}", file=sys.stderr)
+        return 1
 
-    for path in js_ts_files:
-        print(f"  scanning {path.name} ... ", end="", flush=True)
-        findings, cost = scan_file(path)
+    out = Path(args.output).expanduser() if args.output else bench / "zero-shot-results.json"
+    if not out.is_absolute():
+        out = REPO_ROOT / out
+    out.parent.mkdir(parents=True, exist_ok=True)
+
+    print(f"Zero-shot baseline — {len(files)} {args.lang} files, model={args.model} @ {args.base_url}")
+    print("NO chunking · NO KB/RAG · NO framework hints · NO per-type templates\n")
+
+    all_findings, total_cost, failures, started = [], 0.0, [], time.time()
+    for path in files:
+        rel = path.relative_to(bench)
+        print(f"  {rel} ... ", end="", flush=True)
+        try:
+            findings, cost, note = scan_file(path, args)
+        except Exception as e:  # noqa: BLE001 - record and continue
+            failures.append({"file": str(rel), "error": str(e)[:200]})
+            print(f"FAILED ({str(e)[:80]})")
+            continue
+        if note:
+            failures.append({"file": str(rel), "error": note})
+            print(note)
+            continue
         all_findings.extend(findings)
         total_cost += cost
-        print(f"{len(findings)} findings  (${cost:.4f})")
+        print(f"{len(findings)} findings")
+
+    by_sev, by_type = {}, {}
+    for f in all_findings:
+        by_sev[f["severity"]] = by_sev.get(f["severity"], 0) + 1
+        by_type[f["type"]] = by_type.get(f["type"], 0) + 1
 
     report = {
         "scan_metadata": {
-            "target_path": str(BENCH_DIR),
-            "model": MODEL,
-            "mode": "zero_shot_no_kb_no_rag",
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "target_path": str(bench),
+            "languages": [args.lang],
+            "model_used": args.model,
+            "base_url": args.base_url,
+            "mode": "zero_shot_no_pipeline",
             "total_cost": total_cost,
-            "files_scanned": len(js_ts_files),
+            "scan_duration_seconds": round(time.time() - started, 1),
+            "files_scanned": len(files),
+            # Same completeness contract as DeepGuard reports: a partial run must be visible.
+            "analysis": {
+                "attempted": len(files),
+                "failed": len(failures),
+                "complete": not failures,
+                "failures": failures,
+            },
         },
         "findings": all_findings,
-        "summary": {
-            "total_findings": len(all_findings),
-            "by_severity": {},
-            "by_type":     {},
-        },
+        "summary": {"total_findings": len(all_findings), "by_severity": by_sev, "by_type": by_type},
     }
-    for f in all_findings:
-        report["summary"]["by_severity"][f["severity"]] = \
-            report["summary"]["by_severity"].get(f["severity"], 0) + 1
-        report["summary"]["by_type"][f["type"]] = \
-            report["summary"]["by_type"].get(f["type"], 0) + 1
-
-    OUTPUT.write_text(json.dumps(report, indent=2))
-    print(f"\nDone — {len(all_findings)} total findings, cost ${total_cost:.4f}")
-    print(f"Saved → {OUTPUT.relative_to(REPO_ROOT)}")
-    print(f"\nEvaluate with:")
-    print(f"  python3 scripts/evaluation_report.py --results {OUTPUT.relative_to(REPO_ROOT)}")
+    out.write_text(json.dumps(report, indent=2))
+    print(f"\nDone — {len(all_findings)} findings, {len(failures)} failed/skipped files, "
+          f"cost ${total_cost:.4f}, {report['scan_metadata']['scan_duration_seconds']}s")
+    print(f"Saved → {out}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
