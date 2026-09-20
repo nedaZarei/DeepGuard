@@ -66,8 +66,18 @@ Rules:
 - Two candidates that describe the same weakness under different names count as one: keep the more precise.
 - Selecting none is a valid answer.
 
+{selection_rule}
+
 Return exactly:
-{{"selected": ["A", ...] or [], "line": <the single line that best evidences the selected weakness, or null>, "confidence": <0.0-1.0>, "reason": "<one sentence>"}}"""
+{{"selected": {selected_shape}, "line": <integer line number that best evidences the selected weakness, or null>, "confidence": <0.0-1.0>, "reason": "<one sentence>"}}"""
+
+SELECTION_RULES = {
+    "multi": ("Select every candidate that is a real, distinct weakness at this location (usually one).",
+              '["A", ...] or []'),
+    "single": ("Select AT MOST ONE candidate: the one that most precisely names the weakness at this location. "
+               "If two candidates describe the same problem, keep only the more precise one.",
+               '["A"] or []'),
+}
 
 VERIFY_SYSTEM = (
     "You are a senior application-security reviewer. A scanner reported one vulnerability at one "
@@ -110,6 +120,19 @@ def call(base_url: str, api_key: str, model: str, system: str, user: str, timeou
             last = ex
             time.sleep(2 * (attempt + 1))
     raise RuntimeError(f"model call failed: {last}")
+
+
+def parse_line(v) -> int | None:
+    """Accept 14, "14", "14: code", "line 14"; reject anything else."""
+    if isinstance(v, bool):
+        return None
+    if isinstance(v, int):
+        return v
+    if isinstance(v, str):
+        m = re.search(r"\d+", v)
+        if m:
+            return int(m.group())
+    return None
 
 
 def read_lines(repo: str, rel: str) -> list[str] | None:
@@ -174,14 +197,18 @@ def judge_site(site: list[dict], repo: str, args, stats: Counter, log: list) -> 
         by_letter[letter] = r
         cand_lines.append(f"{letter}. {t} (reported at line {r['start']['line']}, "
                           f"confidence {r['extra']['metadata'].get('confidence', '?')}): {r['extra'].get('message', '')[:200]}")
+    rule, shape = SELECTION_RULES[args.select_mode]
     user = JUDGE_USER.format(file=site[0]["path"], lo=lo, hi=hi, site=center, excerpt=exc,
-                             candidates="\n".join(cand_lines))
+                             candidates="\n".join(cand_lines), selection_rule=rule, selected_shape=shape)
     entry = {"repo": repo, "file": site[0]["path"], "site": center, "candidates": {l: vtype(r) for l, r in by_letter.items()}}
     try:
         out = call(args.base_url, args.api_key, args.model, JUDGE_SYSTEM, user, args.timeout)
         stats["judge_calls"] += 1
         sel = [s for s in (out.get("selected") or []) if isinstance(s, str) and s.strip().upper()[:1] in by_letter]
         sel = sorted({s.strip().upper()[:1] for s in sel})
+        if args.select_mode == "single" and len(sel) > 1:
+            stats["single_mode_truncated"] += 1
+            sel = sel[:1]
         entry.update({"selected": sel, "line": out.get("line"), "confidence": out.get("confidence"), "reason": out.get("reason")})
         log.append(entry)
         stats[f"selected_{min(len(sel), 2)}{'plus' if len(sel) >= 2 else ''}"] += 1
@@ -190,8 +217,8 @@ def judge_site(site: list[dict], repo: str, args, stats: Counter, log: list) -> 
             r = dict(by_letter[letter])
             r["extra"] = dict(r["extra"]); r["extra"]["metadata"] = dict(r["extra"]["metadata"])
             r["extra"]["metadata"]["judge"] = {"site": center, "n_candidates": len(by_letter), "reason": out.get("reason")}
-            jl = out.get("line")
-            if isinstance(jl, int) and lo <= jl <= hi and abs(jl - r["start"]["line"]) <= args.window * 2:
+            jl = parse_line(out.get("line"))
+            if jl is not None and lo <= jl <= hi and abs(jl - r["start"]["line"]) <= args.window * 2:
                 r["start"] = {"line": jl, "col": 1}; r["end"] = {"line": jl, "col": 1}
             kept.append(r)
         stats["findings_in_contested"] += len(site)
@@ -247,6 +274,8 @@ def main() -> int:
     ap.add_argument("--context", type=int, default=15, help="lines of code shown on each side of a site")
     ap.add_argument("--timeout", type=int, default=int(os.environ.get("DEEPGUARD_REQUEST_TIMEOUT", "300")))
     ap.add_argument("--fail-policy", choices=["keep", "drop"], default="keep")
+    ap.add_argument("--select-mode", choices=["multi", "single"], default="single",
+                    help="single: at most one type per site (default); multi: any number")
     ap.add_argument("--repos", nargs="*", default=None)
     args = ap.parse_args()
     args.api_key = os.environ.get("DEEPGUARD_OPENAI_API_KEY", "ollama")
@@ -287,7 +316,7 @@ def main() -> int:
         total.update(stats)
         print("   " + ", ".join(f"{k}={v}" for k, v in sorted(stats.items())), flush=True)
 
-    summary = {"slug_in": args.slug, "slug_out": args.out_slug, "mode": args.mode, "model": args.model,
+    summary = {"slug_in": args.slug, "slug_out": args.out_slug, "mode": args.mode, "select_mode": args.select_mode, "model": args.model,
                "window": args.window, "context": args.context, "fail_policy": args.fail_policy,
                "repos": repos, "wall_seconds": round(time.time() - started), "stats": dict(total)}
     json.dump(summary, open(os.path.join(log_dir, "_summary.json"), "w"), indent=2)
