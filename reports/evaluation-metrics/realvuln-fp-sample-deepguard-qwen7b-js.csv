@@ -1,0 +1,101 @@
+repo,file,line,cwe,type,category,note,message,context,human_verdict,human_note
+realvuln-dvna,routes/app.js,23,CWE-79,xss,duplicate_site,,User-controlled data rendered directly in HTML response,"21  
+22      router.get('/bulkproducts', authHandler.isAuthenticated, function (req, res) {
+23>         res.render('app/bulkproducts',{legacy:req.query.legacy})
+24      })
+25  ",,
+realvuln-dvna,core/appHandler.js,121,CWE-79,xss,no_nearby_gt,,Potential XSS in success message,"119  		product.save().then(p => {
+120  			if (p) {
+121> 				req.flash('success', 'Product added/modified!')
+122  				res.redirect('/app/products')
+123  			}",,
+realvuln-node-api-goat,app/server.js,54,CWE-78,command_injection,wrong_type,"said command_injection, GT cross_site_scripting @62",User input directly flows to file read command,"52  // Status:      PASS
+53  app.get(""/cwe73/read"", function(req, res) {
+54>   res.send(fse.readJsonSync(req.query.foo));
+55  });
+56  ",,
+realvuln-dvna,core/appHandler.js,137,CWE-284,missing_auth,wrong_type,"said missing_auth, GT broken_object_level_authorization @145",No authentication check for endpoint,"135  
+136  module.exports.userEdit = function (req, res) {
+137> 	res.render('app/useredit', {
+138  		userId: req.user.id,
+139  		userEmail: req.user.email,",,
+realvuln-dvna,core/appHandler.js,87,CWE-918,ssrf,duplicate_site,,User-controlled ID passed to database query without allowlist validation,"85  		db.Product.find({
+86  			where: {
+87> 				'id': req.query.id
+88  			}
+89  		}).then(product => {",,
+realvuln-node-api-goat,app/server.js,110,CWE-79,xss,wrong_type,"said xss, GT os_command_injection @106",Unescaped user input directly in HTML response,"108      console.log(`Error executing endpoint /cwe78/childprocess: ${error}`);
+109    }});
+110>   res.send(""child_process"");
+111  });
+112  ",,
+realvuln-dvna,core/authHandler.js,6,CWE-284,missing_auth,no_nearby_gt,,No authentication middleware on protected routes,"4  
+5  module.exports.isAuthenticated = function (req, res, next) {
+6> 	if (req.isAuthenticated()) {
+7  		req.flash('authenticated', true)
+8  		return next();",,
+realvuln-node-api-goat,app/server.js,97,CWE-22,path_traversal,wrong_type,"said path_traversal, GT unsafe_deserialization @97",User-controlled file path sans validation,"95  // Status:      PASS
+96  app.get(""/cwe502/serialize"", function(req, res) {
+97>   serialize.unserialize(req.query.foo);
+98    res.send(""node-serialize"");
+99  });",,
+realvuln-vuln-node-express,routes/search.js,17,CWE-79,xss,no_nearby_gt,,Unescaped user input rendered directly in HTML response,"15        res.redirect('/search')
+16      } else {
+17>       res.render('searchResult', ret)
+18      }
+19    });",,
+realvuln-dvna,core/appHandler.js,190,CWE-284,missing_auth,no_nearby_gt,,Potential Server-Side Request Forgery (SSRF),"188  		res.redirect(req.query.url)
+189  	} else {
+190> 		res.send('invalid redirect url')
+191  	}
+192  }",,
+realvuln-node-api-goat,test/server.js,155,CWE-78,command_injection,no_nearby_gt,,Potential OS command injection via user input,"153              return done(err);
+154            } else{
+155>             res.text.should.be.include('child_process');
+156              return done();
+157            }",,
+realvuln-dvna,core/appHandler.js,235,CWE-502,insecure_deserialization,wrong_type,"said insecure_deserialization, GT xxe @235",Use a safe parser that does not evaluate external entities,"233  module.exports.bulkProducts =  function(req, res) {
+234  	if (req.files.products && req.files.products.mimetype=='text/xml'){
+235> 		var products = libxmljs.parseXmlString(req.files.products.data.toString('utf8'), {noent:true,noblanks:true})
+236  		products.root().childNodes().forEach( product => {
+237  			var newProduct = new db.Product()",,
+realvuln-dvna,core/appHandler.js,39,CWE-284,missing_auth,wrong_type,"said missing_auth, GT os_command_injection @39",Command injection vulnerability,"37  
+38  module.exports.ping = function (req, res) {
+39> 	exec('ping -c 2 ' + req.body.address, function (err, stdout, stderr) {
+40  		output = stdout + stderr
+41  		res.render('app/ping', {",,
+realvuln-dvna,routes/app.js,50,CWE-918,ssrf,wrong_type,"said ssrf, GT missing_authorization @42",User-controlled URL passed to appHandler.userSearch without validation,"48      router.get('/redirect', appHandler.redirect)
+49  
+50>     router.post('/usersearch', authHandler.isAuthenticated, appHandler.userSearch)
+51  
+52      router.post('/ping', authHandler.isAuthenticated, appHandler.ping)",,
+realvuln-node-api-goat,app/server.js,62,CWE-284,missing_auth,wrong_type,"said missing_auth, GT cross_site_scripting @62",XSS vulnerability due to unescaped output,"60  // Status:      PASS
+61  app.get('/cwe79/echo', function (req, res) {
+62>   res.send(""<p>You sent this: "" + req.query.text + ""</p>"")
+63  });
+64  ",,
+realvuln-node-api-goat,test/server.js,139,CWE-79,xss,duplicate_site,,User input likely rendered directly in HTML,"137              return done(err);
+138            } else{
+139>             res.text.should.be.include('node-serialize');
+140              return done();
+141            }",,
+realvuln-dvna,core/appHandler.js,39,CWE-918,ssrf,wrong_type,"said ssrf, GT os_command_injection @39",User-controlled URL used in system command without validation,"37  
+38  module.exports.ping = function (req, res) {
+39> 	exec('ping -c 2 ' + req.body.address, function (err, stdout, stderr) {
+40  		output = stdout + stderr
+41  		res.render('app/ping', {",,
+realvuln-dvna,routes/app.js,42,CWE-284,missing_auth,wrong_type,"said missing_auth, GT missing_authorization @42",Protected route missing session/middleware validation,"40      })
+41  
+42>     router.get('/admin/usersapi', authHandler.isAuthenticated, appHandler.listUsersAPI)
+43  
+44      router.get('/admin/users', authHandler.isAuthenticated, function(req, res){",,
+realvuln-dvna,routes/app.js,23,CWE-22,path_traversal,duplicate_site,,User-controlled file path without validation allows directory traversal,"21  
+22      router.get('/bulkproducts', authHandler.isAuthenticated, function (req, res) {
+23>         res.render('app/bulkproducts',{legacy:req.query.legacy})
+24      })
+25  ",,
+realvuln-node-api-goat,app/server.js,80,CWE-89,sql_injection,wrong_type,"said sql_injection, GT cross_site_scripting @80",User input directly included in response without sanitization,"78  // Status:      PASS
+79  app.get('/cwe201/exposure', function (req, res) {
+80>   res.send(req.query.text);
+81  });
+82  ",,

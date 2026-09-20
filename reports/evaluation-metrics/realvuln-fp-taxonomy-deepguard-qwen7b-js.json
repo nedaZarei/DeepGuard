@@ -1,0 +1,42 @@
+{
+  "slug": "deepguard-qwen7b-js",
+  "gt": "in_scope",
+  "repos": [
+    "realvuln-dvna",
+    "realvuln-node-api-goat",
+    "realvuln-vuln-node-express"
+  ],
+  "TP": 8,
+  "FP": 165,
+  "FN": 11,
+  "taxonomy": {
+    "duplicate_site": 40,
+    "no_nearby_gt": 48,
+    "wrong_type": 70,
+    "gt_claimed_or_far": 2,
+    "line_off_11_30": 5
+  },
+  "wrong_type_also_line_off": 10,
+  "wrong_type_pairs": {
+    "said xss, GT unsafe_deserialization": 4,
+    "said path_traversal, GT cross_site_scripting": 4,
+    "said sql_injection, GT unsafe_deserialization": 3,
+    "said command_injection, GT cross_site_scripting": 3,
+    "said missing_auth, GT cross_site_scripting": 3,
+    "said sql_injection, GT cross_site_scripting": 3,
+    "said missing_auth, GT sql_injection": 2,
+    "said missing_auth, GT broken_object_level_authorization": 2,
+    "said CWE-327, GT os_command_injection": 2,
+    "said xss, GT os_command_injection": 2,
+    "said insecure_deserialization, GT sql_injection": 2,
+    "said missing_auth, GT missing_authorization": 2,
+    "said command_injection, GT sql_injection": 2,
+    "said path_traversal, GT unsafe_deserialization": 2,
+    "said missing_auth, GT unsafe_deserialization": 2,
+    "said ssrf, GT cross_site_scripting": 2,
+    "said xss, GT code_injection": 2,
+    "said path_traversal, GT os_command_injection": 1,
+    "said path_traversal, GT xxe": 1,
+    "said missing_auth, GT os_command_injection": 1
+  }
+}
