@@ -1,0 +1,300 @@
+#!/usr/bin/env python3
+"""
+Stage 3 of the method, as an offline instrument: per-site judge and per-finding verifier.
+
+Takes an existing DeepGuard run on RealVuln (scan-results/<repo>/<slug>/results.json),
+groups findings into *sites* (same file, lines within --window), and for every site
+where more than one vulnerability type was reported makes ONE model call that
+selects which candidate(s) are real at that location. Optionally re-checks every
+surviving finding cold ("verifier": fresh context, only the finding and the code).
+
+Why offline: the sweep (stage 1) is the expensive part (~9 calls per function);
+the judge needs only the flagged sites and the source, so it can be iterated on
+cached sweeps without re-running them, and then ported into the Go pipeline.
+
+Modes:
+  judge    adjudicate contested sites only (default)
+  verify   cold re-check of every finding, no adjudication
+  both     judge, then verify what survives
+
+Fail policy (--fail-policy): what to do when a model call errors or returns
+unparseable output. keep = pass the candidates through untouched (protects
+recall, default); drop = remove them (protects precision). Counted either way.
+
+Usage:
+  RV=~/Documents/university/Real-Vuln-Benchmark \\
+  DEEPGUARD_OPENAI_BASE_URL=http://localhost:11434/v1 DEEPGUARD_OPENAI_API_KEY=ollama \\
+  python3 scripts/realvuln_judge.py --slug deepguard-qwen7b --out-slug deepguard-qwen7b-judge \\
+      --model qwen2.5-coder:7b [--mode judge|verify|both] [--repos r1 r2 ...]
+Then: python3 scripts/realvuln_report.py deepguard-qwen7b-judge
+"""
+from __future__ import annotations
+
+import argparse
+import glob
+import json
+import os
+import re
+import sys
+import time
+import urllib.request
+from collections import Counter, defaultdict
+
+RV = os.environ.get("RV") or sys.exit("set RV to the Real-Vuln-Benchmark checkout")
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+JUDGE_SYSTEM = (
+    "You are a senior application-security reviewer adjudicating automated findings. "
+    "Several scanners reported different vulnerability types at the same code location. "
+    "Decide, from the code alone, which of the candidate reports describe a real, distinct "
+    "vulnerability at that location. Usually one is right; sometimes none; rarely more than one. "
+    "Respond ONLY with a JSON object."
+)
+
+JUDGE_USER = """\
+Code ({file}, lines {lo}-{hi}; the reported location is around line {site}):
+```
+{excerpt}
+```
+
+Candidate reports for this location:
+{candidates}
+
+Rules:
+- Judge from the code shown. Do not assume input is sanitised elsewhere unless the code shows it.
+- Select a candidate only if the code at this location actually has that class of weakness.
+- Two candidates that describe the same weakness under different names count as one: keep the more precise.
+- Selecting none is a valid answer.
+
+Return exactly:
+{{"selected": ["A", ...] or [], "line": <the single line that best evidences the selected weakness, or null>, "confidence": <0.0-1.0>, "reason": "<one sentence>"}}"""
+
+VERIFY_SYSTEM = (
+    "You are a senior application-security reviewer. A scanner reported one vulnerability at one "
+    "code location. Decide from the code alone whether that report is correct. "
+    "Respond ONLY with a JSON object."
+)
+
+VERIFY_USER = """\
+Code ({file}, lines {lo}-{hi}):
+```
+{excerpt}
+```
+
+Reported finding: {vtype} at line {line}. Scanner's note: {message}
+
+Is this a real {vtype} vulnerability at this location? Do not assume sanitisation that the code does not show.
+Return exactly: {{"applies": true or false, "confidence": <0.0-1.0>, "reason": "<one sentence>"}}"""
+
+
+def call(base_url: str, api_key: str, model: str, system: str, user: str, timeout: int) -> dict:
+    payload = {"model": model, "temperature": 0,
+               "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
+               "response_format": {"type": "json_object"}}
+    req = urllib.request.Request(base_url.rstrip("/") + "/chat/completions", data=json.dumps(payload).encode(),
+                                 headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"},
+                                 method="POST")
+    last = None
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                body = json.loads(resp.read())
+            raw = body["choices"][0]["message"]["content"] or ""
+            try:
+                return json.loads(raw)
+            except json.JSONDecodeError:
+                cleaned = re.sub(r"```[a-zA-Z]*\n?", "", raw)
+                s, e = cleaned.find("{"), cleaned.rfind("}")
+                return json.loads(cleaned[s:e + 1])
+        except Exception as ex:  # noqa: BLE001
+            last = ex
+            time.sleep(2 * (attempt + 1))
+    raise RuntimeError(f"model call failed: {last}")
+
+
+def read_lines(repo: str, rel: str) -> list[str] | None:
+    p = os.path.join(RV, "repos", repo, rel)
+    try:
+        return open(p, encoding="utf-8", errors="replace").read().split("\n")
+    except OSError:
+        return None
+
+
+def excerpt(lines: list[str], center: int, ctx: int) -> tuple[int, int, str]:
+    lo, hi = max(1, center - ctx), min(len(lines), center + ctx)
+    w = len(str(hi))
+    return lo, hi, "\n".join(f"{i:{w}d}: {lines[i - 1]}" for i in range(lo, hi + 1))
+
+
+def group_sites(results: list[dict], window: int) -> list[list[dict]]:
+    """Cluster findings by file and line proximity (single-linkage within `window`)."""
+    by_file: dict[str, list[dict]] = defaultdict(list)
+    for r in results:
+        by_file[r["path"]].append(r)
+    sites = []
+    for path, rs in by_file.items():
+        rs.sort(key=lambda r: r["start"]["line"])
+        cur = [rs[0]]
+        for r in rs[1:]:
+            if r["start"]["line"] - cur[-1]["start"]["line"] <= window:
+                cur.append(r)
+            else:
+                sites.append(cur)
+                cur = [r]
+        sites.append(cur)
+    return sites
+
+
+def vtype(r: dict) -> str:
+    return r["extra"]["metadata"].get("deepguard_type") or r["check_id"].split(".")[-1]
+
+
+def judge_site(site: list[dict], repo: str, args, stats: Counter, log: list) -> list[dict]:
+    types = sorted({vtype(r) for r in site})
+    if len(types) < 2:
+        stats["sites_uncontested"] += 1
+        return site
+    stats["sites_contested"] += 1
+    lines = read_lines(repo, site[0]["path"])
+    if lines is None:
+        stats["file_unreadable"] += 1
+        return site
+    center = round(sum(r["start"]["line"] for r in site) / len(site))
+    lo, hi, exc = excerpt(lines, center, args.context)
+
+    # One candidate per type: keep the highest-confidence report of each type.
+    best: dict[str, dict] = {}
+    for r in site:
+        t = vtype(r)
+        if t not in best or (r["extra"]["metadata"].get("confidence") or 0) > (best[t]["extra"]["metadata"].get("confidence") or 0):
+            best[t] = r
+    letters = [chr(ord("A") + i) for i in range(len(best))]
+    cand_lines, by_letter = [], {}
+    for letter, (t, r) in zip(letters, sorted(best.items())):
+        by_letter[letter] = r
+        cand_lines.append(f"{letter}. {t} (reported at line {r['start']['line']}, "
+                          f"confidence {r['extra']['metadata'].get('confidence', '?')}): {r['extra'].get('message', '')[:200]}")
+    user = JUDGE_USER.format(file=site[0]["path"], lo=lo, hi=hi, site=center, excerpt=exc,
+                             candidates="\n".join(cand_lines))
+    entry = {"repo": repo, "file": site[0]["path"], "site": center, "candidates": {l: vtype(r) for l, r in by_letter.items()}}
+    try:
+        out = call(args.base_url, args.api_key, args.model, JUDGE_SYSTEM, user, args.timeout)
+        stats["judge_calls"] += 1
+        sel = [s for s in (out.get("selected") or []) if isinstance(s, str) and s.strip().upper()[:1] in by_letter]
+        sel = sorted({s.strip().upper()[:1] for s in sel})
+        entry.update({"selected": sel, "line": out.get("line"), "confidence": out.get("confidence"), "reason": out.get("reason")})
+        log.append(entry)
+        stats[f"selected_{min(len(sel), 2)}{'plus' if len(sel) >= 2 else ''}"] += 1
+        kept = []
+        for letter in sel:
+            r = dict(by_letter[letter])
+            r["extra"] = dict(r["extra"]); r["extra"]["metadata"] = dict(r["extra"]["metadata"])
+            r["extra"]["metadata"]["judge"] = {"site": center, "n_candidates": len(by_letter), "reason": out.get("reason")}
+            jl = out.get("line")
+            if isinstance(jl, int) and lo <= jl <= hi and abs(jl - r["start"]["line"]) <= args.window * 2:
+                r["start"] = {"line": jl, "col": 1}; r["end"] = {"line": jl, "col": 1}
+            kept.append(r)
+        stats["findings_in_contested"] += len(site)
+        stats["findings_kept_by_judge"] += len(kept)
+        return kept
+    except Exception as ex:  # noqa: BLE001
+        stats["judge_errors"] += 1
+        entry.update({"error": str(ex)[:160]})
+        log.append(entry)
+        if args.fail_policy == "drop":
+            stats["dropped_on_error"] += len(site)
+            return []
+        return site
+
+
+def verify_finding(r: dict, repo: str, args, stats: Counter, log: list) -> dict | None:
+    lines = read_lines(repo, r["path"])
+    if lines is None:
+        stats["file_unreadable"] += 1
+        return r
+    lo, hi, exc = excerpt(lines, r["start"]["line"], args.context)
+    user = VERIFY_USER.format(file=r["path"], lo=lo, hi=hi, excerpt=exc, vtype=vtype(r),
+                              line=r["start"]["line"], message=(r["extra"].get("message") or "")[:200])
+    entry = {"repo": repo, "file": r["path"], "line": r["start"]["line"], "type": vtype(r)}
+    try:
+        out = call(args.base_url, args.api_key, args.model, VERIFY_SYSTEM, user, args.timeout)
+        stats["verify_calls"] += 1
+        applies = bool(out.get("applies"))
+        entry.update({"applies": applies, "confidence": out.get("confidence"), "reason": out.get("reason")})
+        log.append(entry)
+        if not applies:
+            stats["verify_rejected"] += 1
+            return None
+        stats["verify_confirmed"] += 1
+        r = dict(r); r["extra"] = dict(r["extra"]); r["extra"]["metadata"] = dict(r["extra"]["metadata"])
+        r["extra"]["metadata"]["verify"] = {"confidence": out.get("confidence"), "reason": out.get("reason")}
+        return r
+    except Exception as ex:  # noqa: BLE001
+        stats["verify_errors"] += 1
+        entry.update({"error": str(ex)[:160]})
+        log.append(entry)
+        return None if args.fail_policy == "drop" else r
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--slug", required=True, help="existing run to post-process")
+    ap.add_argument("--out-slug", required=True)
+    ap.add_argument("--mode", choices=["judge", "verify", "both"], default="judge")
+    ap.add_argument("--model", default=os.environ.get("DEEPGUARD_OPENAI_MODEL", "qwen2.5-coder:7b"))
+    ap.add_argument("--base-url", default=os.environ.get("DEEPGUARD_OPENAI_BASE_URL", "http://localhost:11434/v1"))
+    ap.add_argument("--window", type=int, default=3, help="lines: findings this close form one site")
+    ap.add_argument("--context", type=int, default=15, help="lines of code shown on each side of a site")
+    ap.add_argument("--timeout", type=int, default=int(os.environ.get("DEEPGUARD_REQUEST_TIMEOUT", "300")))
+    ap.add_argument("--fail-policy", choices=["keep", "drop"], default="keep")
+    ap.add_argument("--repos", nargs="*", default=None)
+    args = ap.parse_args()
+    args.api_key = os.environ.get("DEEPGUARD_OPENAI_API_KEY", "ollama")
+
+    repos = args.repos or sorted(p.split("/")[-3] for p in glob.glob(f"{RV}/scan-results/realvuln-*/{args.slug}/results.json"))
+    if not repos:
+        sys.exit(f"no results for {args.slug}")
+
+    log_dir = os.path.join(ROOT, "reports", "realvuln-judge", args.out_slug)
+    os.makedirs(log_dir, exist_ok=True)
+    total = Counter()
+    started = time.time()
+    for repo in repos:
+        src = f"{RV}/scan-results/{repo}/{args.slug}/results.json"
+        dst_dir = f"{RV}/scan-results/{repo}/{args.out_slug}"
+        if os.path.exists(f"{dst_dir}/results.json"):
+            print(f"=== {repo} === (done, skipping)")
+            continue
+        data = json.load(open(src))
+        results = data.get("results", [])
+        stats, log = Counter(), []
+        stats["findings_in"] = len(results)
+        print(f"=== {repo} === {len(results)} findings", flush=True)
+
+        kept = results
+        if args.mode in ("judge", "both"):
+            kept = []
+            for site in group_sites(results, args.window):
+                kept.extend(judge_site(site, repo, args, stats, log))
+        if args.mode in ("verify", "both"):
+            kept = [v for v in (verify_finding(r, repo, args, stats, log) for r in kept) if v is not None]
+        stats["findings_out"] = len(kept)
+
+        os.makedirs(dst_dir, exist_ok=True)
+        json.dump({"results": kept, "errors": [], "version": f"{args.out_slug}"}, open(f"{dst_dir}/results.json", "w"), indent=2)
+        json.dump({"repo": repo, "mode": args.mode, "model": args.model, "stats": dict(stats), "decisions": log},
+                  open(os.path.join(log_dir, f"{repo}.json"), "w"), indent=2)
+        total.update(stats)
+        print("   " + ", ".join(f"{k}={v}" for k, v in sorted(stats.items())), flush=True)
+
+    summary = {"slug_in": args.slug, "slug_out": args.out_slug, "mode": args.mode, "model": args.model,
+               "window": args.window, "context": args.context, "fail_policy": args.fail_policy,
+               "repos": repos, "wall_seconds": round(time.time() - started), "stats": dict(total)}
+    json.dump(summary, open(os.path.join(log_dir, "_summary.json"), "w"), indent=2)
+    print("\nTOTAL " + ", ".join(f"{k}={v}" for k, v in sorted(total.items())))
+    print(f"logs: {log_dir}\nscore with: RV={RV} python3 scripts/realvuln_report.py {args.out_slug}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

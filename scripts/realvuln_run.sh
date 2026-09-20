@@ -19,6 +19,8 @@
 # Open-weight model names are tracked at $0 cost, so the budget cap never trips.
 #
 # Usage: RV=/path/to/Real-Vuln-Benchmark SLUG=deepguard-qwen7b ./scripts/realvuln_run.sh [repo ...]
+#   Resumable: repos that already have a report under reports/realvuln/$SLUG/ are
+#   skipped (FORCE=1 re-scans). LANGS=js,ts for the JavaScript/TypeScript repos.
 #   GT_DIR=ground-truth-inscope  -> score only the 9 classes DeepGuard covers
 #                                   (create it with scripts/realvuln_baselines.py)
 set -euo pipefail
@@ -35,11 +37,16 @@ REPOS=("$@")
 for repo in "${REPOS[@]}"; do
   src="$RV/repos/$repo"
   [ -d "$src" ] || { echo "skip $repo (not cloned)"; continue; }
-  echo "=== $repo ==="
   scan_out="$OUT/$repo"; mkdir -p "$scan_out"
-  DEEPGUARD_BUDGET_CAP="$BUDGET" "$ROOT/deepguard" scan --path "$src" --languages python --output "$scan_out" \
-    2>&1 | grep -E "Extracted|Findings:|Cost:|Duration:|ERR" || true
   report="$(ls -t "$scan_out"/scan-*.json 2>/dev/null | head -1)"
+  if [ -n "$report" ] && [ "${FORCE:-0}" != "1" ]; then
+    echo "=== $repo === (report exists, skipping scan; FORCE=1 to redo)"
+  else
+    echo "=== $repo ==="
+    DEEPGUARD_BUDGET_CAP="$BUDGET" "$ROOT/deepguard" scan --path "$src" --languages "${LANGS:-python}" --output "$scan_out" \
+      2>&1 | grep -E "Extracted|Findings:|Cost:|Duration:|ERR|line snapping" || true
+    report="$(ls -t "$scan_out"/scan-*.json 2>/dev/null | head -1)"
+  fi
   [ -n "$report" ] || { echo "no report for $repo"; continue; }
   if ! python3 "$ROOT/scripts/realvuln_adapter.py" "$report" "$src" "$RV/scan-results/$repo/$SLUG/results.json"; then
     echo "  ADAPTER FAILED for $repo - skipping, continuing batch"
