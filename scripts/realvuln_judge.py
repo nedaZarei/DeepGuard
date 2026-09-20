@@ -78,6 +78,34 @@ SELECTION_RULES = {
                "If two candidates describe the same problem, keep only the more precise one.",
                '["A"] or []'),
 }
+# --answer-format name: the model answers with the vulnerability type string instead of a
+# letter, and must first state the weakness in its own words. Letters invite slips where
+# the reason says "SQL query built from user input" but the selection is another row.
+NAME_RULES = {
+    "multi": ("First describe the weakness you see in one sentence. Then list every candidate TYPE NAME (exactly as "
+              "written above) that is a real, distinct weakness at this location; usually one; an empty list if none."),
+    "single": ("First describe the weakness you see in one sentence. Then give AT MOST ONE candidate TYPE NAME "
+               "(exactly as written above) that most precisely names that weakness, or an empty list if none applies."),
+}
+JUDGE_USER_NAME = """\
+Code ({file}, lines {lo}-{hi}; the reported location is around line {site}):
+```
+{excerpt}
+```
+
+Candidate types reported at this location (name: scanner's note):
+{candidates}
+
+Rules:
+- Judge from the code shown. Do not assume input is sanitised elsewhere unless the code shows it.
+- A type is correct only if the code at this location actually has that class of weakness.
+- Two names for the same weakness count as one: keep the more precise.
+- Selecting none is a valid answer.
+
+{selection_rule}
+
+Return exactly:
+{{"weakness": "<one sentence>", "selected_types": ["<type name>", ...] or [], "line": <integer line number that best evidences it, or null>, "confidence": <0.0-1.0>}}"""
 
 VERIFY_SYSTEM = (
     "You are a senior application-security reviewer. A scanner reported one vulnerability at one "
@@ -197,15 +225,28 @@ def judge_site(site: list[dict], repo: str, args, stats: Counter, log: list) -> 
         by_letter[letter] = r
         cand_lines.append(f"{letter}. {t} (reported at line {r['start']['line']}, "
                           f"confidence {r['extra']['metadata'].get('confidence', '?')}): {r['extra'].get('message', '')[:200]}")
-    rule, shape = SELECTION_RULES[args.select_mode]
-    user = JUDGE_USER.format(file=site[0]["path"], lo=lo, hi=hi, site=center, excerpt=exc,
-                             candidates="\n".join(cand_lines), selection_rule=rule, selected_shape=shape)
+    if args.answer_format == "name":
+        name_lines = [f"- {t}: {r['extra'].get('message', '')[:200]}" for t, r in sorted(best.items())]
+        user = JUDGE_USER_NAME.format(file=site[0]["path"], lo=lo, hi=hi, site=center, excerpt=exc,
+                                      candidates="\n".join(name_lines), selection_rule=NAME_RULES[args.select_mode])
+    else:
+        rule, shape = SELECTION_RULES[args.select_mode]
+        user = JUDGE_USER.format(file=site[0]["path"], lo=lo, hi=hi, site=center, excerpt=exc,
+                                 candidates="\n".join(cand_lines), selection_rule=rule, selected_shape=shape)
     entry = {"repo": repo, "file": site[0]["path"], "site": center, "candidates": {l: vtype(r) for l, r in by_letter.items()}}
     try:
         out = call(args.base_url, args.api_key, args.model, JUDGE_SYSTEM, user, args.timeout)
         stats["judge_calls"] += 1
-        sel = [s for s in (out.get("selected") or []) if isinstance(s, str) and s.strip().upper()[:1] in by_letter]
-        sel = sorted({s.strip().upper()[:1] for s in sel})
+        if args.answer_format == "name":
+            by_name = {t: l for l, t in ((l, vtype(r)) for l, r in by_letter.items())}
+            raw_sel = out.get("selected_types") or out.get("selected") or []
+            sel = sorted({by_name[s.strip()] for s in raw_sel if isinstance(s, str) and s.strip() in by_name})
+            if raw_sel and not sel:
+                stats["name_not_a_candidate"] += 1
+            entry["weakness"] = out.get("weakness")
+        else:
+            sel = [s for s in (out.get("selected") or []) if isinstance(s, str) and s.strip().upper()[:1] in by_letter]
+            sel = sorted({s.strip().upper()[:1] for s in sel})
         if args.select_mode == "single" and len(sel) > 1:
             stats["single_mode_truncated"] += 1
             sel = sel[:1]
@@ -274,6 +315,8 @@ def main() -> int:
     ap.add_argument("--context", type=int, default=15, help="lines of code shown on each side of a site")
     ap.add_argument("--timeout", type=int, default=int(os.environ.get("DEEPGUARD_REQUEST_TIMEOUT", "300")))
     ap.add_argument("--fail-policy", choices=["keep", "drop"], default="keep")
+    ap.add_argument("--answer-format", choices=["letter", "name"], default="letter",
+                    help="name: model answers with the type string after stating the weakness (see NAME_RULES)")
     ap.add_argument("--select-mode", choices=["multi", "single"], default="single",
                     help="single: at most one type per site (default); multi: any number")
     ap.add_argument("--repos", nargs="*", default=None)
@@ -316,7 +359,7 @@ def main() -> int:
         total.update(stats)
         print("   " + ", ".join(f"{k}={v}" for k, v in sorted(stats.items())), flush=True)
 
-    summary = {"slug_in": args.slug, "slug_out": args.out_slug, "mode": args.mode, "select_mode": args.select_mode, "model": args.model,
+    summary = {"slug_in": args.slug, "slug_out": args.out_slug, "mode": args.mode, "select_mode": args.select_mode, "answer_format": args.answer_format, "model": args.model,
                "window": args.window, "context": args.context, "fail_policy": args.fail_policy,
                "repos": repos, "wall_seconds": round(time.time() - started), "stats": dict(total)}
     json.dump(summary, open(os.path.join(log_dir, "_summary.json"), "w"), indent=2)
