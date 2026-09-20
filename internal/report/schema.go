@@ -32,8 +32,28 @@ type ScanMetadata struct {
 	TotalCost           float64           `json:"total_cost"`
 	ScanDurationSeconds int               `json:"scan_duration_seconds"`
 	Analysis            *AnalysisStats    `json:"analysis,omitempty"`    // Chunk-analysis completeness
+	LineSnap            *LineSnapStats    `json:"line_snap,omitempty"`   // Quote-anchored line correction
 	Filtering           *FilteringStats   `json:"filtering,omitempty"`   // Optional filtering statistics
 	Suppression         *SuppressionStats `json:"suppression,omitempty"` // Optional suppression statistics
+}
+
+// LineSnapStats records what the quote-anchored line correction did.
+// Every finding falls into exactly one of: WithoutQuote, FileUnreadable,
+// QuoteNotFound, Confirmed, Snapped, TooFar.
+type LineSnapStats struct {
+	Enabled           bool `json:"enabled"`
+	MaxDistance       int  `json:"max_distance"`
+	TotalFindings     int  `json:"total_findings"`
+	WithQuote         int  `json:"with_quote"`
+	WithoutQuote      int  `json:"without_quote"`
+	FileUnreadable    int  `json:"file_unreadable"`
+	Confirmed         int  `json:"confirmed"`          // quote found at the reported line
+	Snapped           int  `json:"snapped"`            // line moved to the quote's location
+	TooFar            int  `json:"too_far"`            // quote found only beyond max_distance; left as reported
+	QuoteNotFound     int  `json:"quote_not_found"`    // quote absent from the file
+	Dropped           int  `json:"dropped"`            // removed under the strict policy (subset of quote_not_found)
+	DuplicatesRemoved int  `json:"duplicates_removed"` // same file+line+type collapsed after snapping
+	KeptFindings      int  `json:"kept_findings"`
 }
 
 // FilteringStats contains statistics about finding filtering
@@ -65,6 +85,8 @@ type Finding struct {
 	Message        string  `json:"message"`
 	Recommendation string  `json:"recommendation"`
 	CodeSnippet    string  `json:"code_snippet,omitempty"`
+	Quote          string  `json:"quote,omitempty"`
+	ReportedLine   int     `json:"reported_line,omitempty"`
 }
 
 // Summary contains aggregate statistics about findings

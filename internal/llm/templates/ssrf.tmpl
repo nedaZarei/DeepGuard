@@ -10,6 +10,7 @@ Expected JSON Schema:
       "severity": "low|medium|high|critical",
       "confidence": 0.0-1.0,
       "line": <integer>,
+      "quote": "<the offending source line, copied verbatim>",
       "message": "<concise description>",
       "recommendation": "<actionable fix>"
     }
@@ -24,6 +25,7 @@ Example Response:
       "severity": "high",
       "confidence": 0.9,
       "line": 23,
+      "quote": "<copy of line 23 exactly as it appears in the code>",
       "message": "User-controlled URL passed to fetch() without allowlist validation",
       "recommendation": "Validate URL against an allowlist of permitted hosts/schemes before making the request"
     }
@@ -49,6 +51,8 @@ Example Response:
 {{end}}
 
 ---
+
+**Quote requirement:** for every finding, set `quote` to the offending source line copied exactly as it appears in the listing (without the line-number prefix). The quote is used to verify the line number; a finding whose quote does not appear in the code is discarded.
 
 ## CODE TO ANALYZE
 

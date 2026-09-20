@@ -20,6 +20,14 @@ type Finding struct {
 	// Recommendation for fixing the vulnerability
 	Recommendation string `json:"recommendation"`
 
+	// Quote is the offending source line, verbatim, as reported by the model.
+	// Used by post-processing to anchor Line to where that text actually is.
+	Quote string `json:"quote,omitempty"`
+
+	// ReportedLine is the absolute line the model originally reported, kept when
+	// post-processing snaps Line to the quoted text. Zero when no snap happened.
+	ReportedLine int `json:"reported_line,omitempty"`
+
 	// --- Context fields (enriched after parsing) ---
 
 	// ChunkID is the SHA256 hash of the code chunk

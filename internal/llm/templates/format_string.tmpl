@@ -10,6 +10,7 @@ Expected JSON Schema:
       "severity": "low|medium|high|critical",
       "confidence": 0.0-1.0,
       "line": <integer>,
+      "quote": "<the offending source line, copied verbatim>",
       "message": "<concise description>",
       "recommendation": "<actionable fix>"
     }
@@ -24,6 +25,7 @@ Example Response:
       "severity": "critical",
       "confidence": 0.95,
       "line": 8,
+      "quote": "<copy of line 8 exactly as it appears in the code>",
       "message": "printf(user_input) passes user data as format string — arbitrary read/write",
       "recommendation": "Replace with printf(\"%s\", user_input) to use user data as argument, not format"
     }
@@ -44,6 +46,8 @@ Example Response:
 {{end}}
 
 ---
+
+**Quote requirement:** for every finding, set `quote` to the offending source line copied exactly as it appears in the listing (without the line-number prefix). The quote is used to verify the line number; a finding whose quote does not appear in the code is discarded.
 
 ## CODE TO ANALYZE
 

@@ -342,9 +342,17 @@ func runScan(cmd *cobra.Command, args []string) error {
 	// Convert types.Finding → report.Finding
 	reportFindings := convertFindings(typeFindings)
 
+	// Anchor each finding to its quoted source line and collapse same-site
+	// duplicates. DEEPGUARD_DROP_UNVERIFIABLE=1 removes findings whose quote is
+	// not in the file (the strict policy the prompt announces); default keeps them.
+	dropUnverifiable := os.Getenv("DEEPGUARD_DROP_UNVERIFIABLE") == "1"
+	snappedFindings, snapStats := reporting.SnapLinesToQuotes(
+		reportFindings, reporting.DefaultSnapMaxDistance, dropUnverifiable, log.Logger,
+	)
+
 	// Apply confidence threshold filtering
 	filteredFindings, filterStats := reporting.FilterFindingsByConfidence(
-		reportFindings, cfg.ConfidenceThreshold, log.Logger,
+		snappedFindings, cfg.ConfidenceThreshold, log.Logger,
 	)
 
 	// Apply inline suppression filtering
@@ -381,6 +389,7 @@ func runScan(cmd *cobra.Command, args []string) error {
 				Failed:    analysisStats.Failed,
 				Complete:  analysisStats.Failed == 0,
 			},
+			LineSnap: &snapStats,
 			Filtering: &report.FilteringStats{
 				Enabled:          filterStats.Enabled,
 				ThresholdUsed:    filterStats.ThresholdUsed,
@@ -450,6 +459,7 @@ func convertFindings(typeFindings []types.Finding) []report.Finding {
 			FunctionName:   f.FunctionName,
 			Message:        f.Message,
 			Recommendation: f.Recommendation,
+			Quote:          f.Quote,
 		})
 	}
 	return findings
