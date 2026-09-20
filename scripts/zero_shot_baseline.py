@@ -95,8 +95,10 @@ def price(model: str, pt: int, ct: int) -> float:
 
 
 def call_api(base_url: str, api_key: str, model: str, messages: list,
-             timeout: int, retries: int = 2, json_mode: bool = True) -> dict:
-    payload = {"model": model, "messages": messages, "temperature": 0}
+             timeout: int, retries: int = 2, json_mode: bool = True, max_tokens: int = 2048) -> dict:
+    # Cap generation: a small model in JSON mode on a dense file can otherwise emit
+    # findings until the context is exhausted, then time out and retry.
+    payload = {"model": model, "messages": messages, "temperature": 0, "max_tokens": max_tokens}
     if json_mode:
         payload["response_format"] = {"type": "json_object"}
     req = urllib.request.Request(
@@ -149,7 +151,7 @@ def scan_file(path: Path, args) -> tuple[list, float, str | None]:
     resp = call_api(args.base_url, args.api_key, args.model,
                     [{"role": "system", "content": SYSTEM},
                      {"role": "user", "content": user_msg}],
-                    timeout=args.timeout, json_mode=not args.no_json_mode)
+                    timeout=args.timeout, json_mode=not args.no_json_mode, max_tokens=args.max_output_tokens)
     usage = resp.get("usage", {}) or {}
     cost = price(args.model, usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0))
     raw = resp["choices"][0]["message"]["content"] or ""
@@ -188,6 +190,7 @@ def main() -> int:
     ap.add_argument("--timeout", type=int, default=int(os.environ.get("DEEPGUARD_REQUEST_TIMEOUT", "300")))
     ap.add_argument("--max-prompt-tokens", type=int, default=MAX_PROMPT_TOKENS_DEFAULT)
     ap.add_argument("--no-json-mode", action="store_true", help="don't request response_format=json_object")
+    ap.add_argument("--max-output-tokens", type=int, default=2048)
     args = ap.parse_args()
 
     args.api_key = os.environ.get("DEEPGUARD_OPENAI_API_KEY") or os.environ.get("OPENAI_API_KEY", "")
