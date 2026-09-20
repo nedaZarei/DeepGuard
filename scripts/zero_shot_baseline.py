@@ -118,15 +118,46 @@ def call_api(base_url: str, api_key: str, model: str, messages: list,
             time.sleep(2 * (attempt + 1))
 
 
-def parse_findings(raw: str) -> dict:
+def parse_findings(raw: str) -> tuple[dict, bool]:
+    """Parse the model's JSON; returns (data, truncated).
+
+    If generation stopped at the token cap the JSON is cut mid-object. Rather than
+    lose the whole file, salvage every complete finding object emitted before the
+    cut and flag the result as truncated (recorded in the report's failures list
+    as a note, so partial coverage is visible)."""
     try:
-        return json.loads(raw)
+        return json.loads(raw), False
     except json.JSONDecodeError:
-        cleaned = re.sub(r"```[a-zA-Z]*\n?", "", raw).strip()
-        start, end = cleaned.find("{"), cleaned.rfind("}")
-        if start >= 0 and end > start:
-            return json.loads(cleaned[start:end + 1])
-        raise
+        pass
+    cleaned = re.sub(r"```[a-zA-Z]*\n?", "", raw).strip()
+    start, end = cleaned.find("{"), cleaned.rfind("}")
+    if start >= 0 and end > start:
+        try:
+            return json.loads(cleaned[start:end + 1]), False
+        except json.JSONDecodeError:
+            pass
+    # Salvage: pull out complete {...} objects that look like findings.
+    objs = []
+    depth, buf = 0, ""
+    arr = cleaned.find("[")
+    for ch in cleaned[arr + 1:] if arr >= 0 else "":
+        if ch == "{":
+            depth += 1
+        if depth > 0:
+            buf += ch
+        if ch == "}":
+            depth -= 1
+            if depth == 0:
+                try:
+                    o = json.loads(buf)
+                    if isinstance(o, dict) and "type" in o:
+                        objs.append(o)
+                except json.JSONDecodeError:
+                    pass
+                buf = ""
+    if objs:
+        return {"findings": objs}, True
+    raise json.JSONDecodeError("unparseable and nothing to salvage", raw[:80], 0)
 
 
 def iter_files(root: Path, exts: set) -> list:
@@ -155,7 +186,7 @@ def scan_file(path: Path, args) -> tuple[list, float, str | None]:
     usage = resp.get("usage", {}) or {}
     cost = price(args.model, usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0))
     raw = resp["choices"][0]["message"]["content"] or ""
-    data = parse_findings(raw)
+    data, truncated = parse_findings(raw)
 
     findings = []
     for f in data.get("findings", []) or []:
@@ -176,7 +207,8 @@ def scan_file(path: Path, args) -> tuple[list, float, str | None]:
             "message": str(f.get("message", "")),
             "recommendation": "",
         })
-    return findings, cost, None
+    note = f"truncated output at token cap; salvaged {len(findings)} complete findings" if truncated else None
+    return findings, cost, note
 
 
 def main() -> int:
@@ -190,7 +222,7 @@ def main() -> int:
     ap.add_argument("--timeout", type=int, default=int(os.environ.get("DEEPGUARD_REQUEST_TIMEOUT", "300")))
     ap.add_argument("--max-prompt-tokens", type=int, default=MAX_PROMPT_TOKENS_DEFAULT)
     ap.add_argument("--no-json-mode", action="store_true", help="don't request response_format=json_object")
-    ap.add_argument("--max-output-tokens", type=int, default=2048)
+    ap.add_argument("--max-output-tokens", type=int, default=4096)
     args = ap.parse_args()
 
     args.api_key = os.environ.get("DEEPGUARD_OPENAI_API_KEY") or os.environ.get("OPENAI_API_KEY", "")
@@ -230,10 +262,13 @@ def main() -> int:
             failures.append({"file": str(rel), "error": str(e)[:200]})
             print(f"FAILED ({str(e)[:80]})")
             continue
-        if note:
+        if note and not findings:
             failures.append({"file": str(rel), "error": note})
             print(note)
             continue
+        if note:
+            failures.append({"file": str(rel), "error": note, "partial": True})
+            print(f"{len(findings)} findings ({note})")
         all_findings.extend(findings)
         total_cost += cost
         print(f"{len(findings)} findings")
