@@ -125,7 +125,15 @@ Is this a real {vtype} vulnerability at this location? Do not assume sanitisatio
 Return exactly: {{"applies": true or false, "confidence": <0.0-1.0>, "reason": "<one sentence>"}}"""
 
 
-def call(base_url: str, api_key: str, model: str, system: str, user: str, timeout: int) -> dict:
+_last_call = [0.0]
+
+
+def call(base_url: str, api_key: str, model: str, system: str, user: str, timeout: int, interval: float = 0.0) -> dict:
+    if interval > 0:
+        wait = _last_call[0] + interval - time.time()
+        if wait > 0:
+            time.sleep(wait)
+    _last_call[0] = time.time()
     payload = {"model": model, "temperature": 0,
                "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
                "response_format": {"type": "json_object"}}
@@ -146,7 +154,7 @@ def call(base_url: str, api_key: str, model: str, system: str, user: str, timeou
                 return json.loads(cleaned[s:e + 1])
         except Exception as ex:  # noqa: BLE001
             last = ex
-            time.sleep(2 * (attempt + 1))
+            time.sleep(20 * (attempt + 1) if "429" in str(ex) else 2 * (attempt + 1))
     raise RuntimeError(f"model call failed: {last}")
 
 
@@ -235,7 +243,7 @@ def judge_site(site: list[dict], repo: str, args, stats: Counter, log: list) -> 
                                  candidates="\n".join(cand_lines), selection_rule=rule, selected_shape=shape)
     entry = {"repo": repo, "file": site[0]["path"], "site": center, "candidates": {l: vtype(r) for l, r in by_letter.items()}}
     try:
-        out = call(args.base_url, args.api_key, args.model, JUDGE_SYSTEM, user, args.timeout)
+        out = call(args.base_url, args.api_key, args.model, JUDGE_SYSTEM, user, args.timeout, args.interval)
         stats["judge_calls"] += 1
         if args.answer_format == "name":
             by_name = {t: l for l, t in ((l, vtype(r)) for l, r in by_letter.items())}
@@ -285,7 +293,7 @@ def verify_finding(r: dict, repo: str, args, stats: Counter, log: list) -> dict 
                               line=r["start"]["line"], message=(r["extra"].get("message") or "")[:200])
     entry = {"repo": repo, "file": r["path"], "line": r["start"]["line"], "type": vtype(r)}
     try:
-        out = call(args.base_url, args.api_key, args.model, VERIFY_SYSTEM, user, args.timeout)
+        out = call(args.base_url, args.api_key, args.model, VERIFY_SYSTEM, user, args.timeout, args.interval)
         stats["verify_calls"] += 1
         applies = bool(out.get("applies"))
         entry.update({"applies": applies, "confidence": out.get("confidence"), "reason": out.get("reason")})
@@ -315,6 +323,8 @@ def main() -> int:
     ap.add_argument("--context", type=int, default=15, help="lines of code shown on each side of a site")
     ap.add_argument("--timeout", type=int, default=int(os.environ.get("DEEPGUARD_REQUEST_TIMEOUT", "300")))
     ap.add_argument("--fail-policy", choices=["keep", "drop"], default="keep")
+    ap.add_argument("--interval", type=float, default=float(os.environ.get("DEEPGUARD_MIN_REQUEST_INTERVAL_MS", "0")) / 1000,
+                    help="seconds to wait between model calls (rate-limited free tiers)")
     ap.add_argument("--answer-format", choices=["letter", "name"], default="letter",
                     help="name: model answers with the type string after stating the weakness (see NAME_RULES)")
     ap.add_argument("--select-mode", choices=["multi", "single"], default="single",
