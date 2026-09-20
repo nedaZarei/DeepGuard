@@ -65,25 +65,34 @@ def near(a: int | None, entry: dict, tol: int) -> bool:
     return start - tol <= a <= end + tol
 
 
-def classify(x, m, findings, vulns, tp_lines) -> tuple[str, str]:
-    """Return (category, note) for one FP finding x with match-result m."""
+def classify(x, m, findings, vulns, tp_lines) -> tuple[str, str, bool]:
+    """Return (category, note, also_line_off) for one FP finding x with match-result m.
+
+    Precedence when several explanations fit: fp_trap > wrong_type > line_off >
+    duplicate > claimed/far > none. wrong_type outranks line_off because the
+    scorer's own +-10 window defines "same site": a real vulnerability of another
+    type at the reported location is the nearer explanation than a same-type one
+    11-30 lines away. The overlap is counted separately so the choice is visible.
+    """
     if m.ground_truth_entry is not None:
-        return "fp_trap", m.ground_truth_entry.get("id", "")
+        return "fp_trap", m.ground_truth_entry.get("id", ""), False
     same_file = [e for e in vulns if e["file"] == x.file]
+    same_cwe = [e for e in same_file if x.cwe in e["acceptable_cwes"]]
+    off = [e for e in same_cwe if near(x.line, e, 30) and not near(x.line, e, 10)]
     wrong_type = [e for e in same_file if x.cwe not in e["acceptable_cwes"] and near(x.line, e, 10)]
     if wrong_type:
         e = wrong_type[0]
-        return "wrong_type", f"said {CWE2FAMILY.get(x.cwe, x.cwe)}, GT {e['vulnerability_class']} @{e['location']['start_line']}"
-    same_cwe = [e for e in same_file if x.cwe in e["acceptable_cwes"]]
-    off = [e for e in same_cwe if near(x.line, e, 30) and not near(x.line, e, 10)]
+        return ("wrong_type",
+                f"said {CWE2FAMILY.get(x.cwe, x.cwe)}, GT {e['vulnerability_class']} @{e['location']['start_line']}",
+                bool(off))
     if off:
         e = off[0]
-        return "line_off_11_30", f"GT @{e['location']['start_line']}, reported {x.line}"
+        return "line_off_11_30", f"GT @{e['location']['start_line']}, reported {x.line}", False
     if (x.file, x.line) in tp_lines or sum(1 for y in findings if y.file == x.file and y.line == x.line) > 1:
-        return "duplicate_site", ""
+        return "duplicate_site", "", False
     if same_cwe:
-        return "gt_claimed_or_far", f"nearest GT @{min(same_cwe, key=lambda e: abs((e['location']['start_line'] or 0) - (x.line or 0)))['location']['start_line']}"
-    return "no_nearby_gt", ""
+        return "gt_claimed_or_far", f"nearest GT @{min(same_cwe, key=lambda e: abs((e['location']['start_line'] or 0) - (x.line or 0)))['location']['start_line']}", False
+    return "no_nearby_gt", "", False
 
 
 def source_context(repo: str, file: str, line: int | None, width: int = 2) -> str:
@@ -117,6 +126,7 @@ def main() -> int:
 
     cats = collections.Counter()
     pairs = collections.Counter()
+    overlap = 0  # wrong_type findings that would also qualify as line_off_11_30
     rows = []
     tp = fp = fn = 0
     for repo in repos:
@@ -131,8 +141,9 @@ def main() -> int:
             if m.classification != "FP":
                 continue
             x = m.scanner_finding
-            cat, note = classify(x, m, fs, vulns, tp_lines)
+            cat, note, also_off = classify(x, m, fs, vulns, tp_lines)
             cats[cat] += 1
+            overlap += also_off
             if cat == "wrong_type":
                 pairs[note.split(" @")[0]] += 1
             rows.append({"repo": repo, "file": x.file, "line": x.line, "cwe": x.cwe,
@@ -145,6 +156,7 @@ def main() -> int:
     print("\nFP taxonomy:")
     for k, v in cats.most_common():
         print(f"  {v:>5}  {v / total_fp:5.1%}  {k}")
+    print(f"  (of the wrong_type findings, {overlap} also have a same-type GT 11-30 lines away)")
     print("\nMost common wrong-type pairs:")
     for k, v in pairs.most_common(8):
         print(f"  {v:>5}  {k}")
@@ -162,7 +174,7 @@ def main() -> int:
     out_dir = os.path.join(ROOT, "reports", "evaluation-metrics")
     os.makedirs(out_dir, exist_ok=True)
     summary = {"slug": args.slug, "gt": args.gt, "repos": repos, "TP": tp, "FP": fp, "FN": fn,
-               "taxonomy": dict(cats), "wrong_type_pairs": dict(pairs.most_common(20))}
+               "taxonomy": dict(cats), "wrong_type_also_line_off": overlap, "wrong_type_pairs": dict(pairs.most_common(20))}
     with open(os.path.join(out_dir, f"realvuln-fp-taxonomy-{args.slug}.json"), "w") as fh:
         json.dump(summary, fh, indent=2)
 

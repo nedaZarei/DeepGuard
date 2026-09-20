@@ -95,14 +95,15 @@ def score(scanner, gt_dir, conf_min=None):
         c = C(); c.tp = sum(x.tp for x in run_cards)/k; c.fp = sum(x.fp for x in run_cards)/k
         c.fn = sum(x.fn for x in run_cards)/k; c.tn = sum(x.tn for x in run_cards)/k
         cards.append(c); per_repo[repo] = dict(TP=c.tp, FP=c.fp, FN=c.fn)
-    return metrics(cards), per_repo
+    m = metrics(cards); m["repos_covered"] = len(cards)
+    return m, per_repo
 
 out = {"slug": slug, "repos": repos, "line_tolerance": 10,
        "incomplete_scans": incomplete, "full": {}, "in_scope": {}}
 print(f"Repos scored by {slug}: {len(repos)}\n")
 for gt_label, gt_dir in (("full", "ground-truth"), ("in_scope", "ground-truth-inscope")):
     print(f"=== {gt_label} ground truth, same {len(repos)} repos ===")
-    print(f"{'scanner':<36}{'F1':>7}{'F2':>7}{'Prec':>7}{'Rec':>7}{'TP':>7}{'FP':>7}{'FN':>7}")
+    print(f"{'scanner':<36}{'F1':>7}{'F2':>7}{'Prec':>7}{'Rec':>7}{'TP':>7}{'FP':>7}{'FN':>7}{'repos':>7}")
     rows = []
     for b in BASELINES:
         m, _ = score(b, gt_dir); rows.append((b, m)); out[gt_label][b] = m
@@ -111,7 +112,10 @@ for gt_label, gt_dir in (("full", "ground-truth"), ("in_scope", "ground-truth-in
         rows.append((name, m)); out[gt_label][name] = m
         if t == 0.5: out[gt_label][f"{slug}_per_repo"] = per
     for name, m in rows:
-        print(f"{name:<36}{m['f1']:>7.3f}{m['f2_score']:>7.1f}{m['precision']:>7.3f}{m['recall']:>7.3f}{m['TP']:>7}{m['FP']:>7}{m['FN']:>7}")
+        cov = m.get("repos_covered", 0)
+        flag = "" if cov == len(repos) else " *"
+        print(f"{name:<36}{m['f1']:>7.3f}{m['f2_score']:>7.1f}{m['precision']:>7.3f}{m['recall']:>7.3f}{m['TP']:>7}{m['FP']:>7}{m['FN']:>7}{cov:>6}{flag}")
+    print("  (* = baseline lacks results on some of these repos; compare only on the intersection)")
     print()
 dst = os.path.join(os.path.dirname(__file__), "..", f"reports/evaluation-metrics/realvuln-{slug}.json")
 json.dump(out, open(dst, "w"), indent=2); print("saved", os.path.normpath(dst))

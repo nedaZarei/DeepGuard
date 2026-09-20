@@ -34,14 +34,21 @@ SEVERITY_MAP = {"critical": "ERROR", "high": "ERROR", "medium": "WARNING", "low"
 
 
 def to_repo_relative(path: str, target_path: str, repo_root: str) -> str:
-    """DeepGuard writes paths relative to the CWD it was run from, prefixed with
-    the --path argument. Strip that prefix so the path is relative to repo root."""
+    """Make a finding's path relative to the repo root the scorer expects.
+
+    DeepGuard writes paths as `<--path argument>/<file>`, relative or absolute
+    depending on how it was invoked. The report's own `target_path` is the
+    authoritative prefix: a benchmark checkout may have moved since the scan,
+    so relpath against the *current* repo_root would silently produce
+    `../../..` paths and zero matches. Order: strip target_path; else, if
+    absolute, relpath against repo_root; then drop any leading `./`.
+    """
     p = path.replace("\\", "/")
-    if os.path.isabs(p):
-        return os.path.relpath(p, repo_root).replace("\\", "/")
-    tp = target_path.replace("\\", "/").rstrip("/")
-    if tp and p.startswith(tp + "/"):
-        p = p[len(tp) + 1:]
+    tp = (target_path or "").replace("\\", "/").rstrip("/")
+    if tp and (p == tp or p.startswith(tp + "/")):
+        p = p[len(tp):].lstrip("/")
+    elif os.path.isabs(p):
+        p = os.path.relpath(p, repo_root).replace("\\", "/")
     while p.startswith("./"):
         p = p[2:]
     return p
@@ -91,6 +98,11 @@ def main():
     # REALVULN_CONF_MIN lets us sweep the confidence threshold at scoring time
     # without re-running the (slow) scan; the raw report keeps everything >= 0.5.
     out = convert(report, repo_root, float(os.environ.get("REALVULN_CONF_MIN", "0")))
+    escaped = [r["path"] for r in out["results"] if r["path"].startswith("../") or os.path.isabs(r["path"])]
+    if escaped:
+        print(f"  ERROR: {len(escaped)} finding paths are not repo-relative (e.g. {escaped[0][:80]}); "
+              "target_path in the report does not match its findings", file=sys.stderr)
+        sys.exit(2)
     os.makedirs(os.path.dirname(os.path.abspath(dst)), exist_ok=True)
     with open(dst, "w") as fh:
         json.dump(out, fh, indent=2)
