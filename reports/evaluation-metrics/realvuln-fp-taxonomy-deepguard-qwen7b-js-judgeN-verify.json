@@ -1,0 +1,28 @@
+{
+  "slug": "deepguard-qwen7b-js-judgeN-verify",
+  "gt": "in_scope",
+  "repos": [
+    "realvuln-dvna",
+    "realvuln-node-api-goat",
+    "realvuln-vuln-node-express"
+  ],
+  "TP": 8,
+  "FP": 49,
+  "FN": 11,
+  "taxonomy": {
+    "no_nearby_gt": 38,
+    "wrong_type": 8,
+    "gt_claimed_or_far": 2,
+    "line_off_11_30": 1
+  },
+  "wrong_type_also_line_off": 1,
+  "wrong_type_pairs": {
+    "said missing_auth, GT broken_object_level_authorization": 2,
+    "said ssrf, GT missing_authorization": 1,
+    "said missing_auth, GT xxe": 1,
+    "said CWE-327, GT predictable_security_token": 1,
+    "said command_injection, GT code_injection": 1,
+    "said path_traversal, GT cross_site_scripting": 1,
+    "said command_injection, GT cross_site_scripting": 1
+  }
+}

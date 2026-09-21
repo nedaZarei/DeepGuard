@@ -1,0 +1,97 @@
+repo,file,line,cwe,type,category,note,message,context,human_verdict,human_note
+realvuln-dvna,core/appHandler.js,274,CWE-327,CWE-327,no_nearby_gt,,Weak hashing algorithm MD5 used for password storage,,,
+realvuln-dvna,core/appHandler.js,87,CWE-918,ssrf,no_nearby_gt,,User-controlled ID passed to database query without allowlist validation,"85  		db.Product.find({
+86  			where: {
+87> 				'id': req.query.id
+88  			}
+89  		}).then(product => {",,
+realvuln-dvna,core/authHandler.js,95,CWE-79,xss,no_nearby_gt,,User input used in rendered template,"93  		} else {
+94  			req.flash('danger', ""Passowords do not match"")
+95> 			res.render('resetpw', {
+96  				login: req.query.login,
+97  				token: req.query.token",,
+realvuln-vuln-node-express,routes/search.js,17,CWE-79,xss,no_nearby_gt,,Unescaped user input rendered directly in HTML response,"15        res.redirect('/search')
+16      } else {
+17>       res.render('searchResult', ret)
+18      }
+19    });",,
+realvuln-dvna,routes/main.js,16,CWE-22,path_traversal,no_nearby_gt,,"Potential file path manipulation, missing path validation","14  	router.get('/learn/vulnerability/:vuln', authHandler.isAuthenticated, function (req, res) {
+15  		res.render('vulnerabilities/layout', {
+16> 			vuln: req.params.vuln,
+17  			vuln_title: vulnDict[req.params.vuln],
+18  			vuln_scenario: req.params.vuln + '/scenario',",,
+realvuln-dvna,routes/main.js,36,CWE-284,missing_auth,no_nearby_gt,,Authentication middleware missing,"34  	})
+35  
+36> 	router.get('/register', authHandler.isNotAuthenticated, function (req, res) {
+37  		res.render('register')
+38  	})",,
+realvuln-node-api-goat,test/server.js,39,CWE-79,xss,no_nearby_gt,,Unescaped user input rendered directly in HTML response,"37          .get('/cwe79/echo?text=hello')
+38          .expect('Content-Type', /text/)
+39>         .expect(200)
+40          .end((err, res) => {
+41            if(err){",,
+realvuln-dvna,core/appHandler.js,62,CWE-89,sql_injection,gt_claimed_or_far,nearest GT @11,User input directly in LIKE clause,"60  		where: {
+61  			name: {
+62> 				[Op.like]: '%' + req.body.name + '%'
+63  			}
+64  		}",,
+realvuln-dvna,core/authHandler.js,50,CWE-327,CWE-327,no_nearby_gt,,Weak hashing algorithm MD5 used for security-sensitive purposes,"48  			if (user) {
+49  				if (req.query.token == md5(req.query.login)) {
+50> 					res.render('resetpw', {
+51  						login: req.query.login,
+52  						token: req.query.token",,
+realvuln-node-api-goat,test/server.js,139,CWE-502,insecure_deserialization,no_nearby_gt,,Deserializes untrusted data without verification of result data,"137              return done(err);
+138            } else{
+139>             res.text.should.be.include('node-serialize');
+140              return done();
+141            }",,
+realvuln-vuln-node-express,routes/api.js,15,CWE-79,xss,no_nearby_gt,,Unescaped search results may include user input.,"13      } else {
+14        delete ret.searchText;
+15>       res.json(ret);
+16      }
+17    });",,
+realvuln-node-api-goat,app/server.js,89,CWE-78,command_injection,wrong_type,"said command_injection, GT cross_site_scripting @80",User-controlled text reflected in URL without sanitation,"87  // Status:      PASS
+88  app.get('/cwe601/redirect', function (req, res) {
+89>   res.redirect(""http://localhost:3001/echo?text="" + req.query.text + "" (Redirected)"");
+90  });
+91  ",,
+realvuln-dvna,core/appHandler.js,136,CWE-284,missing_auth,wrong_type,"said missing_auth, GT broken_object_level_authorization @145",No authentication check for endpoint,"134  }
+135  
+136> module.exports.userEdit = function (req, res) {
+137  	res.render('app/useredit', {
+138  		userId: req.user.id,",,
+realvuln-dvna,routes/main.js,6,CWE-284,missing_auth,no_nearby_gt,,Authentication middleware missing,"4  
+5  module.exports = function (passport) {
+6> 	router.get('/', authHandler.isAuthenticated, function (req, res) {
+7  		res.redirect('/learn')
+8  	})",,
+realvuln-dvna,core/appHandler.js,52,CWE-79,xss,no_nearby_gt,,User-controlled data rendered in view templates without proper escaping,"50  			products: products
+51  		}
+52> 		res.render('app/products', {
+53  			output: output
+54  		})",,
+realvuln-dvna,core/passport.js,86,CWE-327,CWE-327,no_nearby_gt,,Unnecessary null parameter in bcrypt.hashSync,"84  
+85      var createHash = function (password) {
+86>         return bCrypt.hashSync(password, bCrypt.genSaltSync(10), null);
+87      }
+88  ",,
+realvuln-dvna,core/passport.js,57,CWE-89,sql_injection,no_nearby_gt,,Unsanitized user input in SQL query via string concatenation,"55                  db.User.findOne({
+56                      where: {
+57>                         'email': username
+58                      }
+59                  }).then(function (user) {",,
+realvuln-vuln-node-express,routes/api.js,10,CWE-89,sql_injection,no_nearby_gt,,Unsanitized user input in SQL query,"8    console.log(req.query);
+9    console.log('search text: ' + searchText);
+10>   searchService.searchByName(searchText, function (err, ret) {
+11      if (err) {
+12        res.json(err);",,
+realvuln-dvna,core/appHandler.js,68,CWE-79,xss,no_nearby_gt,,User input used in search criteria,"66  		output = {
+67  			products: products,
+68> 			searchTerm: req.body.name
+69  		}
+70  		res.render('app/products', {",,
+realvuln-node-api-goat,test/server.js,86,CWE-327,CWE-327,no_nearby_gt,,Potential open redirect,"84      it('echoes back what you send in the text query string parameter via a redirect', function (done) {
+85          request(server)
+86>           .get('/cwe601/redirect?text=hello')
+87            .expect(302) // HTTP response code for Redirect is 302
+88            .end((err, res) => {",,
