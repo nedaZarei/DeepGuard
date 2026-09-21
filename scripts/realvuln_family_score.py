@@ -40,6 +40,13 @@ TYPE_FAMILY = {
 CWE_TO_TYPE = {c: t for t, cs in TYPE_FAMILY.items() for c in cs}
 
 
+
+def _refuse_incomplete(slugs, root):
+    bad = [s for s in slugs if os.path.exists(os.path.join(root, "reports", "realvuln-judge", s, "INCOMPLETE"))]
+    if bad:
+        sys.exit(f"REFUSING to score partial judge/verifier runs (failed model calls): {bad}. "
+                 "Re-run them, or delete the INCOMPLETE marker if you really mean it.")
+
 def family_of(cwe: str) -> set:
     return TYPE_FAMILY.get(CWE_TO_TYPE.get(cwe, ""), {cwe})
 
@@ -77,6 +84,7 @@ def main():
     gt_dir = "ground-truth-inscope" if a.gt == "in_scope" else "ground-truth"
     inscope = set(json.load(open(f"{RV}/{gt_dir}/in-scope-cwes.json"))) if a.gt == "in_scope" else None
     print(f"family-level scoring, gt={a.gt}\n{'scanner':<34}{'repos':>6}{'TP':>6}{'FP':>6}{'FN':>6}{'Prec':>7}{'Rec':>7}{'F1':>7}")
+    _refuse_incomplete(a.slugs, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     out = {}
     for slug in a.slugs:
         files = sorted(glob.glob(f"{RV}/scan-results/realvuln-*/{slug}/results.json"))

@@ -36,6 +36,13 @@ from scorer.metrics import compute_scorecard  # noqa: E402
 FAM = json.load(open(f"{RV}/config/cwe-families.json"))
 
 
+
+def _refuse_incomplete(slugs, root):
+    bad = [s for s in slugs if os.path.exists(os.path.join(root, "reports", "realvuln-judge", s, "INCOMPLETE"))]
+    if bad:
+        sys.exit(f"REFUSING to score partial judge/verifier runs (failed model calls): {bad}. "
+                 "Re-run them, or delete the INCOMPLETE marker if you really mean it.")
+
 def wilson(k: float, n: float, z: float = 1.96) -> tuple[float, float]:
     if n <= 0:
         return (0.0, 0.0)
@@ -127,6 +134,7 @@ def main() -> int:
     gt_dir = "ground-truth-inscope" if args.gt == "in_scope" else "ground-truth"
     inscope = set(json.load(open(f"{RV}/{gt_dir}/in-scope-cwes.json"))) if args.gt == "in_scope" else None
 
+    _refuse_incomplete(args.slugs, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     rows = {s: per_repo(s, gt_dir, inscope) for s in args.slugs}
     out = {"gt": args.gt, "scanners": {}, "pairs": {}}
 

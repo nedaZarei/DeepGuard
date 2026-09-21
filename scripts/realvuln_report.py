@@ -21,6 +21,7 @@ BASELINES = ["sonarqube", "semgrep", "snyk", "gemma4-31b-agentic-v1",
              "gemini-3.5-flash-agentic-v1", "claude-opus-5-cc-agentic-v1", "gpt-5.5-agentic-v1"]
 THRESHOLDS = [0.5, 0.7, 0.8, 0.9]
 
+_refuse_incomplete([slug], os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 repos = sorted(os.path.basename(os.path.dirname(os.path.dirname(p)))
                for p in glob.glob(f"{RV}/scan-results/realvuln-*/{slug}/results.json"))
 if not repos:
@@ -45,6 +46,13 @@ if incomplete:
     for r, why in incomplete.items():
         print(f"  {r}: {why}")
     print()
+
+
+def _refuse_incomplete(slugs, root):
+    bad = [s for s in slugs if os.path.exists(os.path.join(root, "reports", "realvuln-judge", s, "INCOMPLETE"))]
+    if bad:
+        sys.exit(f"REFUSING to score partial judge/verifier runs (failed model calls): {bad}. "
+                 "Re-run them, or delete the INCOMPLETE marker if you really mean it.")
 
 def conf_of(f):
     return f.metadata.get("confidence") if hasattr(f, "metadata") and isinstance(f.metadata, dict) else None

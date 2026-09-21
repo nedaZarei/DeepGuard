@@ -375,9 +375,18 @@ def main() -> int:
     summary = {"slug_in": args.slug, "slug_out": args.out_slug, "mode": args.mode, "select_mode": args.select_mode, "answer_format": args.answer_format, "model": args.model,
                "window": args.window, "context": args.context, "fail_policy": args.fail_policy,
                "repos": repos, "wall_seconds": round(time.time() - started), "stats": dict(total)}
+    errors = total.get("judge_errors", 0) + total.get("verify_errors", 0)
+    summary["incomplete"] = errors > 0
     json.dump(summary, open(os.path.join(log_dir, "_summary.json"), "w"), indent=2)
     print("\nTOTAL " + ", ".join(f"{k}={v}" for k, v in sorted(total.items())))
     print(f"logs: {log_dir}\nscore with: RV={RV} python3 scripts/realvuln_report.py {args.out_slug}")
+    if errors:
+        # A run with failed calls is not a measurement: under the keep policy the affected
+        # findings passed through untouched. Mark it so scoring scripts refuse it by default.
+        marker = os.path.join(log_dir, "INCOMPLETE")
+        open(marker, "w").write(f"{errors} failed model calls; re-run before scoring\n")
+        print(f"\nWARNING: {errors} model calls failed -> results are PARTIAL. Marker written: {marker}", file=sys.stderr)
+        return 3
     return 0
 
 
