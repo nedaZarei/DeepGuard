@@ -1,22 +1,4 @@
 {
-  "deepguard-qwen7b-js": {
-    "repos": 3,
-    "TP": 12,
-    "FP": 161,
-    "FN": 7,
-    "precision": 0.06936416184971098,
-    "recall": 0.631578947368421,
-    "f1": 0.125
-  },
-  "deepguard-qwen7b-js-judgeN": {
-    "repos": 3,
-    "TP": 12,
-    "FP": 66,
-    "FN": 7,
-    "precision": 0.15384615384615385,
-    "recall": 0.631578947368421,
-    "f1": 0.24742268041237114
-  },
   "deepguard-qwen7b-js-judgeN-verify": {
     "repos": 3,
     "TP": 11,
@@ -25,6 +7,24 @@
     "precision": 0.19298245614035087,
     "recall": 0.5789473684210527,
     "f1": 0.2894736842105263
+  },
+  "deepguard-qwen7b-js-judgeNM-120b": {
+    "repos": 3,
+    "TP": 12,
+    "FP": 54,
+    "FN": 7,
+    "precision": 0.18181818181818182,
+    "recall": 0.631578947368421,
+    "f1": 0.2823529411764706
+  },
+  "deepguard-qwen7b-js-judgeNM-120b-verify": {
+    "repos": 3,
+    "TP": 11,
+    "FP": 36,
+    "FN": 8,
+    "precision": 0.23404255319148937,
+    "recall": 0.5789473684210527,
+    "f1": 0.3333333333333333
   },
   "semgrep": {
     "repos": 3,
