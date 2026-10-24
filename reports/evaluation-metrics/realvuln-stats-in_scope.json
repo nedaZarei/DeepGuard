@@ -1,95 +1,56 @@
 {
   "gt": "in_scope",
   "scanners": {
-    "deepguard-qwen7b-judgeNM-120b": {
+    "deepguard-qwen7b-js-judgeN": {
       "repos": [
-        "realvuln-pythonssti",
-        "realvuln-intentionally-vulnerable-python-application",
-        "realvuln-insecure-web",
-        "realvuln-dsvw",
-        "realvuln-python-insecure-app",
-        "realvuln-vulnerable-api",
-        "realvuln-vulnerable-tornado-app",
-        "realvuln-damn-vulnerable-flask-application"
+        "realvuln-vuln-node-express",
+        "realvuln-dvna",
+        "realvuln-node-api-goat"
       ],
-      "TP": 34.0,
-      "FP": 45.0,
-      "FN": 17.0,
-      "precision": 0.43037974683544306,
+      "TP": 8.0,
+      "FP": 70.0,
+      "FN": 11.0,
+      "precision": 0.10256410256410256,
       "precision_ci": [
-        0.3269364765548295,
-        0.5402799943969628
+        0.05289271527803498,
+        0.18954633772190638
       ],
-      "recall": 0.6666666666666666,
+      "recall": 0.42105263157894735,
       "recall_ci": [
-        0.5296812196648056,
-        0.7803024423727717
+        0.2314162039203038,
+        0.6372444853483988
       ],
-      "f1": 0.5230769230769231,
+      "f1": 0.16494845360824742,
       "f1_bootstrap_ci": [
-        0.43137254901960786,
-        0.6153846153846153
+        0.10714285714285714,
+        0.3076923076923077
       ]
     },
-    "deepguard-qwen7b-judgeNM-120b-verify": {
+    "deepguard-qwen7b-js-judgeV3": {
       "repos": [
-        "realvuln-pythonssti",
-        "realvuln-intentionally-vulnerable-python-application",
-        "realvuln-insecure-web",
-        "realvuln-dsvw",
-        "realvuln-python-insecure-app",
-        "realvuln-vulnerable-api",
-        "realvuln-vulnerable-tornado-app",
-        "realvuln-damn-vulnerable-flask-application"
+        "realvuln-vuln-node-express",
+        "realvuln-dvna",
+        "realvuln-node-api-goat"
       ],
-      "TP": 24.0,
-      "FP": 18.0,
-      "FN": 27.0,
-      "precision": 0.5714285714285714,
+      "TP": 8.0,
+      "FP": 70.0,
+      "FN": 11.0,
+      "precision": 0.10256410256410256,
       "precision_ci": [
-        0.4220597791187447,
-        0.7088257048085179
+        0.05289271527803498,
+        0.18954633772190638
       ],
-      "recall": 0.47058823529411764,
+      "recall": 0.42105263157894735,
       "recall_ci": [
-        0.34052771426416406,
-        0.6047692865527341
+        0.2314162039203038,
+        0.6372444853483988
       ],
-      "f1": 0.5161290322580646,
+      "f1": 0.16494845360824742,
       "f1_bootstrap_ci": [
-        0.4077669902912621,
-        0.6666666666666666
+        0.10714285714285714,
+        0.3076923076923077
       ]
     }
   },
-  "pairs": {
-    "deepguard-qwen7b-judgeNM-120b-verify:deepguard-qwen7b-judgeNM-120b": {
-      "repos": [
-        "realvuln-damn-vulnerable-flask-application",
-        "realvuln-dsvw",
-        "realvuln-insecure-web",
-        "realvuln-intentionally-vulnerable-python-application",
-        "realvuln-python-insecure-app",
-        "realvuln-pythonssti",
-        "realvuln-vulnerable-api",
-        "realvuln-vulnerable-tornado-app"
-      ],
-      "f1_a": 0.5161290322580646,
-      "f1_b": 0.5230769230769231,
-      "diff": -0.006947890818858493,
-      "per_repo_diffs": {
-        "realvuln-damn-vulnerable-flask-application": 0.06666666666666676,
-        "realvuln-dsvw": -0.27680311890838216,
-        "realvuln-insecure-web": 0.13333333333333353,
-        "realvuln-intentionally-vulnerable-python-application": -0.045454545454545414,
-        "realvuln-python-insecure-app": -0.07142857142857151,
-        "realvuln-pythonssti": 0.0,
-        "realvuln-vulnerable-api": 0.1428571428571429,
-        "realvuln-vulnerable-tornado-app": 0.0
-      },
-      "wins_a": 3,
-      "perm_p": 0.9345,
-      "sign_p": 1.0
-    }
-  }
+  "pairs": {}
 }

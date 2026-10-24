@@ -1,20 +1,29 @@
 {
-  "deepguard-qwen7b-judgeNM-120b": {
+  "deepguard-qwen7b-judgeN": {
     "repos": 8,
-    "TP": 34,
-    "FP": 45,
-    "FN": 17,
-    "precision": 0.43037974683544306,
-    "recall": 0.6666666666666666,
-    "f1": 0.5230769230769231
+    "TP": 29,
+    "FP": 42,
+    "FN": 22,
+    "precision": 0.4084507042253521,
+    "recall": 0.5686274509803921,
+    "f1": 0.47540983606557374
   },
-  "deepguard-qwen7b-judgeNM-120b-verify": {
+  "deepguard-qwen7b-judgeV3": {
     "repos": 8,
-    "TP": 25,
-    "FP": 17,
-    "FN": 26,
-    "precision": 0.5952380952380952,
-    "recall": 0.49019607843137253,
-    "f1": 0.5376344086021505
+    "TP": 30,
+    "FP": 42,
+    "FN": 21,
+    "precision": 0.4166666666666667,
+    "recall": 0.5882352941176471,
+    "f1": 0.48780487804878053
+  },
+  "deepguard-qwen7b-judgeN-vAX": {
+    "repos": 8,
+    "TP": 29,
+    "FP": 27,
+    "FN": 22,
+    "precision": 0.5178571428571429,
+    "recall": 0.5686274509803921,
+    "f1": 0.5420560747663551
   }
 }
