@@ -96,4 +96,12 @@ if have score21; then
   python3 scripts/realvuln_stats.py --slugs deepguard-qwen7b deepguard-qwen7b-judgeN deepguard-qwen7b-judgeN-verify semgrep snyk --pairs deepguard-qwen7b-judgeN-verify:snyk deepguard-qwen7b-judgeN-verify:semgrep --repos $ALL > "$LOGS/stats21.log" 2>&1; tail -14 "$LOGS/stats21.log"
   python3 scripts/realvuln_family_score.py --slugs deepguard-qwen7b deepguard-qwen7b-judgeN deepguard-qwen7b-judgeN-verify semgrep snyk --repos $ALL > "$LOGS/family21.log" 2>&1; tail -7 "$LOGS/family21.log"
 fi
+for ab in rag frameworks ast; do
+  if have "ablate-$ab"; then
+    step "ablation: no $ab, 8 Python repos"
+    DEEPGUARD_ABLATE=$ab SLUG=deepguard-qwen7b-no-$ab ./scripts/realvuln_run.sh $PY8 > "$LOGS/ablate-$ab.log" 2>&1; grep -E "^===|repos=" "$LOGS/ablate-$ab.log" | tail -3
+    python3 scripts/realvuln_judge.py --slug deepguard-qwen7b-no-$ab --out-slug deepguard-qwen7b-no-$ab-judgeN --select-mode single --answer-format name --repos $PY8 > "$LOGS/ablate-$ab-judge.log" 2>&1
+    python3 scripts/realvuln_judge.py --slug deepguard-qwen7b-no-$ab-judgeN --out-slug deepguard-qwen7b-no-$ab-judgeN-verify --mode verify --repos $PY8 > "$LOGS/ablate-$ab-verify.log" 2>&1
+  fi
+done
 step "queue finished"
