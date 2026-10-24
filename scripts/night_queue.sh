@@ -17,6 +17,7 @@ LOGS="$HOME/Documents/university/deepguard-runs/logs"; mkdir -p "$LOGS"
 STEPS="${STEPS:-wait zsfix judge1 judgeM verify1 js variance score}"
 PY8="realvuln-pythonssti realvuln-intentionally-vulnerable-python-application realvuln-insecure-web realvuln-dsvw realvuln-python-insecure-app realvuln-vulnerable-api realvuln-vulnerable-tornado-app realvuln-damn-vulnerable-flask-application"
 JS3="realvuln-vuln-node-express realvuln-dvna realvuln-node-api-goat"
+PY13="realvuln-vfapi realvuln-python-app realvuln-vulnerable-flask-app realvuln-vampi realvuln-flask-xss realvuln-lets-be-bad-guys realvuln-extremely-vulnerable-flask-app realvuln-dvblab realvuln-dvpwa realvuln-dsvpwa realvuln-owasp-web-playground realvuln-threatbyte realvuln-vulnerable-python-apps"
 
 ts() { date +%H:%M:%S; }
 step() { echo "[$(ts)] === $1 ==="; }
@@ -79,5 +80,20 @@ if have score; then
   python3 scripts/realvuln_stats.py --slugs deepguard-qwen7b zeroshot-qwen7b deepguard-qwen7b-judge1 deepguard-qwen7b-judgeM deepguard-qwen7b-judge1-verify \
     --pairs deepguard-qwen7b:zeroshot-qwen7b deepguard-qwen7b:deepguard-qwen7b-judge1 deepguard-qwen7b-judge1:deepguard-qwen7b-judgeM deepguard-qwen7b-judge1:deepguard-qwen7b-judge1-verify \
     --repos $PY8 > "$LOGS/stats.log" 2>&1; tail -20 "$LOGS/stats.log"
+fi
+if have py13; then
+  step "sweep on the 13 remaining smaller Python repos"
+  SLUG=deepguard-qwen7b ./scripts/realvuln_run.sh $PY13 > "$LOGS/py13-sweep.log" 2>&1; grep -E "^===|Findings:|repos=" "$LOGS/py13-sweep.log" | tail -15
+fi
+if have judge13; then
+  step "judge + verifier on the 13 new repos (offline, same prompts as --judge/--verify)"
+  python3 scripts/realvuln_judge.py --slug deepguard-qwen7b --out-slug deepguard-qwen7b-judgeN --select-mode single --answer-format name --repos $PY13 > "$LOGS/judgeN-py13.log" 2>&1; tail -2 "$LOGS/judgeN-py13.log"
+  python3 scripts/realvuln_judge.py --slug deepguard-qwen7b-judgeN --out-slug deepguard-qwen7b-judgeN-verify --mode verify --repos $PY13 > "$LOGS/verifyN-py13.log" 2>&1; tail -2 "$LOGS/verifyN-py13.log"
+fi
+if have score21; then
+  step "score 21 Python repos"
+  ALL="$PY8 $PY13"
+  python3 scripts/realvuln_stats.py --slugs deepguard-qwen7b deepguard-qwen7b-judgeN deepguard-qwen7b-judgeN-verify semgrep snyk --pairs deepguard-qwen7b-judgeN-verify:snyk deepguard-qwen7b-judgeN-verify:semgrep --repos $ALL > "$LOGS/stats21.log" 2>&1; tail -14 "$LOGS/stats21.log"
+  python3 scripts/realvuln_family_score.py --slugs deepguard-qwen7b deepguard-qwen7b-judgeN deepguard-qwen7b-judgeN-verify semgrep snyk --repos $ALL > "$LOGS/family21.log" 2>&1; tail -7 "$LOGS/family21.log"
 fi
 step "queue finished"
