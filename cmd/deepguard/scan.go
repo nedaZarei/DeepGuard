@@ -66,11 +66,7 @@ func init() {
 	// Bind flags to viper config keys
 	viper.BindPFlag("scan_path", scanCmd.Flags().Lookup("path"))
 	viper.BindPFlag("output_dir", scanCmd.Flags().Lookup("output"))
-	viper.BindPFlag("worker_count", scanCmd.Flags().Lookup("workers"))
-	viper.BindPFlag("judge", scanCmd.Flags().Lookup("judge"))
-	viper.BindPFlag("verify", scanCmd.Flags().Lookup("verify"))
 	viper.BindPFlag("languages", scanCmd.Flags().Lookup("languages"))
-	viper.BindPFlag("confidence_threshold", scanCmd.Flags().Lookup("confidence-threshold"))
 }
 
 // validateScanFlags validates all scan command flags before execution
@@ -160,11 +156,25 @@ func validateScanFlags(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to load configuration: %w", loadErr)
 	}
 
-	// Override with validated flag values
+	// Override with validated flag values. LoadConfig uses its own viper
+	// instance, so the global BindPFlag calls do not reach it; explicitly set
+	// flags are applied here.
 	cfg.ScanPath = scanPath
 	cfg.OutputDir = outputDir
 	cfg.Languages = filteredLanguages
 	cfg.Verbose = verbose
+	if cmd.Flags().Changed("confidence-threshold") {
+		cfg.ConfidenceThreshold, _ = cmd.Flags().GetFloat64("confidence-threshold")
+	}
+	if cmd.Flags().Changed("workers") {
+		cfg.WorkerCount, _ = cmd.Flags().GetInt("workers")
+	}
+	if cmd.Flags().Changed("judge") {
+		cfg.Judge, _ = cmd.Flags().GetBool("judge")
+	}
+	if cmd.Flags().Changed("verify") {
+		cfg.Verify, _ = cmd.Flags().GetBool("verify")
+	}
 
 	// Run full config validation
 	if err := cfg.Validate(); err != nil {
@@ -189,6 +199,8 @@ func runScan(cmd *cobra.Command, args []string) error {
 		Str("model", cfg.OpenAIModel).
 		Float64("budget_cap", cfg.BudgetCap).
 		Float64("confidence_threshold", cfg.ConfidenceThreshold).
+		Bool("judge", cfg.Judge).
+		Bool("verify", cfg.Verify).
 		Msg("Scan configuration")
 
 	// Discover files
