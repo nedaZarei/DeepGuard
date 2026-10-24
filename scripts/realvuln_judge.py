@@ -128,6 +128,25 @@ Is this a real {vtype} vulnerability at this location? Do not assume sanitisatio
 Return exactly: {{"applies": true or false, "confidence": <0.0-1.0>, "reason": "<one sentence>"}}"""
 
 
+# Verifier that must state a concrete failure before ruling. Asking for the evidence
+# fields before the verdict is the same ordering that fixed the judge (7.22).
+VERIFY_ATTACK_USER = """\
+Code ({file}, lines {lo}-{hi}):
+```
+{excerpt}
+```
+{xref}
+Reported finding: {vtype} at line {line}. Scanner's note: {message}
+
+A report is correct only if the code shown supports a concrete failure, not just a risky-looking pattern.
+For injection-style weaknesses, name what an attacker controls, how it reaches the dangerous operation
+at this location, and why nothing shown prevents it. For authentication or cryptography weaknesses, name
+the protected operation or secret and the missing or weak control. If you cannot state this from the
+code shown, the report does not apply. Do not assume sanitisation the code does not show.
+
+Return exactly:
+{{"attacker_input": "<what the attacker controls, or none>", "dangerous_operation": "<the operation at this location>", "why_not_prevented": "<one sentence>", "applies": true or false, "confidence": <0.0-1.0>}}"""
+
 _last_call = [0.0]
 
 
@@ -186,6 +205,104 @@ def excerpt(lines: list[str], center: int, ctx: int) -> tuple[int, int, str]:
     lo, hi = max(1, center - ctx), min(len(lines), center + ctx)
     w = len(str(hi))
     return lo, hi, "\n".join(f"{i:{w}d}: {lines[i - 1]}" for i in range(lo, hi + 1))
+
+
+_DEF = {
+    ".py": r"^\s*(?:async\s+)?def\s+{name}\s*\(",
+    ".js": r"(?:function\s+{name}\s*\(|\b{name}\s*[:=]\s*(?:async\s*)?(?:function\b|\([^)]*\)\s*=>|[A-Za-z_$][\w$]*\s*=>))",
+}
+_DEF[".ts"] = _DEF[".js"]
+_CALL = r"\b{name}\s*\("
+# Web handlers are invoked by the framework, so their real "caller" is the route
+# registration (Express router.get('/x', mw, handler); Django path('x', views.handler)).
+_ROUTE = r"(?:\.(?:get|post|put|patch|delete|all|use|route)\s*\(|\b(?:path|re_path|url)\s*\().*\b{name}\b"
+_IDENT = re.compile(r"\b([A-Za-z_][A-Za-z0-9_]{2,})\s*\(")
+_SKIP_EXT = {".git", "node_modules", "venv", ".venv", "site-packages", "migrations", "__pycache__", "dist", "build"}
+
+
+def _repo_files(repo: str, ext: str) -> list[str]:
+    root = os.path.join(RV, "repos", repo)
+    out = []
+    for dp, dns, fns in os.walk(root):
+        dns[:] = [d for d in dns if d not in _SKIP_EXT]
+        out.extend(os.path.join(dp, f) for f in fns if f.endswith(ext))
+    return out
+
+
+def _enclosing_function(lines: list[str], line: int, ext: str) -> str | None:
+    pat = re.compile(r"^\s*(?:async\s+)?def\s+([A-Za-z_]\w*)\s*\(" if ext == ".py"
+                     else r"(?:function\s+([A-Za-z_$][\w$]*)\s*\(|\b([A-Za-z_$][\w$]*)\s*[:=]\s*(?:async\s*)?(?:function\b|\())")
+    for i in range(min(line, len(lines)) - 1, -1, -1):
+        m = pat.search(lines[i])
+        if m:
+            return next(g for g in m.groups() if g)
+    return None
+
+
+def xref_context(repo: str, rel: str, lines: list[str], line: int, lo: int, hi: int, budget: int = 2400) -> str:
+    """Name-based callers of the enclosing function and definitions of functions it calls.
+
+    An approximation of a call graph (no type resolution): enough to show where a
+    parameter comes from or what a helper does, which a single excerpt cannot.
+    """
+    ext = os.path.splitext(rel)[1]
+    if ext not in _DEF:
+        return ""
+    files = _repo_files(repo, ext)
+    root = os.path.join(RV, "repos", repo)
+    parts = []
+
+    fn = _enclosing_function(lines, line, ext)
+    if fn and fn not in ("__init__", "main"):
+        call = re.compile(_CALL.format(name=re.escape(fn)) + "|" + _ROUTE.format(name=re.escape(fn)))
+        defn = re.compile(_DEF[ext].format(name=re.escape(fn)))
+        shown = 0
+        for path in files:
+            try:
+                fl = open(path, encoding="utf-8", errors="replace").read().split("\n")
+            except OSError:
+                continue
+            for i, l in enumerate(fl):
+                if call.search(l) and not defn.search(l):
+                    r0 = os.path.relpath(path, root)
+                    if r0 == rel and lo <= i + 1 <= hi:
+                        continue
+                    a, b = max(0, i - 3), min(len(fl), i + 2)
+                    parts.append(f"Caller of {fn} ({r0}, lines {a + 1}-{b}):\n" + "\n".join(f"{j + 1}: {fl[j]}" for j in range(a, b)))
+                    shown += 1
+                    break
+            if shown >= 2:
+                break
+
+    callees = []
+    for l in lines[lo - 1:hi]:
+        callees.extend(m.group(1) for m in _IDENT.finditer(l))
+    seen = set()
+    for name in callees:
+        if name in seen or name == fn or len(parts) >= 4:
+            continue
+        seen.add(name)
+        defn = re.compile(_DEF[ext].format(name=re.escape(name)))
+        for path in files:
+            try:
+                fl = open(path, encoding="utf-8", errors="replace").read().split("\n")
+            except OSError:
+                continue
+            hit = next((i for i, l in enumerate(fl) if defn.search(l)), None)
+            if hit is not None:
+                r0 = os.path.relpath(path, root)
+                if r0 == rel and lo <= hit + 1 <= hi:
+                    break
+                b = min(len(fl), hit + 10)
+                parts.append(f"Definition of {name} ({r0}, lines {hit + 1}-{b}):\n" + "\n".join(f"{j + 1}: {fl[j]}" for j in range(hit, b)))
+                break
+
+    text = ""
+    for p_ in parts:
+        if len(text) + len(p_) > budget:
+            break
+        text += "\n" + p_ + "\n"
+    return f"\nRelated code elsewhere in the repository:\n```{text}```\n" if text else ""
 
 
 def group_sites(results: list[dict], window: int) -> list[list[dict]]:
@@ -292,14 +409,21 @@ def verify_finding(r: dict, repo: str, args, stats: Counter, log: list) -> dict 
         stats["file_unreadable"] += 1
         return r
     lo, hi, exc = excerpt(lines, r["start"]["line"], args.context)
-    user = VERIFY_USER.format(file=r["path"], lo=lo, hi=hi, excerpt=exc, vtype=vtype(r),
-                              line=r["start"]["line"], message=(r["extra"].get("message") or "")[:200])
-    entry = {"repo": repo, "file": r["path"], "line": r["start"]["line"], "type": vtype(r)}
+    xref = xref_context(repo, r["path"], lines, r["start"]["line"], lo, hi) if args.xref else ""
+    if args.verify_prompt == "attack":
+        user = VERIFY_ATTACK_USER.format(file=r["path"], lo=lo, hi=hi, excerpt=exc, xref=xref, vtype=vtype(r),
+                                         line=r["start"]["line"], message=(r["extra"].get("message") or "")[:200])
+    else:
+        user = VERIFY_USER.format(file=r["path"], lo=lo, hi=hi, excerpt=exc + (("\n```\n" + xref + "```") if xref else ""),
+                                  vtype=vtype(r), line=r["start"]["line"], message=(r["extra"].get("message") or "")[:200])
+    entry = {"repo": repo, "file": r["path"], "line": r["start"]["line"], "type": vtype(r), "xref_chars": len(xref)}
     try:
         out = call(args.base_url, args.api_key, args.model, VERIFY_SYSTEM, user, args.timeout, args.interval)
         stats["verify_calls"] += 1
         applies = bool(out.get("applies"))
-        entry.update({"applies": applies, "confidence": out.get("confidence"), "reason": out.get("reason")})
+        entry.update({"applies": applies, "confidence": out.get("confidence"),
+                      "reason": out.get("reason") or out.get("why_not_prevented"),
+                      "attacker_input": out.get("attacker_input"), "dangerous_operation": out.get("dangerous_operation")})
         log.append(entry)
         if not applies:
             stats["verify_rejected"] += 1
@@ -332,6 +456,9 @@ def main() -> int:
                     help="name: model answers with the type string after stating the weakness (see NAME_RULES)")
     ap.add_argument("--select-mode", choices=["multi", "single"], default="single",
                     help="single: at most one type per site (default); multi: any number")
+    ap.add_argument("--verify-prompt", choices=["basic", "attack"], default="basic",
+                    help="attack: the verifier must state a concrete failure before ruling")
+    ap.add_argument("--xref", action="store_true", help="give the verifier name-based callers and callees")
     ap.add_argument("--repos", nargs="*", default=None)
     args = ap.parse_args()
     args.api_key = os.environ.get("DEEPGUARD_OPENAI_API_KEY", "ollama")
@@ -372,7 +499,8 @@ def main() -> int:
         total.update(stats)
         print("   " + ", ".join(f"{k}={v}" for k, v in sorted(stats.items())), flush=True)
 
-    summary = {"slug_in": args.slug, "slug_out": args.out_slug, "mode": args.mode, "select_mode": args.select_mode, "answer_format": args.answer_format, "model": args.model,
+    summary = {"slug_in": args.slug, "slug_out": args.out_slug, "mode": args.mode, "select_mode": args.select_mode, "answer_format": args.answer_format,
+               "verify_prompt": args.verify_prompt, "xref": args.xref, "model": args.model,
                "window": args.window, "context": args.context, "fail_policy": args.fail_policy,
                "repos": repos, "wall_seconds": round(time.time() - started), "stats": dict(total)}
     errors = total.get("judge_errors", 0) + total.get("verify_errors", 0)
