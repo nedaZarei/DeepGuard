@@ -99,6 +99,25 @@ func (c *Client) Analyze(ctx context.Context, chunk chunker.CodeChunk, kbContext
 	return response, analyzeErr
 }
 
+// Complete sends a prompt with no chunk or KB context and returns the raw reply.
+// Used by post-processing stages (judge, verifier) that build their own prompts.
+func (c *Client) Complete(ctx context.Context, prompt string) (string, error) {
+	var response *Response
+	err := withRetry(ctx, func(attemptCtx context.Context) error {
+		resp, err := c.callAPI(attemptCtx, prompt)
+		if err != nil {
+			return err
+		}
+		response = resp
+		return nil
+	})
+	if err != nil {
+		return "", err
+	}
+	c.tracker.Record(response.PromptTokens, response.CompletionTokens, response.Cost)
+	return response.Findings, nil
+}
+
 // AnalyzeWithParsing sends a code chunk for analysis and parses the response into structured findings
 // Implements retry logic with stricter prompts if parsing fails
 // Returns: (parsed findings, response metadata, error)

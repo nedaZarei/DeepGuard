@@ -33,6 +33,7 @@ type ScanMetadata struct {
 	ScanDurationSeconds int               `json:"scan_duration_seconds"`
 	Analysis            *AnalysisStats    `json:"analysis,omitempty"`    // Chunk-analysis completeness
 	LineSnap            *LineSnapStats    `json:"line_snap,omitempty"`   // Quote-anchored line correction
+	Judge               *JudgeStats       `json:"judge,omitempty"`       // Per-site type adjudication
 	Filtering           *FilteringStats   `json:"filtering,omitempty"`   // Optional filtering statistics
 	Suppression         *SuppressionStats `json:"suppression,omitempty"` // Optional suppression statistics
 }
@@ -54,6 +55,20 @@ type LineSnapStats struct {
 	Dropped           int  `json:"dropped"`            // removed under the strict policy (subset of quote_not_found)
 	DuplicatesRemoved int  `json:"duplicates_removed"` // same file+line+type collapsed after snapping
 	KeptFindings      int  `json:"kept_findings"`
+}
+
+// JudgeStats records the per-site type adjudication.
+type JudgeStats struct {
+	Enabled          bool `json:"enabled"`
+	TotalFindings    int  `json:"total_findings"`
+	SitesUncontested int  `json:"sites_uncontested"`
+	SitesContested   int  `json:"sites_contested"`
+	Calls            int  `json:"calls"`
+	SelectedOne      int  `json:"selected_one"`
+	SelectedNone     int  `json:"selected_none"`
+	Removed          int  `json:"removed"`
+	Errors           int  `json:"errors"` // failed calls; their sites were kept as reported
+	KeptFindings     int  `json:"kept_findings"`
 }
 
 // FilteringStats contains statistics about finding filtering

@@ -47,6 +47,9 @@ type Config struct {
 	// Env: DEEPGUARD_WORKER_COUNT
 	WorkerCount int `mapstructure:"worker_count"`
 
+	// Judge enables per-site type adjudication after line snapping.
+	Judge bool `mapstructure:"judge"`
+
 	// BudgetCap is the maximum cost in USD for a single scan
 	// Must be a positive float
 	BudgetCap float64 `mapstructure:"budget_cap"`
@@ -137,6 +140,7 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("openai_model", "gpt-4o-mini")
 	v.SetDefault("fallback_model", "")
 	v.SetDefault("worker_count", 5)
+	v.SetDefault("judge", false)
 	v.SetDefault("budget_cap", 3.0)
 	v.SetDefault("confidence_threshold", 0.5)
 	v.SetDefault("verbose", false)
