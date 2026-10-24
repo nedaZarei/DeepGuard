@@ -317,6 +317,9 @@ func runScan(cmd *cobra.Command, args []string) error {
 
 		frameworks := projectCtx.Frameworks[file.Language]
 		fileChunks, err := astChunker.ChunkFile(tree, content, absPath, file.Language, frameworks)
+		if config.Ablated("ast") {
+			fileChunks = chunker.WindowChunks(content, absPath, file.Language, frameworks, 60)
+		}
 		tree.Close()
 		if err != nil {
 			log.Warn().Err(err).Str("file", file.Path).Msg("failed to chunk file, skipping")

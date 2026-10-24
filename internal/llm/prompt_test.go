@@ -468,3 +468,22 @@ func TestFormatFrameworks(t *testing.T) {
 		})
 	}
 }
+
+func TestRenderPrompt_FrameworksAblationDropsFrameworksAndHints(t *testing.T) {
+	r, err := NewPromptRenderer()
+	if err != nil {
+		t.Fatal(err)
+	}
+	chunk := chunker.CodeChunk{FilePath: "a.js", StartLine: 1, EndLine: 1, Source: "x()", Frameworks: []string{"express"}}
+
+	with, _ := r.RenderPrompt(VulnTypeSQLInjection, chunk, nil)
+	t.Setenv("DEEPGUARD_ABLATE", "frameworks")
+	without, _ := r.RenderPrompt(VulnTypeSQLInjection, chunk, nil)
+
+	if !strings.Contains(with, "express") {
+		t.Fatal("baseline prompt should mention the detected framework")
+	}
+	if strings.Contains(without, "express") || strings.Contains(without, "Framework-Specific Guidance") {
+		t.Fatal("ablated prompt still carries framework information")
+	}
+}

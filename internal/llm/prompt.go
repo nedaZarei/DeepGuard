@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
+	"github.com/Neda-Zarei/deep-guard/internal/config"
 	"strings"
 	"text/template"
 
@@ -120,10 +121,14 @@ func (r *PromptRenderer) RenderPrompt(
 
 	// Get framework-specific hints
 	frameworkHints := GetAllFrameworkHints(chunk.Frameworks, vulnType)
+	frameworks := chunk.Frameworks
+	if config.Ablated("frameworks") {
+		frameworkHints, frameworks = nil, nil
+	}
 
 	// Build template parameters
 	params := TemplateParams{
-		Frameworks:     chunk.Frameworks,
+		Frameworks:     frameworks,
 		KBEntries:      formattedKB,
 		FilePath:       chunk.FilePath,
 		LineStart:      chunk.StartLine,

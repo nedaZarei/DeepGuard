@@ -2,6 +2,7 @@ package orchestrator
 
 import (
 	"context"
+	"github.com/Neda-Zarei/deep-guard/internal/config"
 	"time"
 
 	"github.com/Neda-Zarei/deep-guard/internal/budget"
@@ -134,7 +135,7 @@ func processChunk(
 
 	// Retrieve relevant KB entries for this chunk via BM25 RAG
 	kbContext := []kb.KBEntry{}
-	if retriever != nil {
+	if retriever != nil && !config.Ablated("rag") {
 		if ragResult, err := retriever.Retrieve(work.Chunk); err == nil {
 			kbContext = ragResult.Entries
 		} else {
