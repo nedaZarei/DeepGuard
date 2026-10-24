@@ -362,6 +362,8 @@ def judge_site(site: list[dict], repo: str, args, stats: Counter, log: list) -> 
         user = JUDGE_USER.format(file=site[0]["path"], lo=lo, hi=hi, site=center, excerpt=exc,
                                  candidates="\n".join(cand_lines), selection_rule=rule, selected_shape=shape)
     entry = {"repo": repo, "file": site[0]["path"], "site": center, "candidates": {l: vtype(r) for l, r in by_letter.items()}}
+    if args.votes > 1:
+        return judge_site_votes(site, best, lo, hi, center, exc, args, stats, log, entry)
     try:
         out = call(args.base_url, args.api_key, args.model, JUDGE_SYSTEM, user, args.timeout, args.interval)
         stats["judge_calls"] += 1
@@ -401,6 +403,59 @@ def judge_site(site: list[dict], repo: str, args, stats: Counter, log: list) -> 
             stats["dropped_on_error"] += len(site)
             return []
         return site
+
+
+def judge_site_votes(site, best, lo, hi, center, exc, args, stats, log, entry) -> list[dict]:
+    """Name-format single-select judge asked once per rotation of the candidate order.
+
+    Temperature is 0, so votes differ only through candidate order, which also exposes
+    position bias. Plurality wins; a tie goes to the canonical-order vote. The winner's
+    share of votes replaces the finding's confidence, so thresholds on it trade recall
+    for precision.
+    """
+    types = sorted(best)
+    votes, lines_by_type = [], {}
+    for k in range(args.votes):
+        order = types[k % len(types):] + types[:k % len(types)]
+        name_lines = [f"- {t}: {best[t]['extra'].get('message', '')[:200]}" for t in order]
+        user = JUDGE_USER_NAME.format(file=site[0]["path"], lo=lo, hi=hi, site=center, excerpt=exc,
+                                      candidates="\n".join(name_lines), selection_rule=NAME_RULES["single"])
+        try:
+            out = call(args.base_url, args.api_key, args.model, JUDGE_SYSTEM, user, args.timeout, args.interval)
+        except Exception as ex:  # noqa: BLE001
+            stats["judge_errors"] += 1
+            entry.setdefault("errors", []).append(str(ex)[:120])
+            continue
+        stats["judge_calls"] += 1
+        picked = next((x.strip() for x in (out.get("selected_types") or []) if isinstance(x, str) and x.strip() in best), None)
+        votes.append(picked)
+        if picked and picked not in lines_by_type:
+            lines_by_type[picked] = parse_line(out.get("line"))
+    entry["votes"] = votes
+    if not votes:
+        log.append(entry)
+        return [] if args.fail_policy == "drop" else site
+    tally = Counter(votes)
+    top = max(tally.values())
+    winner = next(v for v in votes if tally[v] == top)
+    agreement = tally[winner] / len(votes)
+    entry.update({"winner": winner, "agreement": round(agreement, 3)})
+    log.append(entry)
+    stats[f"agreement_{tally[winner]}of{len(votes)}"] += 1
+    stats["findings_in_contested"] += len(site)
+    if winner is None:
+        stats["selected_0"] += 1
+        return []
+    stats["selected_1"] += 1
+    stats["findings_kept_by_judge"] += 1
+    r = dict(best[winner]); r["extra"] = dict(r["extra"]); r["extra"]["metadata"] = dict(r["extra"]["metadata"])
+    r["extra"]["metadata"]["sweep_confidence"] = r["extra"]["metadata"].get("confidence")
+    r["extra"]["metadata"]["confidence"] = round(agreement, 3)
+    r["extra"]["metadata"]["judge"] = {"site": center, "votes": votes, "agreement": round(agreement, 3)}
+    jl = lines_by_type.get(winner)
+    if jl is not None and lo <= jl <= hi and abs(jl - r["start"]["line"]) <= args.window * 2:
+        r["start"] = {"line": jl, "col": 1}; r["end"] = {"line": jl, "col": 1}
+    return [r]
 
 
 def verify_finding(r: dict, repo: str, args, stats: Counter, log: list) -> dict | None:
@@ -456,6 +511,8 @@ def main() -> int:
                     help="name: model answers with the type string after stating the weakness (see NAME_RULES)")
     ap.add_argument("--select-mode", choices=["multi", "single"], default="single",
                     help="single: at most one type per site (default); multi: any number")
+    ap.add_argument("--votes", type=int, default=1,
+                    help=">1: name-format single-select judge, one call per rotation of the candidate order")
     ap.add_argument("--verify-prompt", choices=["basic", "attack"], default="basic",
                     help="attack: the verifier must state a concrete failure before ruling")
     ap.add_argument("--xref", action="store_true", help="give the verifier name-based callers and callees")
@@ -500,7 +557,7 @@ def main() -> int:
         print("   " + ", ".join(f"{k}={v}" for k, v in sorted(stats.items())), flush=True)
 
     summary = {"slug_in": args.slug, "slug_out": args.out_slug, "mode": args.mode, "select_mode": args.select_mode, "answer_format": args.answer_format,
-               "verify_prompt": args.verify_prompt, "xref": args.xref, "model": args.model,
+               "verify_prompt": args.verify_prompt, "xref": args.xref, "votes": args.votes, "model": args.model,
                "window": args.window, "context": args.context, "fail_policy": args.fail_policy,
                "repos": repos, "wall_seconds": round(time.time() - started), "stats": dict(total)}
     errors = total.get("judge_errors", 0) + total.get("verify_errors", 0)
