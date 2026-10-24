@@ -61,12 +61,14 @@ func init() {
 	scanCmd.Flags().Float64("confidence-threshold", 0.5, "minimum confidence score (0.0-1.0) for reporting findings")
 	scanCmd.Flags().Int("workers", 5, "concurrent analysis workers (lower for rate-limited providers)")
 	scanCmd.Flags().Bool("judge", false, "adjudicate sites where several vulnerability types were reported")
+	scanCmd.Flags().Bool("verify", false, "re-check each remaining finding in isolation")
 
 	// Bind flags to viper config keys
 	viper.BindPFlag("scan_path", scanCmd.Flags().Lookup("path"))
 	viper.BindPFlag("output_dir", scanCmd.Flags().Lookup("output"))
 	viper.BindPFlag("worker_count", scanCmd.Flags().Lookup("workers"))
 	viper.BindPFlag("judge", scanCmd.Flags().Lookup("judge"))
+	viper.BindPFlag("verify", scanCmd.Flags().Lookup("verify"))
 	viper.BindPFlag("languages", scanCmd.Flags().Lookup("languages"))
 	viper.BindPFlag("confidence_threshold", scanCmd.Flags().Lookup("confidence-threshold"))
 }
@@ -358,6 +360,12 @@ func runScan(cmd *cobra.Command, args []string) error {
 		snappedFindings, judgeStats = judged, &js
 	}
 
+	var verifyStats *report.VerifyStats
+	if cfg.Verify {
+		verified, vs := reporting.VerifyFindings(ctx, snappedFindings, llmClient, log.Logger)
+		snappedFindings, verifyStats = verified, &vs
+	}
+
 	// Apply confidence threshold filtering
 	filteredFindings, filterStats := reporting.FilterFindingsByConfidence(
 		snappedFindings, cfg.ConfidenceThreshold, log.Logger,
@@ -399,6 +407,7 @@ func runScan(cmd *cobra.Command, args []string) error {
 			},
 			LineSnap: &snapStats,
 			Judge:    judgeStats,
+			Verify:   verifyStats,
 			Filtering: &report.FilteringStats{
 				Enabled:          filterStats.Enabled,
 				ThresholdUsed:    filterStats.ThresholdUsed,

@@ -50,6 +50,9 @@ type Config struct {
 	// Judge enables per-site type adjudication after line snapping.
 	Judge bool `mapstructure:"judge"`
 
+	// Verify re-checks each remaining finding in isolation.
+	Verify bool `mapstructure:"verify"`
+
 	// BudgetCap is the maximum cost in USD for a single scan
 	// Must be a positive float
 	BudgetCap float64 `mapstructure:"budget_cap"`
@@ -141,6 +144,7 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("fallback_model", "")
 	v.SetDefault("worker_count", 5)
 	v.SetDefault("judge", false)
+	v.SetDefault("verify", false)
 	v.SetDefault("budget_cap", 3.0)
 	v.SetDefault("confidence_threshold", 0.5)
 	v.SetDefault("verbose", false)
