@@ -1,156 +1,6 @@
 {
   "gt": "in_scope",
   "scanners": {
-    "deepguard-qwen7b": {
-      "repos": [
-        "realvuln-pythonssti",
-        "realvuln-intentionally-vulnerable-python-application",
-        "realvuln-insecure-web",
-        "realvuln-dsvw",
-        "realvuln-python-insecure-app",
-        "realvuln-vulnerable-api",
-        "realvuln-vulnerable-tornado-app",
-        "realvuln-damn-vulnerable-flask-application"
-      ],
-      "TP": 40.0,
-      "FP": 223.0,
-      "FN": 11.0,
-      "precision": 0.1520912547528517,
-      "precision_ci": [
-        0.11372184117257807,
-        0.2004780437029436
-      ],
-      "recall": 0.7843137254901961,
-      "recall_ci": [
-        0.6537337712118703,
-        0.8750618875581144
-      ],
-      "f1": 0.25477707006369427,
-      "f1_bootstrap_ci": [
-        0.19941348973607034,
-        0.3414634146341463
-      ]
-    },
-    "zeroshot-qwen7b": {
-      "repos": [
-        "realvuln-pythonssti",
-        "realvuln-intentionally-vulnerable-python-application",
-        "realvuln-insecure-web",
-        "realvuln-dsvw",
-        "realvuln-python-insecure-app",
-        "realvuln-vulnerable-api",
-        "realvuln-vulnerable-tornado-app",
-        "realvuln-damn-vulnerable-flask-application"
-      ],
-      "TP": 22.0,
-      "FP": 83.0,
-      "FN": 29.0,
-      "precision": 0.20952380952380953,
-      "precision_ci": [
-        0.1426344996383833,
-        0.29691802439654447
-      ],
-      "recall": 0.43137254901960786,
-      "recall_ci": [
-        0.30501028092334304,
-        0.5673493876494193
-      ],
-      "f1": 0.28205128205128205,
-      "f1_bootstrap_ci": [
-        0.1592920353982301,
-        0.6486486486486486
-      ]
-    },
-    "deepguard-qwen7b-judge1": {
-      "repos": [
-        "realvuln-pythonssti",
-        "realvuln-intentionally-vulnerable-python-application",
-        "realvuln-insecure-web",
-        "realvuln-dsvw",
-        "realvuln-python-insecure-app",
-        "realvuln-vulnerable-api",
-        "realvuln-vulnerable-tornado-app",
-        "realvuln-damn-vulnerable-flask-application"
-      ],
-      "TP": 22.0,
-      "FP": 45.0,
-      "FN": 29.0,
-      "precision": 0.3283582089552239,
-      "precision_ci": [
-        0.22791157615605973,
-        0.4474204321554408
-      ],
-      "recall": 0.43137254901960786,
-      "recall_ci": [
-        0.30501028092334304,
-        0.5673493876494193
-      ],
-      "f1": 0.37288135593220334,
-      "f1_bootstrap_ci": [
-        0.24,
-        0.5242718446601943
-      ]
-    },
-    "deepguard-qwen7b-judgeN": {
-      "repos": [
-        "realvuln-pythonssti",
-        "realvuln-intentionally-vulnerable-python-application",
-        "realvuln-insecure-web",
-        "realvuln-dsvw",
-        "realvuln-python-insecure-app",
-        "realvuln-vulnerable-api",
-        "realvuln-vulnerable-tornado-app",
-        "realvuln-damn-vulnerable-flask-application"
-      ],
-      "TP": 27.0,
-      "FP": 44.0,
-      "FN": 24.0,
-      "precision": 0.38028169014084506,
-      "precision_ci": [
-        0.27627002252580524,
-        0.4965835776110171
-      ],
-      "recall": 0.5294117647058824,
-      "recall_ci": [
-        0.3952307134472659,
-        0.6594722857358359
-      ],
-      "f1": 0.4426229508196721,
-      "f1_bootstrap_ci": [
-        0.3098591549295775,
-        0.6078431372549019
-      ]
-    },
-    "deepguard-qwen7b-judgeN-verify": {
-      "repos": [
-        "realvuln-pythonssti",
-        "realvuln-intentionally-vulnerable-python-application",
-        "realvuln-insecure-web",
-        "realvuln-dsvw",
-        "realvuln-python-insecure-app",
-        "realvuln-vulnerable-api",
-        "realvuln-vulnerable-tornado-app",
-        "realvuln-damn-vulnerable-flask-application"
-      ],
-      "TP": 27.0,
-      "FP": 31.0,
-      "FN": 24.0,
-      "precision": 0.46551724137931033,
-      "precision_ci": [
-        0.34331815357826717,
-        0.5920004668972703
-      ],
-      "recall": 0.5294117647058824,
-      "recall_ci": [
-        0.3952307134472659,
-        0.6594722857358359
-      ],
-      "f1": 0.4954128440366972,
-      "f1_bootstrap_ci": [
-        0.3597122302158274,
-        0.6744186046511628
-      ]
-    },
     "deepguard-qwen7b-judgeNM-120b": {
       "repos": [
         "realvuln-pythonssti",
@@ -181,7 +31,7 @@
         0.6153846153846153
       ]
     },
-    "deepguard-qwen7b-judgeN-120b": {
+    "deepguard-qwen7b-judgeNM-120b-verify": {
       "repos": [
         "realvuln-pythonssti",
         "realvuln-intentionally-vulnerable-python-application",
@@ -192,55 +42,54 @@
         "realvuln-vulnerable-tornado-app",
         "realvuln-damn-vulnerable-flask-application"
       ],
-      "TP": 28.0,
-      "FP": 39.0,
-      "FN": 23.0,
-      "precision": 0.417910447761194,
+      "TP": 24.0,
+      "FP": 18.0,
+      "FN": 27.0,
+      "precision": 0.5714285714285714,
       "precision_ci": [
-        0.30742116374992556,
-        0.5373028402251399
+        0.4220597791187447,
+        0.7088257048085179
       ],
-      "recall": 0.5490196078431373,
+      "recall": 0.47058823529411764,
       "recall_ci": [
-        0.41384471541649237,
-        0.6773269498886776
+        0.34052771426416406,
+        0.6047692865527341
       ],
-      "f1": 0.47457627118644063,
+      "f1": 0.5161290322580646,
       "f1_bootstrap_ci": [
-        0.3703703703703704,
-        0.6216216216216216
-      ]
-    },
-    "deepguard-qwen7b-judgeN-120b-verify": {
-      "repos": [
-        "realvuln-pythonssti",
-        "realvuln-intentionally-vulnerable-python-application",
-        "realvuln-insecure-web",
-        "realvuln-dsvw",
-        "realvuln-python-insecure-app",
-        "realvuln-vulnerable-api",
-        "realvuln-vulnerable-tornado-app",
-        "realvuln-damn-vulnerable-flask-application"
-      ],
-      "TP": 22.0,
-      "FP": 13.0,
-      "FN": 29.0,
-      "precision": 0.6285714285714286,
-      "precision_ci": [
-        0.46336640488021064,
-        0.7683439263110894
-      ],
-      "recall": 0.43137254901960786,
-      "recall_ci": [
-        0.30501028092334304,
-        0.5673493876494193
-      ],
-      "f1": 0.5116279069767442,
-      "f1_bootstrap_ci": [
-        0.3541666666666667,
-        0.7169811320754716
+        0.4077669902912621,
+        0.6666666666666666
       ]
     }
   },
-  "pairs": {}
+  "pairs": {
+    "deepguard-qwen7b-judgeNM-120b-verify:deepguard-qwen7b-judgeNM-120b": {
+      "repos": [
+        "realvuln-damn-vulnerable-flask-application",
+        "realvuln-dsvw",
+        "realvuln-insecure-web",
+        "realvuln-intentionally-vulnerable-python-application",
+        "realvuln-python-insecure-app",
+        "realvuln-pythonssti",
+        "realvuln-vulnerable-api",
+        "realvuln-vulnerable-tornado-app"
+      ],
+      "f1_a": 0.5161290322580646,
+      "f1_b": 0.5230769230769231,
+      "diff": -0.006947890818858493,
+      "per_repo_diffs": {
+        "realvuln-damn-vulnerable-flask-application": 0.06666666666666676,
+        "realvuln-dsvw": -0.27680311890838216,
+        "realvuln-insecure-web": 0.13333333333333353,
+        "realvuln-intentionally-vulnerable-python-application": -0.045454545454545414,
+        "realvuln-python-insecure-app": -0.07142857142857151,
+        "realvuln-pythonssti": 0.0,
+        "realvuln-vulnerable-api": 0.1428571428571429,
+        "realvuln-vulnerable-tornado-app": 0.0
+      },
+      "wins_a": 3,
+      "perm_p": 0.9345,
+      "sign_p": 1.0
+    }
+  }
 }
