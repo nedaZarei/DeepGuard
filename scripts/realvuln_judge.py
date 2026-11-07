@@ -110,6 +110,75 @@ Rules:
 Return exactly:
 {{"weakness": "<one sentence>", "selected_types": ["<type name>", ...] or [], "line": <integer line number that best evidences it, or null>, "confidence": <0.0-1.0>}}"""
 
+# --answer-format exist: decide whether anything is vulnerable before naming a type. Small
+# models answer "vulnerable" by default (IRIS, arXiv 2405.17238), and the name judge said
+# "none" at 16 of 242 validation sites. Criteria come from CWE entries and framework docs,
+# never from the validation or test repos.
+JUDGE_EXIST_SYSTEM = (
+    "You are a senior application-security reviewer checking automated findings. Scanners of this kind "
+    "over-report: most flagged locations are not vulnerable. Decide first whether the code shown has a real, "
+    "exploitable weakness at this location, and only then name its type. Respond ONLY with a JSON object."
+)
+
+RUBRIC = {
+    "sql_injection": "real only if data an attacker can influence is put into SQL text by concatenation, f-string, % or "
+                     ".format and then executed. Not a finding: placeholders with a separate parameters argument, ORM "
+                     "query methods without raw SQL, SQL built only from constants.",
+    "xss": "real only if attacker-influenced data reaches HTML output unescaped: returned as an HTML string, placed in the "
+           "template text of render_template_string, or marked safe (Markup, |safe, mark_safe, autoescape off). Not a "
+           "finding: values passed as variables to an autoescaped template, JSON responses, redirects.",
+    "command_injection": "real only if attacker-influenced data reaches os.system, os.popen, subprocess with shell=True, "
+                         "eval or exec. Not a finding: constant commands, subprocess with an argument list and no shell, "
+                         "an import of subprocess or os on its own.",
+    "ssrf": "real only if an attacker can choose the host or scheme of a URL the server fetches (requests, urllib, httpx). "
+            "Not a finding: fixed URLs, or URLs whose scheme and host are fixed in code.",
+    "path_traversal": "real only if attacker-influenced text becomes part of a filesystem path that is opened, sent, "
+                      "written or deleted, with no normalisation and base-directory check. Not a finding: "
+                      "secure_filename, send_from_directory with a fixed directory, constant paths.",
+    "insecure_deserialization": "real only if pickle, marshal, shelve, jsonpickle or yaml.load with an unsafe loader is "
+                                "applied to data from a request, cookie, upload, socket or other outside source. Not a "
+                                "finding: json.loads, yaml.safe_load, an import on its own.",
+    "xxe": "real only if attacker-supplied XML is parsed with external entities or DTDs enabled (for example lxml with "
+           "resolve_entities). Not a finding: defusedxml, xml.etree on Python 3, XML built by the program itself.",
+    "auth_issue": "real only if a handler reads or changes another user's or protected data, or performs a privileged "
+                  "action, with no authentication or authorisation check, or with a check the client controls (a "
+                  "user id or role taken from the request, a JWT decoded without verification). Not a finding: an "
+                  "auth decorator or before_request check is visible, or the page is public by design (login, "
+                  "register, index, static).",
+    "crypto_issue": "real only if a weak primitive protects a secret or makes a security decision: MD5 or SHA1 for "
+                    "passwords or signatures, DES or ECB mode, a hard-coded encryption key, random instead of secrets "
+                    "for tokens. Not a finding: MD5 or SHA1 for checksums, cache keys, ETags or file names; random for "
+                    "non-security values.",
+}
+
+JUDGE_EXIST_NEGATIVES = """\
+- cur.execute("SELECT * FROM users WHERE id = ?", (user_id,))  -> not vulnerable (parameterised query)
+- @login_required above def delete_post(post_id)  -> no auth_issue (the check is visible)
+- etag = hashlib.md5(body).hexdigest()  -> no crypto_issue (not a security use)
+- return render_template("profile.html", name=request.args["name"])  -> no xss (autoescaped template)"""
+
+JUDGE_USER_EXIST = """\
+Code ({file}, lines {lo}-{hi}; the reported location is around line {site}):
+```
+{excerpt}
+```
+
+Types reported at this location (name: scanner's note):
+{candidates}
+
+When each type is real:
+{rubric}
+
+Reports like these are not findings:
+{negatives}
+
+Judge from the code shown. Do not assume sanitisation the code does not show, and do not report a weakness the
+code does not show either. First say in one sentence what this code does with data from outside the program.
+Then decide whether it is vulnerable. If it is, give AT MOST ONE type name from the list above (exactly as written).
+
+Return exactly:
+{{"weakness": "<one sentence>", "vulnerable": true or false, "selected_types": ["<type name>"] or [], "line": <integer line number that best evidences it, or null>, "confidence": <0.0-1.0>}}"""
+
 VERIFY_SYSTEM = (
     "You are a senior application-security reviewer. A scanner reported one vulnerability at one "
     "code location. Decide from the code alone whether that report is correct. "
@@ -330,10 +399,13 @@ def vtype(r: dict) -> str:
 
 def judge_site(site: list[dict], repo: str, args, stats: Counter, log: list) -> list[dict]:
     types = sorted({vtype(r) for r in site})
-    if len(types) < 2:
+    if len(types) < 2 and args.uncontested != "judge":
         stats["sites_uncontested"] += 1
+        if args.uncontested == "drop":
+            stats["dropped_uncontested"] += len(site)
+            return []
         return site
-    stats["sites_contested"] += 1
+    stats["sites_contested" if len(types) > 1 else "sites_uncontested_judged"] += 1
     lines = read_lines(repo, site[0]["path"])
     if lines is None:
         stats["file_unreadable"] += 1
@@ -353,7 +425,14 @@ def judge_site(site: list[dict], repo: str, args, stats: Counter, log: list) -> 
         by_letter[letter] = r
         cand_lines.append(f"{letter}. {t} (reported at line {r['start']['line']}, "
                           f"confidence {r['extra']['metadata'].get('confidence', '?')}): {r['extra'].get('message', '')[:200]}")
-    if args.answer_format == "name":
+    system = JUDGE_SYSTEM
+    if args.answer_format == "exist":
+        system = JUDGE_EXIST_SYSTEM
+        name_lines = [f"- {t}: {r['extra'].get('message', '')[:200]}" for t, r in sorted(best.items())]
+        rubric = "\n".join(f"- {t}: {RUBRIC[t]}" for t in sorted(best) if t in RUBRIC)
+        user = JUDGE_USER_EXIST.format(file=site[0]["path"], lo=lo, hi=hi, site=center, excerpt=exc,
+                                       candidates="\n".join(name_lines), rubric=rubric, negatives=JUDGE_EXIST_NEGATIVES)
+    elif args.answer_format == "name":
         name_lines = [f"- {t}: {r['extra'].get('message', '')[:200]}" for t, r in sorted(best.items())]
         user = JUDGE_USER_NAME.format(file=site[0]["path"], lo=lo, hi=hi, site=center, excerpt=exc,
                                       candidates="\n".join(name_lines), selection_rule=NAME_RULES[args.select_mode])
@@ -365,11 +444,20 @@ def judge_site(site: list[dict], repo: str, args, stats: Counter, log: list) -> 
     if args.votes > 1:
         return judge_site_votes(site, best, lo, hi, center, exc, args, stats, log, entry)
     try:
-        out = call(args.base_url, args.api_key, args.model, JUDGE_SYSTEM, user, args.timeout, args.interval)
+        out = call(args.base_url, args.api_key, args.model, system, user, args.timeout, args.interval)
         stats["judge_calls"] += 1
-        if args.answer_format == "name":
+        if args.answer_format in ("name", "exist"):
             by_name = {t: l for l, t in ((l, vtype(r)) for l, r in by_letter.items())}
             raw_sel = out.get("selected_types") or out.get("selected") or []
+            if args.answer_format == "exist":
+                vuln = out.get("vulnerable")
+                if isinstance(vuln, str):
+                    vuln = vuln.strip().lower() == "true"
+                entry["vulnerable"] = vuln
+                if vuln is False:
+                    raw_sel = []
+                elif vuln is True and not raw_sel and len(by_name) == 1:
+                    raw_sel = list(by_name)
             sel = sorted({by_name[s.strip()] for s in raw_sel if isinstance(s, str) and s.strip() in by_name})
             if raw_sel and not sel:
                 stats["name_not_a_candidate"] += 1
@@ -507,8 +595,13 @@ def main() -> int:
     ap.add_argument("--fail-policy", choices=["keep", "drop"], default="keep")
     ap.add_argument("--interval", type=float, default=float(os.environ.get("DEEPGUARD_MIN_REQUEST_INTERVAL_MS", "0")) / 1000,
                     help="seconds to wait between model calls (rate-limited free tiers)")
-    ap.add_argument("--answer-format", choices=["letter", "name"], default="letter",
-                    help="name: model answers with the type string after stating the weakness (see NAME_RULES)")
+    ap.add_argument("--answer-format", choices=["letter", "name", "exist"], default="letter",
+                    help="name: model answers with the type string after stating the weakness (see NAME_RULES); "
+                         "exist: decides vulnerable or not first, with per-type criteria (see RUBRIC)")
+    ap.add_argument("--uncontested", choices=["keep", "drop", "judge"], default="keep",
+                    help="single-type sites: pass through (default), drop, or judge like contested ones")
+    ap.add_argument("--verify-scope", choices=["all", "uncontested"], default="all",
+                    help="uncontested: verify only findings the judge never saw (single-type sites)")
     ap.add_argument("--select-mode", choices=["multi", "single"], default="single",
                     help="single: at most one type per site (default); multi: any number")
     ap.add_argument("--votes", type=int, default=1,
@@ -546,7 +639,16 @@ def main() -> int:
             for site in group_sites(results, args.window):
                 kept.extend(judge_site(site, repo, args, stats, log))
         if args.mode in ("verify", "both"):
-            kept = [v for v in (verify_finding(r, repo, args, stats, log) for r in kept) if v is not None]
+            checked = []
+            for r in kept:
+                if args.verify_scope == "uncontested" and "judge" in r["extra"]["metadata"]:
+                    stats["verify_skipped_judged"] += 1
+                    checked.append(r)
+                    continue
+                v = verify_finding(r, repo, args, stats, log)
+                if v is not None:
+                    checked.append(v)
+            kept = checked
         stats["findings_out"] = len(kept)
 
         os.makedirs(dst_dir, exist_ok=True)
@@ -558,6 +660,7 @@ def main() -> int:
 
     summary = {"slug_in": args.slug, "slug_out": args.out_slug, "mode": args.mode, "select_mode": args.select_mode, "answer_format": args.answer_format,
                "verify_prompt": args.verify_prompt, "xref": args.xref, "votes": args.votes, "model": args.model,
+               "uncontested": args.uncontested, "verify_scope": args.verify_scope,
                "window": args.window, "context": args.context, "fail_policy": args.fail_policy,
                "repos": repos, "wall_seconds": round(time.time() - started), "stats": dict(total)}
     errors = total.get("judge_errors", 0) + total.get("verify_errors", 0)
