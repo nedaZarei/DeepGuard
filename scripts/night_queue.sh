@@ -18,6 +18,7 @@ STEPS="${STEPS:-wait zsfix judge1 judgeM verify1 js variance score}"
 PY8="realvuln-pythonssti realvuln-intentionally-vulnerable-python-application realvuln-insecure-web realvuln-dsvw realvuln-python-insecure-app realvuln-vulnerable-api realvuln-vulnerable-tornado-app realvuln-damn-vulnerable-flask-application"
 JS3="realvuln-vuln-node-express realvuln-dvna realvuln-node-api-goat"
 PY13="realvuln-vfapi realvuln-python-app realvuln-vulnerable-flask-app realvuln-vampi realvuln-flask-xss realvuln-lets-be-bad-guys realvuln-extremely-vulnerable-flask-app realvuln-dvblab realvuln-dvpwa realvuln-dsvpwa realvuln-owasp-web-playground realvuln-threatbyte realvuln-vulnerable-python-apps"
+TEST5="realvuln-vulpy realvuln-damn-vulnerable-graphql-application realvuln-djangoat realvuln-vulnpy realvuln-pygoat"
 
 ts() { date +%H:%M:%S; }
 step() { echo "[$(ts)] === $1 ==="; }
@@ -100,6 +101,14 @@ ABL_REPOS="${ABL_REPOS:-$PY8}"
 if have zs13; then
   step "zero-shot control on the 13 held-out Python repos"
   SLUG=zeroshot-qwen7b ./scripts/realvuln_zeroshot.sh $PY13 > "$LOGS/zs13.log" 2>&1; tail -3 "$LOGS/zs13.log"
+fi
+if have sweep5; then
+  step "sweep on the 5 test repos (not scored until the filter design is frozen)"
+  NO_SCORE=1 SLUG=deepguard-qwen7b ./scripts/realvuln_run.sh $TEST5 >> "$LOGS/sweep5.log" 2>&1; grep -E "^===|Duration:" "$LOGS/sweep5.log" | tail -10
+fi
+if have zs5; then
+  step "zero-shot control on the 5 test repos"
+  NO_SCORE=1 SLUG=zeroshot-qwen7b ./scripts/realvuln_zeroshot.sh $TEST5 >> "$LOGS/zs5.log" 2>&1; tail -3 "$LOGS/zs5.log"
 fi
 for ab in ast frameworks rag; do
   if have "ablate-$ab"; then
