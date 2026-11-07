@@ -25,7 +25,7 @@ TYPE_TO_CWE = {
     "ssrf":                     "CWE-918",  # 24/24
     "path_traversal":           "CWE-22",   # 26/32
     "insecure_deserialization": "CWE-502",  # 19/19
-    "xxe":                      "CWE-611",  # 8/8
+    "xxe_injection":            "CWE-611",  # 8/8
     "auth_issue":               "CWE-284",  # 56/78
     "crypto_issue":             "CWE-327",  # 17/32
 }
