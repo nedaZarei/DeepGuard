@@ -23,6 +23,7 @@
 #   skipped (FORCE=1 re-scans). LANGS=js,ts for the JavaScript/TypeScript repos.
 #   GT_DIR=ground-truth-inscope  -> score only the 9 classes DeepGuard covers
 #                                   (create it with scripts/realvuln_baselines.py)
+#   NO_SCORE=1                     -> scan and convert only (keeps a test set unscored)
 set -euo pipefail
 RV="${RV:?set RV to the Real-Vuln-Benchmark checkout}"
 SLUG="${SLUG:-deepguard}"
@@ -52,8 +53,9 @@ for repo in "${REPOS[@]}"; do
     echo "  ADAPTER FAILED for $repo - skipping, continuing batch"
     continue
   fi
-  (cd "$RV" && python3 score.py --repo "$repo" --scanner "$SLUG" --gt-dir "$GT_DIR" | grep -E "^$SLUG" || true)
+  [ "${NO_SCORE:-0}" = 1 ] || (cd "$RV" && python3 score.py --repo "$repo" --scanner "$SLUG" --gt-dir "$GT_DIR" | grep -E "^$SLUG" || true)
 done
+[ "${NO_SCORE:-0}" = 1 ] && exit 0
 
 echo; echo "Aggregate (micro) over scored repos:"
 python3 - "$RV" "$SLUG" "$GT_DIR" <<'PY'
