@@ -11,6 +11,7 @@
 #
 # Repos already holding a report under reports/realvuln/$SLUG/ are skipped, so an
 # interrupted batch resumes where it stopped.
+# NO_SCORE=1 scans and converts without scoring (keeps a test set unscored).
 set -euo pipefail
 RV="${RV:?set RV to the Real-Vuln-Benchmark checkout}"
 SLUG="${SLUG:-zeroshot}"
@@ -35,8 +36,9 @@ for repo in "${REPOS[@]}"; do
   fi
   python3 "$ROOT/scripts/realvuln_adapter.py" "$report" "$src" "$RV/scan-results/$repo/$SLUG/results.json" \
     || { echo "  ADAPTER FAILED for $repo - continuing"; continue; }
-  (cd "$RV" && python3 score.py --repo "$repo" --scanner "$SLUG" --gt-dir "$GT_DIR" | grep -E "^$SLUG" || true)
+  [ "${NO_SCORE:-0}" = 1 ] || (cd "$RV" && python3 score.py --repo "$repo" --scanner "$SLUG" --gt-dir "$GT_DIR" | grep -E "^$SLUG" || true)
 done
+[ "${NO_SCORE:-0}" = 1 ] && exit 0
 
 echo; echo "Aggregate (micro) over scored repos:"
 python3 - "$RV" "$SLUG" "$GT_DIR" <<'PY'
