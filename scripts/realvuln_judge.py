@@ -138,8 +138,9 @@ RUBRIC = {
     "insecure_deserialization": "real only if pickle, marshal, shelve, jsonpickle or yaml.load with an unsafe loader is "
                                 "applied to data from a request, cookie, upload, socket or other outside source. Not a "
                                 "finding: json.loads, yaml.safe_load, an import on its own.",
-    "xxe": "real only if attacker-supplied XML is parsed with external entities or DTDs enabled (for example lxml with "
-           "resolve_entities). Not a finding: defusedxml, xml.etree on Python 3, XML built by the program itself.",
+    "xxe_injection": "real only if attacker-supplied XML is parsed with external entities or DTDs enabled (for example "
+                     "lxml with resolve_entities). Not a finding: defusedxml, xml.etree on Python 3, XML built by the "
+                     "program itself.",
     "auth_issue": "real only if a handler reads or changes another user's or protected data, or performs a privileged "
                   "action, with no authentication or authorisation check, or with a check the client controls (a "
                   "user id or role taken from the request, a JWT decoded without verification). Not a finding: an "
