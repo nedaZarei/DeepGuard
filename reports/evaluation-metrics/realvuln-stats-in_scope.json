@@ -214,6 +214,49 @@
         0.1141732283464567,
         0.3888888888888889
       ]
+    },
+    "bandit": {
+      "repos": [
+        "realvuln-pythonssti",
+        "realvuln-intentionally-vulnerable-python-application",
+        "realvuln-insecure-web",
+        "realvuln-dsvw",
+        "realvuln-python-insecure-app",
+        "realvuln-vulnerable-api",
+        "realvuln-vulnerable-tornado-app",
+        "realvuln-damn-vulnerable-flask-application",
+        "realvuln-vfapi",
+        "realvuln-python-app",
+        "realvuln-vulnerable-flask-app",
+        "realvuln-vampi",
+        "realvuln-flask-xss",
+        "realvuln-lets-be-bad-guys",
+        "realvuln-extremely-vulnerable-flask-app",
+        "realvuln-dvblab",
+        "realvuln-dvpwa",
+        "realvuln-dsvpwa",
+        "realvuln-owasp-web-playground",
+        "realvuln-threatbyte",
+        "realvuln-vulnerable-python-apps"
+      ],
+      "TP": 45.0,
+      "FP": 45.0,
+      "FN": 143.0,
+      "precision": 0.5,
+      "precision_ci": [
+        0.39883544540986604,
+        0.601164554590134
+      ],
+      "recall": 0.2393617021276596,
+      "recall_ci": [
+        0.1839746827376389,
+        0.3051872091565071
+      ],
+      "f1": 0.3237410071942446,
+      "f1_bootstrap_ci": [
+        0.21886792452830187,
+        0.41818181818181815
+      ]
     }
   },
   "pairs": {
@@ -322,6 +365,60 @@
       "wins_a": 13,
       "perm_p": 0.3757,
       "sign_p": 0.26317596435546875
+    },
+    "deepguard-qwen7b-judgeN-verify:bandit": {
+      "repos": [
+        "realvuln-damn-vulnerable-flask-application",
+        "realvuln-dsvpwa",
+        "realvuln-dsvw",
+        "realvuln-dvblab",
+        "realvuln-dvpwa",
+        "realvuln-extremely-vulnerable-flask-app",
+        "realvuln-flask-xss",
+        "realvuln-insecure-web",
+        "realvuln-intentionally-vulnerable-python-application",
+        "realvuln-lets-be-bad-guys",
+        "realvuln-owasp-web-playground",
+        "realvuln-python-app",
+        "realvuln-python-insecure-app",
+        "realvuln-pythonssti",
+        "realvuln-threatbyte",
+        "realvuln-vampi",
+        "realvuln-vfapi",
+        "realvuln-vulnerable-api",
+        "realvuln-vulnerable-flask-app",
+        "realvuln-vulnerable-python-apps",
+        "realvuln-vulnerable-tornado-app"
+      ],
+      "f1_a": 0.2957746478873239,
+      "f1_b": 0.3237410071942446,
+      "diff": -0.027966359306920707,
+      "per_repo_diffs": {
+        "realvuln-damn-vulnerable-flask-application": 0.23076923076923075,
+        "realvuln-dsvpwa": -0.25230769230769234,
+        "realvuln-dsvw": -0.12173913043478257,
+        "realvuln-dvblab": -0.34586466165413526,
+        "realvuln-dvpwa": -0.22222222222222224,
+        "realvuln-extremely-vulnerable-flask-app": -0.021428571428571463,
+        "realvuln-flask-xss": 0.15384615384615383,
+        "realvuln-insecure-web": 0.3939393939393938,
+        "realvuln-intentionally-vulnerable-python-application": 0.1212121212121211,
+        "realvuln-lets-be-bad-guys": 0.16666666666666666,
+        "realvuln-owasp-web-playground": -0.08062709966405374,
+        "realvuln-python-app": 0.0,
+        "realvuln-python-insecure-app": 0.6666666666666666,
+        "realvuln-pythonssti": 1.0,
+        "realvuln-threatbyte": -0.11282051282051284,
+        "realvuln-vampi": -0.2222222222222222,
+        "realvuln-vfapi": -0.11666666666666664,
+        "realvuln-vulnerable-api": 0.5833333333333334,
+        "realvuln-vulnerable-flask-app": -0.25,
+        "realvuln-vulnerable-python-apps": 0.2545068928950159,
+        "realvuln-vulnerable-tornado-app": 0.4210526315789474
+      },
+      "wins_a": 10,
+      "perm_p": 0.5746,
+      "sign_p": 1.0
     }
   }
 }
